@@ -1,40 +1,47 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ShoppingCart } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 interface AddToCartButtonProps {
   product: {
-    id: string
-    name: string
-    price: number
-    image: string
-  }
-  className?: string
+    id: string;
+    name: string;
+    price: number;
+    image: string;
+  };
+  className?: string;
 }
 
 export function AddToCartButton({ product, className }: AddToCartButtonProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAddToCart = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     // Simulate adding to cart
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
-    alert(`Agregado ${product.name} al carrito!`)
-  }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsLoading(false);
+    toast.success(`${product.name} agregado al carrito`);
+  };
 
   return (
-    <Button className={className} onClick={handleAddToCart} disabled={isLoading}>
-      {isLoading ? (
-        "Agregando..."
-      ) : (
-        <>
-          Agregar al carrito
-          <ShoppingCart className="w-4 h-4 ml-2" />
-        </>
-      )}
-    </Button>
-  )
+    <>
+      <Button
+        className={className}
+        onClick={handleAddToCart}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          "Agregando..."
+        ) : (
+          <>
+            Agregar al carrito
+            <ShoppingCart className="w-4 h-4 ml-2" />
+          </>
+        )}
+      </Button>
+    </>
+  );
 }

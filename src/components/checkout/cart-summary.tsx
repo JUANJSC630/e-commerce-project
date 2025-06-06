@@ -2,16 +2,7 @@
 
 import Image from "next/image"
 import { Minus, Plus, Trash2 } from "lucide-react"
-
-interface CartItem {
-  id: string
-  name: string
-  image: string
-  price: number
-  quantity: number
-  size: string
-  color: string
-}
+import type { CartItem } from "@/lib/types"
 
 interface CartSummaryProps {
   items: CartItem[]
@@ -32,14 +23,14 @@ export function CartSummary({ items, onUpdateQuantity, onRemoveItem, isEditable 
       <h3 className="font-montserrat font-semibold text-lg mb-4">Resumen del pedido</h3>
       <div className="space-y-4 mb-6">
         {items.map((item) => (
-          <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4">
+          <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex gap-4">
             <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-brand-offWhite" style={{ position: 'relative' }}>
               <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-medium text-sm truncate">{item.name}</h4>
               <p className="text-xs text-muted-foreground">
-                Talla: {item.size} • Color: {item.color}
+                Talla: {item.selectedSize || 'Única'} • Color: {item.selectedColor || 'Estándar'}
               </p>
               <p className="font-semibold text-sm">${item.price.toLocaleString()}</p>
             </div>

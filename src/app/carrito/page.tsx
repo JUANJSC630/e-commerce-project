@@ -6,9 +6,11 @@ import { CartSummary } from "@/components/cart/cart-summary"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
+import { useSonner } from "@/hooks/use-sonner"
 
 export default function CartPage() {
   const { items, getItemCount, clearCart } = useCart()
+  const { success, error } = useSonner()
   const itemCount = getItemCount()
 
   if (itemCount === 0) {
@@ -55,7 +57,21 @@ export default function CartPage() {
           <div className="mt-6 flex justify-end">
             <Button
               variant="outline"
-              onClick={clearCart}
+              onClick={() => {
+                if (window.confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+                  try {
+                    clearCart();
+                    success('Carrito vaciado con éxito', {
+                      description: 'Se han eliminado todos los productos del carrito.'
+                    });
+                  } catch (err) {
+                    console.error('Error clearing cart:', err);
+                    error('No se pudo vaciar el carrito', {
+                      description: 'Ha ocurrido un problema. Por favor, intenta de nuevo.'
+                    });
+                  }
+                }
+              }}
               className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               Vaciar Carrito

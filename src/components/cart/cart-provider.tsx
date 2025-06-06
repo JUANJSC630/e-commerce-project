@@ -16,14 +16,26 @@ export function CartProvider({ children }: CartProviderProps) {
   const [isCartOpen, setIsCartOpen] = useState(false)
 
   useEffect(() => {
-    const storedCart = localStorage.getItem("dulceInfanciaCart")
-    if (storedCart) {
-      setItems(JSON.parse(storedCart))
+    try {
+      if (typeof window !== 'undefined') {
+        const storedCart = localStorage.getItem("dulceInfanciaCart")
+        if (storedCart) {
+          setItems(JSON.parse(storedCart))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load cart from localStorage:', error)
     }
   }, [])
 
   useEffect(() => {
-    localStorage.setItem("dulceInfanciaCart", JSON.stringify(items))
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("dulceInfanciaCart", JSON.stringify(items))
+      }
+    } catch (error) {
+      console.error('Failed to save cart to localStorage:', error)
+    }
   }, [items])
 
   const getItemKey = (productId: string, selectedSize?: string, selectedColor?: string) => {
@@ -85,20 +97,32 @@ export function CartProvider({ children }: CartProviderProps) {
     (productId: string, quantity: number, selectedSize?: string, selectedColor?: string) => {
       setItems((prevItems) => {
         const itemKey = getItemKey(productId, selectedSize, selectedColor)
+        const actualQuantity = Math.max(1, quantity) // Clamp to minimum 1
         const newItems = prevItems
           .map((item) =>
             getItemKey(item.id, item.selectedSize, item.selectedColor) === itemKey
-              ? { ...item, quantity: Math.max(0, quantity) }
+              ? { ...item, quantity: actualQuantity }
               : item,
           )
-          .filter((item) => item.quantity > 0) // Remove if quantity is 0
+          // No longer filtering out items with quantity 0 as we're clamping to 1
 
-        const updatedItem =
-          newItems.find((item) => getItemKey(item.id, item.selectedSize, item.selectedColor) === itemKey) ||
-          prevItems.find((item) => getItemKey(item.id, item.selectedSize, item.selectedColor) === itemKey)
+        const updatedItem = newItems.find(
+          (item) => getItemKey(item.id, item.selectedSize, item.selectedColor) === itemKey
+        )
+        
+        // Find the original item to reference its name if updatedItem is somehow undefined
+        const originalItem = prevItems.find(
+          (item) => getItemKey(item.id, item.selectedSize, item.selectedColor) === itemKey
+        )
+        
         if (updatedItem) {
-          toast.info(`Cantidad de ${updatedItem.name} actualizada a ${quantity}.`)
+          // We have a valid updated item with the new quantity
+          toast.info(`Cantidad de ${updatedItem.name} actualizada a ${actualQuantity}.`)
+        } else if (originalItem) {
+          // This case might occur if there was an issue with updating the item
+          toast.info(`Se intentó actualizar ${originalItem.name} pero hubo un problema.`)
         }
+        
         return newItems
       })
     },

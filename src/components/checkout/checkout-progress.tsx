@@ -9,7 +9,11 @@ interface CheckoutProgressProps {
 export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) {
   return (
     <div className="w-full py-6">
-      <div className="flex items-center justify-between">
+      <div 
+        className="flex items-center justify-between"
+        role="navigation" 
+        aria-label="Checkout progress"
+      >
         {steps.map((step, index) => {
           const stepNumber = index + 1
           const isCompleted = stepNumber < currentStep
@@ -25,9 +29,14 @@ export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) 
                     isCurrent && "border-brand-goldenYellow text-brand-goldenYellow bg-brand-goldenYellow/10",
                     !isCompleted && !isCurrent && "border-border text-muted-foreground",
                   )}
+                  role="status"
+                  aria-label={`Step ${stepNumber}: ${step} - ${isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming'}`}
+                  tabIndex={0}
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-labelledby={`step-label-${stepNumber}`}
                 >
                   {isCompleted ? (
-                    <Check className="w-5 h-5" />
+                    <Check className="w-5 h-5" aria-hidden="true" />
                   ) : (
                     <span className="text-sm font-semibold">{stepNumber}</span>
                   )}
@@ -39,6 +48,7 @@ export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) 
                       (isCompleted || isCurrent) && "text-foreground",
                       !isCompleted && !isCurrent && "text-muted-foreground",
                     )}
+                    id={`step-label-${stepNumber}`}
                   >
                     {step}
                   </p>
@@ -50,6 +60,8 @@ export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) 
                     "flex-1 h-0.5 mx-4 transition-all duration-200",
                     isCompleted ? "bg-brand-goldenYellow" : "bg-border",
                   )}
+                  role="presentation"
+                  aria-hidden="true"
                 />
               )}
             </div>

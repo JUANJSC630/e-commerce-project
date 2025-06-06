@@ -22,13 +22,15 @@ function Avatar({
 function AvatarImage({
   className,
   alt = "Avatar image",
+  src,
   ...props
-}: React.ComponentProps<typeof Image>) {
+}: { src: string } & Omit<React.ComponentProps<typeof Image>, 'src'>) {
   return (
     <Image
       data-slot="avatar-image"
       className={cn("aspect-square size-full", className)}
       alt={alt}
+      src={src}
       {...props}
     />
   )

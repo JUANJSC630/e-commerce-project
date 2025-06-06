@@ -51,7 +51,7 @@ export function CartItem({ item, isMiniCart = false }: CartItemProps) {
           </p>
         </div>
         {!isMiniCart && (
-          <p className={`font-semibold ${isMiniCart ? "text-xs" : "text-sm"} text-brand-charcoal`}>
+          <p className="font-semibold text-sm text-brand-charcoal">
             Subtotal: ${(item.price * item.quantity).toLocaleString()}
           </p>
         )}

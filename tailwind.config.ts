@@ -13,6 +13,10 @@ const config: Config = {
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
+        brand: {
+          charcoal: '#2F2F2F',
+          taupe: '#8B8589',  // Added taupe since it's also used in the essentials page
+        },
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'
@@ -88,9 +92,15 @@ const config: Config = {
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
-  		}
+  		},
+      fontFamily: {
+        montserrat: ['Montserrat', 'sans-serif']
+      }
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require("tailwindcss-animate")
+  ],
 };
 export default config;

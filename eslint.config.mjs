@@ -11,18 +11,6 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-  {
-    files: ["src/components/ui/use-toast.ts", "src/hooks/use-toast.ts"],
-    rules: {
-      "@typescript-eslint/no-unused-vars": "off"
-    }
-  },
-  {
-    files: ["src/components/ui/chart.tsx", "src/components/ui/calendar.tsx"],
-    rules: {
-      "@typescript-eslint/no-unused-vars": "off"
-    }
-  }
 ];
 
 export default eslintConfig;

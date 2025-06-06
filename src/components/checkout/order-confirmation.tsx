@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Check, MapPin, CreditCard, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -31,6 +31,30 @@ interface OrderConfirmationProps {
   onBack: () => void
 }
 
+// Simplified validation just for final confirmation
+const validateOrderData = (orderData: OrderConfirmationProps['orderData']) => {
+  const { shipping, payment, items } = orderData;
+  
+  // Check if we have all required shipping fields
+  const requiredShippingFields = ['firstName', 'lastName', 'email', 'address', 'city'];
+  const shippingValid = requiredShippingFields.every(
+    field => shipping[field as keyof typeof shipping]?.toString().trim() !== ''
+  );
+  
+  // Check if we have a payment method
+  const paymentValid = !!payment.method;
+  
+  // Check if we have items
+  const itemsValid = items && items.length > 0;
+  
+  return {
+    isValid: shippingValid && paymentValid && itemsValid,
+    shippingValid,
+    paymentValid,
+    itemsValid
+  };
+};
+
 interface SectionData {
   icon: React.ElementType;
   title: string;
@@ -41,7 +65,32 @@ interface SectionData {
 
 export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirmationProps) {
   const [isProcessing, setIsProcessing] = useState(false)
+  const [validationState, setValidationState] = useState({ isValid: true, message: '' })
+  
+  // Validate data when component mounts
+  useEffect(() => {
+    const validationResult = validateOrderData(orderData);
+    setValidationState({
+      isValid: validationResult.isValid,
+      message: !validationResult.isValid 
+        ? 'Por favor revisa los datos antes de confirmar tu pedido.' 
+        : ''
+    });
+  }, [orderData]);
+  
   const handleConfirm = async () => {
+    // Final validation before processing the order
+    const validationResult = validateOrderData(orderData);
+    
+    if (!validationResult.isValid) {
+      setValidationState({
+        isValid: false,
+        message: 'Por favor revisa los datos antes de confirmar tu pedido.'
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
     setIsProcessing(true)
     await new Promise((resolve) => setTimeout(resolve, 2000))
     onConfirm()
@@ -78,6 +127,14 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
   return (
     <div className="max-w-2xl text-foreground">
       <h2 className="font-montserrat font-semibold text-xl mb-6">Confirmar pedido</h2>
+      
+      {!validationState.isValid && (
+        <div className="bg-destructive/10 border border-destructive text-destructive rounded-lg p-4 mb-6">
+          <p className="font-medium">{validationState.message}</p>
+          <p className="text-sm mt-1">Regresa a los pasos anteriores para completar la información requerida.</p>
+        </div>
+      )}
+      
       <div className="space-y-6">
         {sections.map((section) => (
           <div key={section.title} className={`${section.bgColor} rounded-xl p-4`}>
@@ -152,7 +209,11 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
           <Button type="button" variant="outline" onClick={onBack} className="flex-1" disabled={isProcessing}>
             Volver al pago
           </Button>
-          <Button onClick={handleConfirm} className="flex-1" disabled={isProcessing}>
+          <Button 
+            onClick={handleConfirm} 
+            className="flex-1" 
+            disabled={isProcessing || !validationState.isValid}
+          >
             {isProcessing ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />{" "}

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "../styles/globals.css";
 import { Montserrat, Inter } from "next/font/google";
 import { CartProvider } from "@/components/cart/cart-provider";
-import { Toaster } from "sonner"; // CORRECCIÓN AQUÍ
+import { Toaster } from "react-hot-toast";
 import { MiniCart } from "@/components/cart/mini-cart";
 import { CartCounter } from "@/components/cart/cart-counter";
 import Link from "next/link";
@@ -88,7 +88,32 @@ export default function RootLayout({
             </header>
             <MiniCart />
             <main className="min-h-screen">{children}</main>
-            <Toaster richColors position="top-right" />
+            <Toaster
+              position="top-right"
+              reverseOrder={false}
+              gutter={8}
+              containerClassName=""
+              containerStyle={{}}
+              toastOptions={{
+                // Define default options
+                className: "",
+                duration: 5000,
+                removeDelay: 1000,
+                style: {
+                  background: "#fff",
+                  color: "#363636",
+                },
+
+                // Default options for specific types
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: "green",
+                    secondary: "black",
+                  },
+                },
+              }}
+            />
             <footer className="py-10 bg-brand-charcoal text-brand-offWhite border-t border-brand-taupe/50">
               <div className="container mx-auto px-4 text-center">
                 <p>

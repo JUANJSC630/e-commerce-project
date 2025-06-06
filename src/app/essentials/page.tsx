@@ -1,14 +1,35 @@
 // app/essentials/page.tsx
 "use client"
 
+import * as React from "react"
 import { ProductCard } from "@/components/product/product-card"
-import { getEssentialProducts } from "@/lib/mock-data"
+import { getEssentialProducts } from "@/lib/mock-data" 
 import type { Product } from "@/lib/types"
 
 // Comentario: Página para mostrar productos esenciales.
-export default function EssentialsPage() {
-  // Comentario: Obtenemos los productos considerados esenciales.
-  const essentialProducts: Product[] = getEssentialProducts()
+export default function EssentialsPage(): React.ReactElement {
+  // Comentario: Obtenemos los productos considerados esenciales con manejo de errores.
+  const [essentialProducts, setEssentialProducts] = React.useState<Product[]>([])
+  const [error, setError] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    try {
+      const products = getEssentialProducts()
+      setEssentialProducts(products)
+    } catch (err) {
+      console.error("Error fetching essential products:", err)
+      setError("No se pudieron cargar los productos esenciales")
+    }
+  }, [])
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-4xl font-montserrat font-bold text-brand-charcoal">Esenciales de Cada Día</h1>
+        <p className="text-lg text-red-500 mt-4">{error}</p>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -7,64 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Gift, Package, ShieldCheck, Tag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link"; // Importar Link
-
-// Mock data for products (can be fetched from an API)
-const mockProducts = [
-  {
-    id: "1",
-    name: "Vestido Floral Bebé Niña",
-    price: 35000,
-    originalPrice: 45000,
-    image: "/vestido-nina/tabata-morado-estampado-39698-726217_039698-2.webp",
-    rating: 4.5,
-    reviewCount: 23,
-    sizes: ["3M", "6M", "9M", "12M"],
-    colors: ["#F67280", "#F8B195", "#FFFFFF"],
-    isNew: false,
-    isOnSale: true,
-    category: "Bebés",
-  },
-  {
-    id: "2",
-    name: "Conjunto Deportivo Niño",
-    price: 42000,
-    image: "/fujed-verde-16925-747727_016925-1.webp",
-    rating: 4.8,
-    reviewCount: 45,
-    sizes: ["2T", "3T", "4T", "5T"],
-    colors: ["#355C7D", "#6C5B7B", "#000000"],
-    isNew: true,
-    isOnSale: false,
-    category: "Niños",
-  },
-  {
-    id: "3",
-    name: "Pijama Unicornio Niña",
-    price: 28000,
-    originalPrice: 35000,
-    image: "/17343976750a17c6239ef2ac046bd8274802812ee4.webp",
-    rating: 4.7,
-    reviewCount: 67,
-    sizes: ["2T", "3T", "4T", "5T", "6T"],
-    colors: ["#F67280", "#6C5B7B", "#F8B195"],
-    isNew: false,
-    isOnSale: true,
-    category: "Niñas",
-  },
-  {
-    id: "4",
-    name: "Body Básico Bebé Unisex",
-    price: 18000,
-    image: "/17211952012fd6203a0f7b39bb2242db32fbae2c39_thumbnail_900x.webp",
-    rating: 4.9,
-    reviewCount: 102,
-    sizes: ["NB", "3M", "6M"],
-    colors: ["#FFFFFF", "#E0E0E0", "#F8B195"],
-    isNew: false,
-    isOnSale: false,
-    category: "Bebés",
-  },
-];
+import { mockProducts } from "@/lib/mock-data";
 
 const featuredCategories = [
   {
@@ -72,9 +15,21 @@ const featuredCategories = [
     image: "/placeholder/bebes-0-24.png",
     href: "/category/babies",
   },
-  { name: "Niñas", image: "/placeholder/ninas-1-6.png", href: "/category/girls" },
-  { name: "Niños", image: "/placeholder/ninos-1-6.png", href: "/category/boys" },
-  { name: "Accesorios", image: "/placeholder/accesorios.png", href: "/category/sales" },
+  {
+    name: "Niñas",
+    image: "/placeholder/ninas-1-6.png",
+    href: "/category/girls",
+  },
+  {
+    name: "Niños",
+    image: "/placeholder/ninos-1-6.png",
+    href: "/category/boys",
+  },
+  {
+    name: "Accesorios",
+    image: "/placeholder/accesorios.png",
+    href: "/category/sales",
+  },
 ];
 
 // Ajustar colores de heroBanners para mejor contraste con la paleta "Modern Yellow"
@@ -116,17 +71,21 @@ export default function HomePage() {
   // const handleQuickView = (productId: string) => { ... }
 
   const [currentBanner, setCurrentBanner] = React.useState(0);
+
   React.useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % heroBanners.length);
     }, 5000); // Cambia cada 5 segundos
-    return () => clearTimeout(timer);
-  }, [currentBanner]);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Mock data for products (can be fetched from an API)
+  const products = mockProducts; // Use imported mock data
 
   return (
     // El div principal ya tiene bg-background y text-foreground del layout
     <div>
-      {/* El header se maneja ahora desde RootLayout.tsx para evitar duplicación */}
+      {/* El header se maneja desde RootLayout.tsx para evitar duplicación */}
       <main>
         {/* Hero Section */}
         <section className="relative h-[calc(100vh-80px)] min-h-[450px] md:min-h-[500px] lg:min-h-[600px] overflow-hidden">
@@ -228,12 +187,12 @@ export default function HomePage() {
               Nuestros Favoritos
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {mockProducts.map((product) => (
+              {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" >
+              <Button variant="outline" size="lg">
                 <Link href="/products" className="flex items-center">
                   {" "}
                   {/* Ruta genérica para todos los productos */}

@@ -11,8 +11,9 @@ interface BaseProps extends React.HTMLAttributes<HTMLElement> {
   asChild?: boolean;
 }
 
-function Sheet({ ...props }: BaseProps) {
-  return <div data-slot="sheet" {...props} />
+// Use ComponentProps<"div"> to ensure only valid HTML attributes are passed to the div
+function Sheet({ className, children, ...props }: React.ComponentProps<"div">) {
+  return <div data-slot="sheet" className={className} {...props}>{children}</div>
 }
 
 function SheetTrigger({
@@ -37,7 +38,7 @@ function SheetContent({
   className,
   children,
   ...props
-}: BaseProps) {
+}: React.ComponentProps<"div">) {
   return (
     <div data-slot="sheet-content" className={cn("bg-white shadow-md rounded-md", className)} {...props}>
       {children}
@@ -48,28 +49,28 @@ function SheetContent({
 function SheetHeader({
   className,
   ...props
-}: BaseProps) {
+}: React.ComponentProps<"div">) {
   return <div data-slot="sheet-header" className={className} {...props} />
 }
 
 function SheetTitle({
   className,
   ...props
-}: BaseProps) {
+}: React.ComponentProps<"h2">) {
   return <h2 data-slot="sheet-title" className={className} {...props} />
 }
 
 function SheetDescription({
   className,
   ...props
-}: BaseProps) {
+}: React.ComponentProps<"p">) {
   return <p data-slot="sheet-description" className={className} {...props} />
 }
 
 function SheetFooter({
   className,
   ...props
-}: BaseProps) {
+}: React.ComponentProps<"div">) {
   return <div data-slot="sheet-footer" className={className} {...props} />
 }
 

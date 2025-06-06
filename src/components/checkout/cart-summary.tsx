@@ -4,10 +4,16 @@ import Image from "next/image"
 import { Minus, Plus, Trash2 } from "lucide-react"
 import type { CartItem } from "@/lib/types"
 
+// Modified item type that uses size and color instead of selectedSize and selectedColor
+interface CartSummaryItem extends Omit<CartItem, 'selectedSize' | 'selectedColor'> {
+  size?: string;
+  color?: string;
+}
+
 interface CartSummaryProps {
-  items: CartItem[]
-  onUpdateQuantity: (id: string, quantity: number) => void
-  onRemoveItem: (id: string) => void
+  items: CartSummaryItem[]
+  onUpdateQuantity: (id: string, quantity: number, size?: string, color?: string) => void
+  onRemoveItem: (id: string, size?: string, color?: string) => void
   isEditable?: boolean
 }
 
@@ -23,35 +29,35 @@ export function CartSummary({ items, onUpdateQuantity, onRemoveItem, isEditable 
       <h3 className="font-montserrat font-semibold text-lg mb-4">Resumen del pedido</h3>
       <div className="space-y-4 mb-6">
         {items.map((item) => (
-          <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex gap-4">
+          <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4">
             <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-brand-offWhite" style={{ position: 'relative' }}>
               <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-medium text-sm truncate">{item.name}</h4>
               <p className="text-xs text-muted-foreground">
-                Talla: {item.selectedSize || 'Única'} • Color: {item.selectedColor || 'Estándar'}
+                Talla: {item.size || 'Única'} • Color: {item.color || 'Estándar'}
               </p>
               <p className="font-semibold text-sm">${item.price.toLocaleString()}</p>
             </div>
             {isEditable ? (
               <div className="flex flex-col items-end gap-2">
                 <button
-                  onClick={() => onRemoveItem(item.id)}
+                  onClick={() => onRemoveItem(item.id, item.size, item.color)}
                   className="text-muted-foreground hover:text-destructive transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                    onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1), item.size, item.color)}
                     className="w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center hover:border-brand-goldenYellow transition-colors"
                   >
                     <Minus className="w-3 h-3" />
                   </button>
                   <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
                   <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1, item.size, item.color)}
                     className="w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center hover:border-brand-goldenYellow transition-colors"
                   >
                     <Plus className="w-3 h-3" />

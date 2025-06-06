@@ -121,6 +121,7 @@ function AlertDialogAction({
 }: React.ComponentProps<"button">) {
   return (
     <button
+      data-slot="alert-dialog-action" // Added data-slot attribute for consistency
       className={cn(buttonVariants(), className)}
       {...props}
     />
@@ -133,6 +134,7 @@ function AlertDialogCancel({
 }: React.ComponentProps<"button">) {
   return (
     <button
+      data-slot="alert-dialog-cancel" // Added data-slot attribute for consistency
       className={cn(buttonVariants({ variant: "outline" }), className)}
       {...props}
     />

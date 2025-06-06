@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react"
+
 function Collapsible({
   ...props
 }: React.ComponentProps<"div">) {

@@ -16,6 +16,9 @@ const config: Config = {
         brand: {
           charcoal: '#2F2F2F',
           taupe: '#8B8589',  // Added taupe since it's also used in the essentials page
+          silver: '#E5E7EB',   // Color muy claro (casi blanco)
+          offWhite: '#FAF9F8', // Fondo blanco con un leve tinte cálido
+          goldenYellow: '#F1C40F', // Color de acento
         },
   			card: {
   				DEFAULT: 'hsl(var(--card))',
@@ -99,7 +102,7 @@ const config: Config = {
   	}
   },
   plugins: [
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require("tailwindcss-animate")
   ],
 };

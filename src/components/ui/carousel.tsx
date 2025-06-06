@@ -83,6 +83,12 @@ function Carousel({
       } else if (event.key === "ArrowRight") {
         event.preventDefault()
         scrollNext()
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault()
+        scrollPrev()
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault()
+        scrollNext()
       }
     },
     [scrollPrev, scrollNext]
@@ -101,6 +107,7 @@ function Carousel({
 
     return () => {
       api?.off("select", onSelect)
+      api?.off("reInit", onSelect) // Added cleanup for "reInit" event listener
     }
   }, [api, onSelect])
 

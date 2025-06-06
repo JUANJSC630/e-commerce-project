@@ -23,11 +23,15 @@ function Progress({
         "bg-primary/20 relative h-2 w-full overflow-hidden rounded-full",
         className
       )}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={clampedValue}
       {...props}
     >
       <div
         data-slot="progress-indicator"
-        className="bg-primary h-full flex-1 transition-all"
+        className="bg-primary h-full transition-all"
         style={{ width: `${clampedValue}%` }}
       />
     </div>

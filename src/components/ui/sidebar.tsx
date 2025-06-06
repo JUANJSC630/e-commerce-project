@@ -72,7 +72,10 @@ const SidebarProvider = React.forwardRef<
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(defaultOpen);
+    const [_open, _setOpen] = React.useState(() => {
+      const match = document.cookie.match(/(?:^|;) *sidebar:state=(true|false)/);
+      return match ? match[1] === "true" : defaultOpen;
+    });
     const open = openProp ?? _open;
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
@@ -84,7 +87,10 @@ const SidebarProvider = React.forwardRef<
         }
 
         // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; Path=/; Max-Age=${SIDEBAR_COOKIE_MAX_AGE}; SameSite=Strict`;
+        if (location.protocol === "https:") {
+          document.cookie += "; Secure";
+        }
       },
       [setOpenProp, open]
     );
@@ -303,7 +309,6 @@ const SidebarRail = React.forwardRef<
       ref={ref}
       data-sidebar="rail"
       aria-label="Toggle Sidebar"
-      tabIndex={-1}
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(

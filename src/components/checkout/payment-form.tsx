@@ -28,12 +28,16 @@ export function PaymentForm({ data, errors: externalErrors, onUpdate, onNext, on
   const [formData, setFormData] = useState<PaymentData>(data)
   const [errors, setErrors] = useState<Record<string, string>>(externalErrors || {})
   
-  // Update errors when external errors change
+  // Update formData when data prop changes
   useEffect(() => {
-    if (externalErrors && Object.keys(externalErrors).length > 0) {
-      setErrors(prev => ({...prev, ...externalErrors}));
-    }
+    setFormData(data);
+  }, [data]);
+
+  // Update errors when externalErrors prop changes
+  useEffect(() => {
+    setErrors(externalErrors || {});
   }, [externalErrors])
+
   const paymentMethods = [
     {
       id: "card" as const,

@@ -1,53 +1,36 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-
-// Need to declare the component types first to resolve the TypeScript errors
-// with the React.Children usage
-const TabsListComponent = () => <></>;
-
-const TabsTriggerComponent = () => <></>;
-
-// Forward references for type checking
-const TabsListType = TabsListComponent as React.FC<{
-  className?: string;
-  children: React.ReactNode;
-}>;
-
-const TabsTriggerType = TabsTriggerComponent as React.FC<{
-  className?: string;
-  children: React.ReactNode;
-  value: string;
-  disabled?: boolean;
-}>;
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface TabsContextType {
-  selectedTab: string
-  setSelectedTab: (value: string) => void
-  tabsId: string
+  selectedTab: string;
+  setSelectedTab: (value: string) => void;
+  tabsId: string;
 }
 
-const TabsContext = React.createContext<TabsContextType | undefined>(undefined)
+const TabsContext = React.createContext<TabsContextType | undefined>(undefined);
 
 function useTabs() {
-  const context = React.useContext(TabsContext)
+  const context = React.useContext(TabsContext);
   if (!context) {
-    throw new Error("Tabs compound components must be used within a Tabs component")
+    throw new Error(
+      "Tabs compound components must be used within a Tabs component"
+    );
   }
-  return context
+  return context;
 }
 
 function generateUniqueId(prefix: string): string {
-  return `${prefix}-${Math.random().toString(36).substring(2, 9)}`
+  return `${prefix}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 interface TabsProps {
-  className?: string
-  children: React.ReactNode
-  value?: string
-  defaultValue?: string
-  onValueChange?: (value: string) => void
+  className?: string;
+  children: React.ReactNode;
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
 }
 
 function Tabs({
@@ -58,21 +41,53 @@ function Tabs({
   onValueChange,
   ...props
 }: TabsProps) {
-  const tabsId = React.useMemo(() => generateUniqueId("tabs"), [])
-  const [selectedTabInternal, setSelectedTabInternal] = React.useState(defaultValue || "")
-  
-  // Handle controlled or uncontrolled component
-  const selectedTab = value !== undefined ? value : selectedTabInternal
-  
-  const setSelectedTab = React.useCallback((value: string) => {
-    if (onValueChange) {
-      onValueChange(value)
+  const tabsId = React.useMemo(() => generateUniqueId("tabs"), []);
+  const [selectedTabInternal, setSelectedTabInternal] = React.useState(
+    defaultValue || ""
+  );
+
+  const selectedTab = value !== undefined ? value : selectedTabInternal;
+
+  const setSelectedTab = React.useCallback(
+    (value: string) => {
+      if (onValueChange) {
+        onValueChange(value);
+      }
+      if (value !== undefined) {
+        setSelectedTabInternal(value);
+      }
+    },
+    [onValueChange]
+  );
+
+  const tabTriggersRef = React.useRef<HTMLElement[]>([]);
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      const currentIndex = tabTriggersRef.current.findIndex(
+        (trigger) => trigger === document.activeElement
+      );
+      let nextIndex = currentIndex;
+
+      if (event.key === "ArrowRight") {
+        nextIndex = (currentIndex + 1) % tabTriggersRef.current.length;
+      } else if (event.key === "ArrowLeft") {
+        nextIndex =
+          (currentIndex - 1 + tabTriggersRef.current.length) %
+          tabTriggersRef.current.length;
+      }
+
+      const nextTrigger = tabTriggersRef.current[nextIndex];
+      if (nextTrigger) {
+        nextTrigger.focus();
+        const nextValue = nextTrigger.getAttribute("data-value");
+        if (nextValue) {
+          setSelectedTab(nextValue);
+        }
+      }
     }
-    if (value !== undefined) {
-      setSelectedTabInternal(value)
-    }
-  }, [onValueChange])
-  
+  };
+
   // Set first tab as selected if none is selected
   React.useEffect(() => {
     if (selectedTab === "") {
@@ -81,31 +96,24 @@ function Tabs({
 
       React.Children.forEach(children, (child) => {
         if (foundTabValue) return;
-        
-        if (React.isValidElement(child)) {
-          // Check for TabsList component match
-          if (child.type === TabsListType || child.type === TabsListComponent) {
+
+        if (hasDisplayName(child, "TabsList")) {
+          const childProps = (
+            child as React.ReactElement<{ children?: React.ReactNode }>
+          ).props;
+          React.Children.forEach(childProps.children, (nestedChild) => {
+            if (foundTabValue) return;
+
             if (
-              React.isValidElement(child) &&
-              child.props &&
-              (child.props as { children?: React.ReactNode }).children
+              hasDisplayName(nestedChild, "TabsTrigger") &&
+              typeof (nestedChild as React.ReactElement<{ value?: unknown }>)
+                .props.value === "string"
             ) {
-              const childProps = child.props as { children?: React.ReactNode };
-              React.Children.forEach(childProps.children, (nestedChild) => {
-                if (foundTabValue) return;
-                
-                if (React.isValidElement(nestedChild)) {
-                  // Check for TabsTrigger component match
-                  if (
-                    (nestedChild.type === TabsTriggerType || nestedChild.type === TabsTriggerComponent) && 
-                    typeof (nestedChild as React.ReactElement<{ value?: unknown }>).props.value === 'string'
-                  ) {
-                    foundTabValue = (nestedChild as React.ReactElement<{ value: string }>).props.value;
-                  }
-                }
-              });
+              foundTabValue = (
+                nestedChild as React.ReactElement<{ value: string }>
+              ).props.value;
             }
-          }
+          });
         }
       });
 
@@ -113,133 +121,81 @@ function Tabs({
         setSelectedTab(foundTabValue);
       }
     }
-  }, [children, selectedTab, setSelectedTab])
+  }, [children, selectedTab, setSelectedTab]);
 
   return (
     <TabsContext.Provider value={{ selectedTab, setSelectedTab, tabsId }}>
       <div
         data-slot="tabs"
         className={cn("flex flex-col gap-2", className)}
+        role="tablist"
+        onKeyDown={handleKeyDown}
         {...props}
       >
         {children}
       </div>
     </TabsContext.Provider>
-  )
+  );
 }
 
 interface TabsListProps {
-  className?: string
-  children: React.ReactNode
+  className?: string;
+  children: React.ReactNode;
 }
 
-function TabsList({
-  className,
-  children,
-  ...props
-}: TabsListProps) {
+function TabsList({ className, children, ...props }: TabsListProps) {
   const tabElements = React.useMemo(() => {
     return React.Children.map(children, (child) => {
-      if (!React.isValidElement(child) || child.type !== TabsTriggerType) {
-        return child
+      if (!hasDisplayName(child, "TabsTrigger")) {
+        return null;
       }
-      return child
-    })
-  }, [children])
+      return child;
+    });
+  }, [children]);
 
   return (
-    <div
-      role="tablist"
-      data-slot="tabs-list"
-      className={cn("flex items-center gap-2", className)}
-      {...props}
-    >
+    <div className={cn("tabs-list", className)} {...props}>
       {tabElements}
     </div>
-  )
+  );
 }
+TabsList.displayName = "TabsList";
 
 interface TabsTriggerProps {
-  className?: string
-  children: React.ReactNode
-  value: string
-  disabled?: boolean
+  className?: string;
+  children: React.ReactNode;
+  value: string;
+  disabled?: boolean;
 }
 
-function TabsTrigger({
-  className,
-  children,
-  value,
-  disabled = false,
-  ...props
-}: TabsTriggerProps) {
-  const { selectedTab, setSelectedTab, tabsId } = useTabs()
-  const isSelected = selectedTab === value
-  const tabId = `${tabsId}-tab-${value}`
-  const panelId = `${tabsId}-panel-${value}`
+const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
+  ({ className, children, value, disabled = false, ...props }, ref) => {
+    const { selectedTab, setSelectedTab, tabsId } = useTabs();
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (disabled) return;
-
-    // Find all tab triggers in the tab list
-    const tabTriggers = Array.from(
-      document.querySelectorAll(`[data-tabs-id="${tabsId}"][role="tab"]`)
-    ) as HTMLElement[];
-    
-    const currentIndex = tabTriggers.findIndex(tab => tab.id === tabId);
-    let nextIndex: number;
-
-    switch (event.key) {
-      case "ArrowRight":
-        nextIndex = (currentIndex + 1) % tabTriggers.length;
-        tabTriggers[nextIndex]?.focus();
-        event.preventDefault();
-        break;
-      case "ArrowLeft":
-        nextIndex = (currentIndex - 1 + tabTriggers.length) % tabTriggers.length;
-        tabTriggers[nextIndex]?.focus();
-        event.preventDefault();
-        break;
-      case "Home":
-        tabTriggers[0]?.focus();
-        event.preventDefault();
-        break;
-      case "End":
-        tabTriggers[tabTriggers.length - 1]?.focus();
-        event.preventDefault();
-        break;
-      default:
-        break;
-    }
-  };
-
-  return (
-    <button
-      id={tabId}
-      role="tab"
-      aria-selected={isSelected}
-      aria-controls={panelId}
-      tabIndex={isSelected ? 0 : -1}
-      data-tabs-id={tabsId}
-      data-state={isSelected ? "active" : "inactive"}
-      data-slot="tabs-trigger"
-      disabled={disabled}
-      className={cn("px-4 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-goldenYellow disabled:opacity-50 disabled:cursor-not-allowed", 
-        isSelected && "font-medium border-b-2 border-brand-goldenYellow",
-        className)}
-      onClick={() => !disabled && setSelectedTab(value)}
-      onKeyDown={handleKeyDown}
-      {...props}
-    >
-      {children}
-    </button>
-  )
-}
+    return (
+      <button
+        ref={ref}
+        className={cn("tabs-trigger", className)}
+        role="tab"
+        aria-selected={selectedTab === value}
+        aria-controls={`${tabsId}-panel-${value}`}
+        disabled={disabled}
+        data-value={value}
+        onClick={() => setSelectedTab(value)}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+TabsTrigger.displayName = "TabsTrigger";
 
 interface TabsContentProps {
-  className?: string
-  children: React.ReactNode
-  value: string
+  className?: string;
+  children: React.ReactNode;
+  value: string;
+  [key: string]: unknown;
 }
 
 function TabsContent({
@@ -248,10 +204,10 @@ function TabsContent({
   value,
   ...props
 }: TabsContentProps) {
-  const { selectedTab, tabsId } = useTabs()
-  const isSelected = selectedTab === value
-  const tabId = `${tabsId}-tab-${value}`
-  const panelId = `${tabsId}-panel-${value}`
+  const { selectedTab, tabsId } = useTabs();
+  const isSelected = selectedTab === value;
+  const tabId = `${tabsId}-tab-${value}`;
+  const panelId = `${tabsId}-panel-${value}`;
 
   if (!isSelected) {
     return null;
@@ -270,7 +226,18 @@ function TabsContent({
     >
       {children}
     </div>
-  )
+  );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent }
+function hasDisplayName(
+  element: React.ReactNode,
+  displayName: string
+): boolean {
+  return (
+    React.isValidElement(element) &&
+    typeof element.type === "function" &&
+    (element.type as React.FC).displayName === displayName
+  );
+}
+
+export { Tabs, TabsList, TabsTrigger, TabsContent };

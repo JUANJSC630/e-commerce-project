@@ -60,8 +60,10 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
     const handleToggle = () => {
       if (disabled) return
       const newState = !isChecked
-      setIsChecked(newState)
-      onCheckedChange?.(newState)
+      if (checked === undefined) {
+        setIsChecked(newState) // Update internal state only if uncontrolled
+      }
+      onCheckedChange?.(newState) // Notify parent of the change
     }
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {

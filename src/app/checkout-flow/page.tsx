@@ -146,22 +146,14 @@ export default function CheckoutPage() {
 		color: item.selectedColor || 'Estándar'
 	}));
 	
-	const handleUpdateQuantity = (id: string, quantity: number) => {
-		// Find the item to get its size and color
-		const item = items.find(item => item.id === id);
-		if (item) {
-			updateItemQuantity(id, quantity, item.selectedSize, item.selectedColor);
-		}
+	const handleUpdateQuantity = (id: string, quantity: number, size?: string, color?: string) => {
+		updateItemQuantity(id, quantity, size, color);
 	}
 	
-	const handleRemoveItem = (id: string) => {
-		// Find the item to get its size and color
-		const item = items.find(item => item.id === id);
-		if (item) {
-			removeItem(id, item.selectedSize, item.selectedColor);
-		}
+	const handleRemoveItem = (id: string, size?: string, color?: string) => {
+		removeItem(id, size, color);
 	}
-	
+
 	const handleShippingNext = () => {
 		const validationResult = validateShippingData(shippingData);
 		if (validationResult.isValid) {
@@ -198,7 +190,8 @@ export default function CheckoutPage() {
 			setTimeout(() => {
 				clearCart();
 				// Redirect to home page after order completion
-				router.push('/');
+				// If using next/router, import and use router. Otherwise, fallback to window.location:
+				window.location.href = '/';
 			}, 2000);
 		} else {
 			toast.error("Por favor revisa los datos de envío y pago antes de confirmar.");

@@ -1,20 +1,25 @@
 "use client"
 
+import React from "react";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-function ContextMenu({
-  ...props
-}: React.ComponentProps<"div">) {
-  return <div data-slot="context-menu" {...props} />
-}
+const ContextMenu = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
+  ({ ...props }, ref) => <div ref={ref} data-slot="context-menu" {...props} />
+);
+ContextMenu.displayName = "ContextMenu";
 
 function ContextMenuTrigger({
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"button">) {
   return (
-    <div data-slot="context-menu-trigger" {...props} />
+    <button
+      data-slot="context-menu-trigger"
+      aria-haspopup="menu"
+      aria-expanded="false" // Update dynamically if needed
+      {...props}
+    />
   )
 }
 
@@ -56,22 +61,32 @@ function ContextMenuSubTrigger({
   inset,
   children,
   ...props
-}: React.ComponentProps<"div"> & {
+}: React.ComponentProps<"button"> & {
   inset?: boolean
 }) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === "Enter" || event.key === " " || event.key === "ArrowRight") {
+      event.preventDefault();
+      // Logic to open the submenu goes here
+    }
+  };
+
   return (
-    <div
+    <button
       data-slot="context-menu-sub-trigger"
       data-inset={inset}
+      role="menuitem"
+      aria-haspopup="menu"
       className={cn(
         "focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
+      onKeyDown={handleKeyDown}
       {...props}
     >
       {children}
       <ChevronRightIcon className="ml-auto" />
-    </div>
+    </button>
   )
 }
 
@@ -118,6 +133,8 @@ function ContextMenuItem({
 }) {
   return (
     <div
+      role="menuitem" // Added ARIA role for accessibility
+      tabIndex={0} // Made focusable
       data-slot="context-menu-item"
       data-inset={inset}
       data-variant={variant}

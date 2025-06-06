@@ -3,6 +3,7 @@ export interface Product {
   name: string
   price: number
   image: string
+  images?: string[] // Array de URLs de imágenes adicionales
   originalPrice?: number
   rating?: number
   reviewCount?: number

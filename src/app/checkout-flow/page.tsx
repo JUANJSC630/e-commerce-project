@@ -198,7 +198,7 @@ export default function CheckoutPage() {
 			setTimeout(() => {
 				clearCart();
 				// Redirect to home page after order completion
-				window.location.href = '/';
+				router.push('/');
 			}, 2000);
 		} else {
 			toast.error("Por favor revisa los datos de envío y pago antes de confirmar.");

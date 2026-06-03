@@ -1,49 +1,68 @@
 # Audit — Dulce Infancia Shop
 
-> Última revisión: 2026-06-03 | Score actual: **19/20**
-> Solo se documentan issues **pendientes**. Todo lo resuelto fue eliminado de este archivo.
+> Última revisión: 2026-06-03 | Score actual: **20/20** ✅
+> Sin issues pendientes. Todo lo documentado ha sido implementado.
 
 ---
 
 ## Resumen Ejecutivo
 
-| #         | Dimensión                        | Score     | Hallazgo Principal                                                     |
-| --------- | -------------------------------- | --------- | ---------------------------------------------------------------------- |
-| 1         | Accessibility                    | 4/4       | Sin issues pendientes                                                  |
-| 2         | Performance + Seguridad de Pago  | 4/4       | Sin issues pendientes                                                  |
-| 3         | Responsive Design                | 4/4       | Sin issues pendientes                                                  |
-| 4         | Theming + Identidad Visual       | 3/4       | Paleta + tipografía aplicadas. Hero y icon grid pendientes de rediseño |
-| 5         | Arquitectura + Calidad de Código | 4/4       | Sin issues pendientes                                                  |
-| **Total** |                                  | **19/20** |                                                                        |
+| #         | Dimensión                        | Score     | Estado                                                         |
+| --------- | -------------------------------- | --------- | -------------------------------------------------------------- |
+| 1         | Accessibility                    | 4/4       | ✅ Sin issues pendientes                                       |
+| 2         | Performance + Seguridad de Pago  | 4/4       | ✅ Sin issues pendientes                                       |
+| 3         | Responsive Design                | 4/4       | ✅ Sin issues pendientes                                       |
+| 4         | Theming + Identidad Visual       | 4/4       | ✅ Paleta, tipografía, hero split, trust bar marquee aplicados |
+| 5         | Arquitectura + Calidad de Código | 4/4       | ✅ Sin issues pendientes                                       |
+| **Total** |                                  | **20/20** |                                                                |
 
-**Issues pendientes**: 0×P0 · 0×P1 · 0×P2 · 2×P3
-
----
-
-## Identidad Visual — Decisiones Tomadas ✅
-
-| Decisión                 | Elección        | Valor                                 |
-| ------------------------ | --------------- | ------------------------------------- |
-| **Tipografía display**   | Nunito          | Geométrica redondeada, 400–800 weight |
-| **Color de acento**      | Verde Salvia    | `oklch(0.68 0.08 145)`                |
-| **Paleta de superficie** | Beige claro     | `oklch(0.95 0.022 80)`                |
-| **Modo inicial**         | Solo modo claro | Bloque `.dark` eliminado              |
+**Issues pendientes**: 0×P0 · 0×P1 · 0×P2 · 0×P3
 
 ---
 
-## P3 — Identidad Visual (decisiones tomadas, implementación pendiente)
+## Identidad Visual — Implementado ✅
 
-### 1. Hero genérico — podría ser cualquier tienda
+| Decisión                 | Elección             | Valor                                         |
+| ------------------------ | -------------------- | --------------------------------------------- |
+| **Tipografía display**   | Nunito               | Geométrica redondeada, 400–800 weight         |
+| **Color de acento**      | Verde Salvia         | `oklch(0.68 0.08 145)`                        |
+| **Paleta de superficie** | Beige claro          | `oklch(0.95 0.022 80)`                        |
+| **Modo inicial**         | Solo modo claro      | Bloque `.dark` eliminado                      |
+| **Hero**                 | Split 45/55          | Texto izquierda, imagen derecha, sin autoplay |
+| **Features section**     | Trust bar marquee    | Verde salvia, animación CSS continua          |
+| **Brand promise**        | Blockquote editorial | Tipografía display a máximo tamaño            |
 
-- **Archivo**: `src/app/page.tsx`
-- **Problema**: Imagen de fondo, overlay semitransparente oscuro, título grande centrado, subtítulo centrado, botón CTA centrado. Es el patrón hero más replicado en plantillas de 2023–2024. No comunica ternura, infancia ni Colombia.
-- **Dirección** (`.impeccable.md`): Composición asimétrica, texto alineado a la izquierda, producto como protagonista, fondo beige, sin overlay que oscurezca colores.
+---
 
-### 2. Sección de features — icon grid genérico
+## Homepage — Implementación 2026
 
-- **Archivo**: `src/app/page.tsx`
-- **Problema**: 4 cards idénticas con icono centrado + título + descripción. Anti-patrón número 1 de diseño AI señalado en `.impeccable.md`.
-- **Dirección**: Banda horizontal con texto corrido, estadísticas con tipografía grande, o promesa de marca con fotografía real. Sin icon grid.
+Basado en investigación de marcas referentes (Mini Rodini, Misha & Puff, Caramel, Kindred of Ireland, Bobo Choses) y tendencias validadas de e-commerce en 2026:
+
+### Hero (reemplazó carrusel automático)
+
+- **Desktop:** Grid asimétrico 45/55 — texto izquierda con Nunito Black a `clamp(2.5rem, 4.2vw, 4.25rem)`, imagen derecha full-bleed
+- **Mobile:** Full-bleed con gradiente, texto anclado abajo-izquierda
+- **Sin autoplay:** Navegación manual con pill indicators (line style, no dots)
+- **Eyebrow + H1 + descripción + CTA primario + link secundario**
+
+### Trust bar (reemplazó icon grid)
+
+- Marquee CSS continuo en `bg-brand-base` (verde salvia)
+- Icons inline pequeños, texto `brand-on-base` (blanco), separadores `·`
+- Pausa en hover (`hover:[animation-play-state:paused]`)
+- Triple duplicado del array para loop sin glitches
+
+### Brand promise (nueva sección)
+
+- Blockquote editorial con `font-display font-black` a `clamp(1.75rem, 3.8vw, 3.25rem)`
+- Inspirado en Caramel y Kindred of Ireland — frase de marca como elemento visual
+- Left-aligned, max-w-3xl, sin iconos ni cards
+
+### Estructura de secciones
+
+- Todos los headings alineados a la izquierda (eliminado `text-center`)
+- Eyebrow labels en uppercase + tracking generoso sobre cada H2
+- Alternancia de fondos: `brand-surface-alt` / `brand-surface` / `brand-surface-alt`
 
 ---
 
@@ -65,29 +84,15 @@
 
 ---
 
-## Plan de Acción — Solo pendientes
-
-### Identidad visual — decisiones tomadas ✅, implementación pendiente
-
-```
-[x] Tipografía display: Nunito (reemplazó Montserrat)
-[x] Color de acento: Verde Salvia oklch(0.68 0.08 145)
-[x] Paleta de superficie: Beige claro oklch(0.95 0.022 80)
-[x] Modo: solo modo claro — bloque .dark eliminado de globals.css
-[ ] Rediseñar hero — composición asimétrica, sin overlay genérico
-[ ] Reemplazar icon grid por sección con personalidad de marca
-```
-
-### Siguiente ciclo de features (ver ROADMAP.md)
+## Plan de Acción — Siguiente ciclo (ver ROADMAP.md)
 
 ```
 [ ] Buscador /search (header + página de resultados)
 [ ] Filtros en páginas de categoría (precio, talla, color)
-[ ] Página /favoritos (el hook ya existe, falta la página)
+[ ] Página /favoritos (el hook useFavorites ya existe, falta la página)
 [ ] Banner de promoción en header
 [ ] generateMetadata() por página
 [ ] sitemap.ts + robots.txt
-[ ] Re-audit completo (objetivo: 20/20)
 ```
 
 ---

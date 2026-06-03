@@ -62,6 +62,7 @@ Para clonar el proyecto para otra marca: actualizar solo esos dos archivos.
 
 ## Documentación
 
+- [`STANDARDS.md`](./STANDARDS.md) — **Leer antes de cada commit.** SOLID, accesibilidad, seguridad, patrones obligatorios y checklist de PR
 - [`PROJECT.md`](./PROJECT.md) — Visión, modelo de negocio, KPIs y fases del proyecto
-- [`ROADMAP.md`](./ROADMAP.md) — Estado de módulos, bugs y plan de ejecución
-- [`AUDIT.md`](./AUDIT.md) — Auditoría técnica de accesibilidad, performance y calidad
+- [`ROADMAP.md`](./ROADMAP.md) — Estado de módulos y plan de ejecución (score 20/20)
+- [`AUDIT.md`](./AUDIT.md) — Auditoría técnica: accesibilidad, performance, arquitectura

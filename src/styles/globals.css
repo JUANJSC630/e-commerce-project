@@ -4,9 +4,21 @@ body {
   font-family: var(--font-display), var(--font-body), Arial, sans-serif;
 }
 
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .animate-marquee {
+    animation: marquee 38s linear infinite;
   }
 }
 

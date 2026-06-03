@@ -29,14 +29,8 @@ const INITIAL_FILTERS: ActiveFilters = { sizes: [], colors: [], maxPrice: null }
 function useFilters(products: Product[]) {
   const [filters, setFilters] = useState<ActiveFilters>(INITIAL_FILTERS)
 
-  const allSizes = useMemo(
-    () => [...new Set(products.flatMap((p) => p.sizes ?? []))],
-    [products],
-  )
-  const allColors = useMemo(
-    () => [...new Set(products.flatMap((p) => p.colors ?? []))],
-    [products],
-  )
+  const allSizes = useMemo(() => [...new Set(products.flatMap((p) => p.sizes ?? []))], [products])
+  const allColors = useMemo(() => [...new Set(products.flatMap((p) => p.colors ?? []))], [products])
   const maxProductPrice = useMemo(() => Math.max(...products.map((p) => p.price), 0), [products])
 
   const filteredProducts = useMemo(
@@ -65,9 +59,7 @@ function useFilters(products: Product[]) {
   function toggleColor(color: string) {
     setFilters((f) => ({
       ...f,
-      colors: f.colors.includes(color)
-        ? f.colors.filter((c) => c !== color)
-        : [...f.colors, color],
+      colors: f.colors.includes(color) ? f.colors.filter((c) => c !== color) : [...f.colors, color],
     }))
   }
 
@@ -257,12 +249,7 @@ export function CategoryPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <BreadcrumbNav
-        segments={[
-          { label: "Inicio", href: routes.home },
-          { label: title },
-        ]}
-      />
+      <BreadcrumbNav segments={[{ label: "Inicio", href: routes.home }, { label: title }]} />
 
       <header className="mb-8">
         <h1 className="text-4xl font-display font-bold text-brand-ink">{title}</h1>
@@ -284,8 +271,7 @@ export function CategoryPage({
         <section className="flex-1 min-w-0" aria-label="Productos">
           <div className="flex items-center justify-between mb-6 lg:hidden">
             <p className="text-sm text-muted-foreground" aria-live="polite">
-              {filteredProducts.length}{" "}
-              {filteredProducts.length === 1 ? "producto" : "productos"}
+              {filteredProducts.length} {filteredProducts.length === 1 ? "producto" : "productos"}
             </p>
             {hasFilters && (
               <Sheet>
@@ -312,8 +298,7 @@ export function CategoryPage({
 
           {hasFilters && (
             <p className="hidden lg:block text-sm text-muted-foreground mb-6" aria-live="polite">
-              {filteredProducts.length}{" "}
-              {filteredProducts.length === 1 ? "producto" : "productos"}
+              {filteredProducts.length} {filteredProducts.length === 1 ? "producto" : "productos"}
             </p>
           )}
 

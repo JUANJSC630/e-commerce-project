@@ -26,12 +26,7 @@ export function SearchResults({ query, results }: SearchResultsProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <BreadcrumbNav
-        segments={[
-          { label: "Inicio", href: routes.home },
-          { label: "Buscar" },
-        ]}
-      />
+      <BreadcrumbNav segments={[{ label: "Inicio", href: routes.home }, { label: "Buscar" }]} />
 
       {/* Search input */}
       <form
@@ -79,9 +74,7 @@ export function SearchResults({ query, results }: SearchResultsProps) {
         </header>
       ) : (
         <header className="mb-6">
-          <h1 className="text-2xl font-display font-bold text-brand-ink">
-            ¿Qué estás buscando?
-          </h1>
+          <h1 className="text-2xl font-display font-bold text-brand-ink">¿Qué estás buscando?</h1>
           <p className="text-brand-muted mt-2">
             Escribe el nombre de una prenda, categoría o descripción.
           </p>

@@ -23,16 +23,9 @@ export default async function AdminRolesPage() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Roles y permisos</h1>
-        <p className="text-slate-500 text-sm mt-0.5">
-          Los roles de sistema no se pueden eliminar
-        </p>
+        <p className="text-slate-500 text-sm mt-0.5">Los roles de sistema no se pueden eliminar</p>
       </div>
-      <RolesEditor
-        roles={roles}
-        canCreate={canCreate}
-        canEdit={canEdit}
-        canDelete={canDelete}
-      />
+      <RolesEditor roles={roles} canCreate={canCreate} canEdit={canEdit} canDelete={canDelete} />
     </div>
   )
 }

@@ -7,11 +7,7 @@ import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 import { ProductForm } from "@/components/admin/products/product-form"
 
-export default async function EditarProductoPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function EditarProductoPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) redirect("/admin/login")
 

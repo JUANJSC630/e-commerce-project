@@ -25,10 +25,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
             )}
           </Link>
 
-          <nav
-            className="hidden md:flex space-x-6 items-center"
-            aria-label="Navegación principal"
-          >
+          <nav className="hidden md:flex space-x-6 items-center" aria-label="Navegación principal">
             {navigation.map((item) => (
               <Link
                 key={item.href}

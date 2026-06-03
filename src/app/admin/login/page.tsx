@@ -58,10 +58,7 @@ function LoginForm() {
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-slate-700 mb-1.5"
-          >
+          <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
             Contraseña
           </label>
           <input
@@ -76,9 +73,7 @@ function LoginForm() {
           />
         </div>
 
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
         <button
           type="submit"
@@ -100,7 +95,11 @@ export default function AdminLoginPage() {
           <h1 className="text-2xl font-bold text-slate-900">Dulce Infancia</h1>
           <p className="text-slate-500 mt-1 text-sm">Panel de administración</p>
         </div>
-        <Suspense fallback={<div className="bg-white rounded-2xl border border-slate-200 p-8 h-64 animate-pulse" />}>
+        <Suspense
+          fallback={
+            <div className="bg-white rounded-2xl border border-slate-200 p-8 h-64 animate-pulse" />
+          }
+        >
           <LoginForm />
         </Suspense>
       </div>

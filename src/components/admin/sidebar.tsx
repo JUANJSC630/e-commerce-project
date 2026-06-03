@@ -44,9 +44,7 @@ export function AdminSidebar() {
 
   const permissions = session?.user?.role?.permissions as Permissions | undefined
 
-  const visibleItems = NAV_ITEMS.filter((item) =>
-    hasPermission(permissions, item.resource, "read"),
-  )
+  const visibleItems = NAV_ITEMS.filter((item) => hasPermission(permissions, item.resource, "read"))
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">

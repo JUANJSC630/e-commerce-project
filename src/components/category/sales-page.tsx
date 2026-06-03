@@ -13,12 +13,7 @@ interface SalesPageProps {
 export function SalesPageComponent({ products, title, description, emptyMessage }: SalesPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
-      <BreadcrumbNav
-        segments={[
-          { label: "Inicio", href: routes.home },
-          { label: title },
-        ]}
-      />
+      <BreadcrumbNav segments={[{ label: "Inicio", href: routes.home }, { label: title }]} />
 
       <header className="mb-8">
         <h1 className="text-4xl font-display font-bold text-brand-ink">{title}</h1>

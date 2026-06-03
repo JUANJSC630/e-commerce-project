@@ -44,7 +44,9 @@ export function UsersTable({ users, roles, canEdit, currentUserId }: UsersTableP
   }
 
   return (
-    <div className={`bg-white rounded-xl border border-slate-200 overflow-hidden ${isPending ? "opacity-70" : ""}`}>
+    <div
+      className={`bg-white rounded-xl border border-slate-200 overflow-hidden ${isPending ? "opacity-70" : ""}`}
+    >
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

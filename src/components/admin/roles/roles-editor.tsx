@@ -26,7 +26,12 @@ export function RolesEditor({ roles, canCreate, canEdit, canDelete }: RolesEdito
     setExpandedId((prev) => (prev === id ? null : id))
   }
 
-  async function handlePermissionToggle(roleId: string, resource: Resource, action: Action, currentPerms: Permissions) {
+  async function handlePermissionToggle(
+    roleId: string,
+    resource: Resource,
+    action: Action,
+    currentPerms: Permissions,
+  ) {
     const currentActions = currentPerms[resource] ?? []
     const newActions = currentActions.includes(action)
       ? currentActions.filter((a) => a !== action)
@@ -119,9 +124,7 @@ export function RolesEditor({ roles, canCreate, canEdit, canDelete }: RolesEdito
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Descripción
-                </label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Descripción</label>
                 <input
                   type="text"
                   value={newRole.description}
@@ -156,7 +159,10 @@ export function RolesEditor({ roles, canCreate, canEdit, canDelete }: RolesEdito
         const isExpanded = expandedId === role.id
 
         return (
-          <div key={role.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div
+            key={role.id}
+            className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+          >
             {/* Header */}
             <button
               onClick={() => toggleExpand(role.id)}
@@ -204,9 +210,7 @@ export function RolesEditor({ roles, canCreate, canEdit, canDelete }: RolesEdito
                   <table className="w-full text-sm">
                     <thead>
                       <tr>
-                        <th className="text-left py-2 font-medium text-slate-500 w-32">
-                          Recurso
-                        </th>
+                        <th className="text-left py-2 font-medium text-slate-500 w-32">Recurso</th>
                         {ALL_ACTIONS.map((action) => (
                           <th
                             key={action}

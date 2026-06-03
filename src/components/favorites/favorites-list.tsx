@@ -16,10 +16,7 @@ export function FavoritesList() {
   return (
     <div className="container mx-auto px-4 py-8">
       <BreadcrumbNav
-        segments={[
-          { label: "Inicio", href: routes.home },
-          { label: "Mis Favoritos" },
-        ]}
+        segments={[{ label: "Inicio", href: routes.home }, { label: "Mis Favoritos" }]}
       />
 
       <header className="mb-8">

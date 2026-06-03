@@ -195,7 +195,11 @@ export function ProductForm({ product }: ProductFormProps) {
         {(
           [
             { field: "isPublished", label: "Publicado", desc: "Visible en la tienda" },
-            { field: "isFeatured", label: "Destacado", desc: "Aparece en la sección de destacados" },
+            {
+              field: "isFeatured",
+              label: "Destacado",
+              desc: "Aparece en la sección de destacados",
+            },
             { field: "isNew", label: "Nuevo", desc: "Muestra la etiqueta NUEVO" },
             { field: "isOnSale", label: "En oferta", desc: "Muestra la etiqueta OFERTA" },
           ] as const

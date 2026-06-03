@@ -45,11 +45,7 @@ export function SearchBar() {
       {isOpen && (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4">
           {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={handleClose}
-            aria-hidden="true"
-          />
+          <div className="absolute inset-0 bg-black/40" onClick={handleClose} aria-hidden="true" />
 
           {/* Search box */}
           <div className="relative w-full max-w-xl bg-brand-surface rounded-2xl shadow-2xl border border-border overflow-hidden">

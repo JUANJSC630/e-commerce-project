@@ -43,7 +43,11 @@ export function ProductsTable({
     if (res.ok) startTransition(() => router.refresh())
   }
 
-  async function toggleField(id: string, field: "isPublished" | "isFeatured" | "isOnSale", current: boolean) {
+  async function toggleField(
+    id: string,
+    field: "isPublished" | "isFeatured" | "isOnSale",
+    current: boolean,
+  ) {
     await fetch(`/api/admin/products/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

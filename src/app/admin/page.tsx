@@ -215,7 +215,10 @@ export default async function AdminDashboard() {
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
             Pedidos recientes
           </h2>
-          <Link href="/admin/pedidos" className="text-xs text-indigo-600 hover:underline font-medium">
+          <Link
+            href="/admin/pedidos"
+            className="text-xs text-indigo-600 hover:underline font-medium"
+          >
             Ver todos →
           </Link>
         </div>

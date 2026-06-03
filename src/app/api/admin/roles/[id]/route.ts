@@ -41,7 +41,10 @@ export async function DELETE(_: Request, { params }: Params) {
   const role = await prisma.role.findUnique({ where: { id } })
   if (!role) return NextResponse.json({ error: "Not found" }, { status: 404 })
   if (role.isSystem) {
-    return NextResponse.json({ error: "Los roles de sistema no se pueden eliminar" }, { status: 403 })
+    return NextResponse.json(
+      { error: "Los roles de sistema no se pueden eliminar" },
+      { status: 403 },
+    )
   }
 
   // Check if any user has this role

@@ -23,11 +23,7 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: "bg-red-100 text-red-800",
 }
 
-export default async function PedidoDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function PedidoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) redirect("/admin/login")
 
@@ -81,9 +77,7 @@ export default async function PedidoDetailPage({
           </div>
           <div className="flex gap-2">
             <dt className="text-slate-500 w-24">Fecha:</dt>
-            <dd className="text-slate-900">
-              {new Date(order.createdAt).toLocaleString("es-AR")}
-            </dd>
+            <dd className="text-slate-900">{new Date(order.createdAt).toLocaleString("es-AR")}</dd>
           </div>
         </dl>
       </div>
@@ -127,7 +121,9 @@ export default async function PedidoDetailPage({
           <div className="flex justify-between text-slate-500">
             <span>Envío</span>
             <span>
-              {order.shippingCost === 0 ? "Gratis" : `$${order.shippingCost.toLocaleString("es-AR")}`}
+              {order.shippingCost === 0
+                ? "Gratis"
+                : `$${order.shippingCost.toLocaleString("es-AR")}`}
             </span>
           </div>
           <div className="flex justify-between font-bold text-slate-900 pt-1 border-t border-slate-200">
@@ -138,9 +134,7 @@ export default async function PedidoDetailPage({
       </div>
 
       {/* Status updater */}
-      {canUpdate && (
-        <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
-      )}
+      {canUpdate && <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />}
     </div>
   )
 }

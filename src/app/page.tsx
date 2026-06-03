@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Package, Gift, ShieldCheck, Tag } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { mockProducts } from "@/lib/mock-data"
+import { allMockProducts } from "@/lib/mock-data"
 import { heroBanners, featuredCategories, homeFeatures, routes } from "@/config/store.config"
 import type { LucideIcon } from "lucide-react"
 
@@ -28,7 +28,7 @@ export default function HomePage() {
     return () => clearInterval(timer)
   }, [])
 
-  const products = mockProducts
+  const products = allMockProducts.slice(0, 8)
 
   return (
     <div>

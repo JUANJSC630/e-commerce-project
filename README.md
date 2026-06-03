@@ -1,38 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dulce Infancia — E-Commerce
 
-## Getting Started
+Tienda en línea de ropa infantil para el mercado hispanohablante. Construida con Next.js 15, Tailwind CSS v4 y shadcn/ui.
 
-First, run the development server:
+## Stack
+
+| Capa            | Tecnología                              |
+| --------------- | --------------------------------------- |
+| Framework       | Next.js 15.3.3 (App Router + Turbopack) |
+| Lenguaje        | TypeScript (strict)                     |
+| Estilos         | Tailwind CSS v4 + OKLCH tokens          |
+| Componentes     | shadcn/ui (Radix UI)                    |
+| Estado          | React Context (carrito, favoritos)      |
+| Notificaciones  | Sonner                                  |
+| Deploy objetivo | Vercel                                  |
+
+## Primeros pasos
 
 ```bash
-npm run dev
-# or
+# Instalar dependencias
+yarn install
+
+# Desarrollo
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Verificación completa (TypeScript + ESLint + Prettier)
+yarn validate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts disponibles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando             | Descripción                                              |
+| ------------------- | -------------------------------------------------------- |
+| `yarn dev`          | Servidor de desarrollo con Turbopack                     |
+| `yarn build`        | Build de producción                                      |
+| `yarn start`        | Servidor de producción                                   |
+| `yarn lint`         | Revisar errores de ESLint                                |
+| `yarn lint:fix`     | Corregir errores de ESLint automáticamente               |
+| `yarn format`       | Aplicar Prettier a todo el proyecto                      |
+| `yarn format:check` | Verificar formato sin modificar archivos                 |
+| `yarn type-check`   | TypeScript sin compilar                                  |
+| `yarn validate`     | type-check + lint + format:check (usar antes de cada PR) |
 
-## Learn More
+## Variables de entorno
 
-To learn more about Next.js, take a look at the following resources:
+Copia `.env.local.example` a `.env.local` y completa los valores:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cp .env.local.example .env.local
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Configuración de marca
 
-## Deploy on Vercel
+Toda la configuración de la tienda está centralizada en dos archivos:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `src/config/store.config.ts` — nombre, rutas, nav, categorías, pagos, redes sociales, contacto
+- `src/config/theme.config.ts` — paleta de colores OKLCH y tipografía
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Para clonar el proyecto para otra marca: actualizar solo esos dos archivos.
 
-# dulce-infancia-shop
+## Documentación
+
+- [`PROJECT.md`](./PROJECT.md) — Visión, modelo de negocio, KPIs y fases del proyecto
+- [`ROADMAP.md`](./ROADMAP.md) — Estado de módulos, bugs y plan de ejecución
+- [`AUDIT.md`](./AUDIT.md) — Auditoría técnica de accesibilidad, performance y calidad

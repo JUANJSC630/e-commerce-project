@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { paymentMethods as configPaymentMethods } from "@/config/store.config"
+import { getCardType, validatePaymentData } from "@/lib/validation"
 import type { LucideIcon } from "lucide-react"
 
 const methodIcons: Record<string, LucideIcon> = {
@@ -107,139 +108,6 @@ export function PaymentForm({
         return newErrors
       })
     }
-  }
-
-  // Luhn algorithm for credit card validation
-  const validateCreditCardWithLuhn = (number: string): boolean => {
-    const digits = number.replace(/\D/g, "")
-    if (!digits) return false
-
-    let sum = 0
-    let shouldDouble = false
-
-    // Loop from right to left
-    for (let i = digits.length - 1; i >= 0; i--) {
-      let digit = parseInt(digits.charAt(i), 10)
-
-      if (shouldDouble) {
-        digit *= 2
-        if (digit > 9) digit -= 9
-      }
-
-      sum += digit
-      shouldDouble = !shouldDouble
-    }
-
-    return sum % 10 === 0
-  }
-
-  // Get card type based on number
-  const getCardType = (number: string): string => {
-    const cleanNumber = number.replace(/\D/g, "")
-
-    // Define card patterns
-    const cardPatterns = {
-      visa: /^4/,
-      mastercard: /^5[1-5]/,
-      amex: /^3[47]/,
-      discover: /^6(?:011|5)/,
-      diners: /^3(?:0[0-5]|[68])/,
-      jcb: /^(?:2131|1800|35)/,
-    }
-
-    if (cardPatterns.visa.test(cleanNumber)) return "visa"
-    if (cardPatterns.mastercard.test(cleanNumber)) return "mastercard"
-    if (cardPatterns.amex.test(cleanNumber)) return "amex"
-    if (cardPatterns.discover.test(cleanNumber)) return "discover"
-    if (cardPatterns.diners.test(cleanNumber)) return "diners"
-    if (cardPatterns.jcb.test(cleanNumber)) return "jcb"
-
-    return "unknown"
-  }
-
-  // Define payment validation function
-  const validatePaymentData = (data: PaymentData) => {
-    const validationResults = {
-      isValid: true,
-      errors: {} as Record<string, string>,
-    }
-
-    if (data.method === "card") {
-      const cleanCardNumber = data.cardNumber.replace(/\s/g, "")
-      const cardType = getCardType(cleanCardNumber)
-
-      // Card number validation (length and format)
-      if (!cleanCardNumber) {
-        validationResults.isValid = false
-        validationResults.errors["cardNumber"] = "Número de tarjeta es requerido"
-      } else if (!/^\d+$/.test(cleanCardNumber)) {
-        validationResults.isValid = false
-        validationResults.errors["cardNumber"] = "Número de tarjeta debe contener solo dígitos"
-      } else {
-        // Validate card length based on type
-        const isValidLength =
-          (cardType === "amex" && cleanCardNumber.length === 15) ||
-          (cardType === "diners" && cleanCardNumber.length === 14) ||
-          (["visa", "mastercard", "discover"].includes(cardType) &&
-            cleanCardNumber.length === 16) ||
-          (cardType === "unknown" && cleanCardNumber.length >= 13 && cleanCardNumber.length <= 19)
-
-        if (!isValidLength) {
-          validationResults.isValid = false
-          validationResults.errors["cardNumber"] =
-            "Longitud de tarjeta inválida para este tipo de tarjeta"
-        } else if (!validateCreditCardWithLuhn(cleanCardNumber)) {
-          validationResults.isValid = false
-          validationResults.errors["cardNumber"] =
-            "Número de tarjeta inválido (verificación fallida)"
-        }
-      }
-
-      // Expiry date validation (MM/YY format and not expired)
-      if (!data.expiryDate) {
-        validationResults.isValid = false
-        validationResults.errors["expiryDate"] = "Fecha de expiración es requerida"
-      } else if (!/^(0[1-9]|1[0-2])\/([0-9]{2})$/.test(data.expiryDate)) {
-        validationResults.isValid = false
-        validationResults.errors["expiryDate"] = "Formato inválido (MM/AA)"
-      } else {
-        // Check if the card is not expired
-        const [month, year] = data.expiryDate.split("/")
-        const expiryDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10), 0) // Last day of the month
-        const currentDate = new Date()
-
-        if (expiryDate < currentDate) {
-          validationResults.isValid = false
-          validationResults.errors["expiryDate"] = "La tarjeta ha expirado"
-        }
-      }
-
-      // CVV validation (3-4 digits based on card type)
-      if (!data.cvv) {
-        validationResults.isValid = false
-        validationResults.errors["cvv"] = "CVV es requerido"
-      } else if (!/^\d+$/.test(data.cvv)) {
-        validationResults.isValid = false
-        validationResults.errors["cvv"] = "CVV debe contener solo dígitos"
-      } else {
-        const requiredCvvLength = cardType === "amex" ? 4 : 3
-        if (data.cvv.length !== requiredCvvLength) {
-          validationResults.isValid = false
-          validationResults.errors["cvv"] =
-            cardType === "amex"
-              ? "CVV para American Express debe tener 4 dígitos"
-              : "CVV debe tener 3 dígitos"
-        }
-      }
-
-      // Card name validation
-      if (!data.cardName || data.cardName.trim() === "") {
-        validationResults.isValid = false
-        validationResults.errors["cardName"] = "Nombre en la tarjeta es requerido"
-      }
-    }
-
-    return validationResults
   }
 
   const validateForm = () => {

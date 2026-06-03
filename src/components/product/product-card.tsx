@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
 import { Heart, Eye, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { AddToCartButton } from "@/components/cart/add-to-cart-button"
+import { useFavorites } from "@/hooks/use-favorites"
 
 interface ProductCardProps {
   product: {
@@ -31,11 +32,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
   const [isImageLoaded, setIsImageLoaded] = useState(false)
-  const [isFavorite, setIsFavorite] = useState(false)
-
-  const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite)
-  }
+  const { isFavorite, toggleFavorite } = useFavorites(product.id)
 
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -69,7 +66,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           )}
         </div>
         <button
-          onClick={handleToggleFavorite}
+          onClick={toggleFavorite}
           aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
           aria-pressed={isFavorite}
           className={cn(

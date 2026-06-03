@@ -11,90 +11,9 @@ import { OrderConfirmation } from "@/components/checkout/order-confirmation"
 import { toast } from "sonner"
 import { useCart } from "@/hooks/use-cart"
 import { locale, routes, brand } from "@/config/store.config"
+import { validateShippingData, validatePaymentData } from "@/lib/validation"
 
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
-
-// Validation functions
-const validateShippingData = (data: {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  address: string
-  city: string
-  state: string
-  zipCode: string
-  country: string
-}) => {
-  const required = ["firstName", "lastName", "email", "address", "city", "zipCode", "country"]
-  const validationResults = {
-    isValid: true,
-    errors: {} as Record<string, string>,
-  }
-
-  required.forEach((field) => {
-    const value = data[field as keyof typeof data]
-    if (!value || (typeof value === "string" && value.trim() === "")) {
-      validationResults.isValid = false
-      validationResults.errors[field] = "Este campo es requerido"
-    }
-  })
-
-  // Email validation
-  if (data.email && !/^\S+@\S+\.\S+$/.test(data.email)) {
-    validationResults.isValid = false
-    validationResults.errors["email"] = "Email inválido"
-  }
-
-  // Zip code validation - assuming Colombian format (6 digits)
-  if (data.zipCode && !/^\d{5,6}$/.test(data.zipCode)) {
-    validationResults.isValid = false
-    validationResults.errors["zipCode"] = "Código postal inválido"
-  }
-
-  return validationResults
-}
-
-const validatePaymentData = (data: {
-  method: "card" | "mercadopago" | "bank"
-  cardNumber: string
-  expiryDate: string
-  cvv: string
-  cardName: string
-}) => {
-  const validationResults = {
-    isValid: true,
-    errors: {} as Record<string, string>,
-  }
-
-  if (data.method === "card") {
-    // Card number validation (16 digits)
-    if (!data.cardNumber || !/^\d{16}$/.test(data.cardNumber.replace(/\s/g, ""))) {
-      validationResults.isValid = false
-      validationResults.errors["cardNumber"] = "Número de tarjeta inválido"
-    }
-
-    // Expiry date validation (MM/YY format)
-    if (!data.expiryDate || !/^(0[1-9]|1[0-2])\/([0-9]{2})$/.test(data.expiryDate)) {
-      validationResults.isValid = false
-      validationResults.errors["expiryDate"] = "Fecha de expiración inválida (MM/YY)"
-    }
-
-    // CVV validation (3-4 digits)
-    if (!data.cvv || !/^\d{3,4}$/.test(data.cvv)) {
-      validationResults.isValid = false
-      validationResults.errors["cvv"] = "CVV inválido"
-    }
-
-    // Card name validation
-    if (!data.cardName || data.cardName.trim() === "") {
-      validationResults.isValid = false
-      validationResults.errors["cardName"] = "Nombre en la tarjeta es requerido"
-    }
-  }
-
-  return validationResults
-}
 
 export default function CheckoutPage() {
   const { items, updateItemQuantity, removeItem, clearCart } = useCart()
@@ -126,8 +45,8 @@ export default function CheckoutPage() {
   })
   // Declaración de errores de envío - Se usa en handleOrderConfirm y se pasa a ShippingForm
   const [shippingErrors, setShippingErrors] = useState<Record<string, string>>({})
-  // Declaración de errores de pago - Se usa en handleOrderConfirm
   const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Create cart item objects with the structure expected by CartSummary component
   const cartItemsForSummary = items.map((item) => ({
@@ -173,13 +92,13 @@ export default function CheckoutPage() {
   }
 
   const handleOrderConfirm = () => {
-    // Final validation before order submission
+    if (isSubmitting) return
     const shippingValidation = validateShippingData(shippingData)
     const paymentValidation = validatePaymentData(paymentData)
 
     if (shippingValidation.isValid && paymentValidation.isValid) {
+      setIsSubmitting(true)
       toast.success("¡Pedido confirmado! Recibirás un email con los detalles.")
-
       setTimeout(() => {
         clearCart()
         router.push(routes.home)

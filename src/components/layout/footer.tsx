@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { brand, navigation, routes, locale } from "@/config/store.config"
+import { brand, navigation, routes, locale, social, contact } from "@/config/store.config"
 import { Instagram, Facebook, Twitter } from "lucide-react"
 
 export function Footer() {
@@ -23,35 +23,43 @@ export function Footer() {
             <p className="mt-3 text-sm text-brand-surface/70 leading-relaxed max-w-xs">
               {brand.description}
             </p>
-            <div className="flex items-center gap-3 mt-5">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Síguenos en Instagram"
-                className="p-2 rounded-full bg-brand-surface/10 hover:bg-brand-base hover:text-brand-on-base transition-colors"
-              >
-                <Instagram className="w-4 h-4" aria-hidden="true" />
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Síguenos en Facebook"
-                className="p-2 rounded-full bg-brand-surface/10 hover:bg-brand-base hover:text-brand-on-base transition-colors"
-              >
-                <Facebook className="w-4 h-4" aria-hidden="true" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Síguenos en X (Twitter)"
-                className="p-2 rounded-full bg-brand-surface/10 hover:bg-brand-base hover:text-brand-on-base transition-colors"
-              >
-                <Twitter className="w-4 h-4" aria-hidden="true" />
-              </a>
-            </div>
+            {(social.instagram || social.facebook || social.tiktok) && (
+              <div className="flex items-center gap-3 mt-5">
+                {social.instagram && (
+                  <a
+                    href={social.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Síguenos en Instagram"
+                    className="p-2 rounded-full bg-brand-surface/10 hover:bg-brand-base hover:text-brand-on-base transition-colors"
+                  >
+                    <Instagram className="w-4 h-4" aria-hidden="true" />
+                  </a>
+                )}
+                {social.facebook && (
+                  <a
+                    href={social.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Síguenos en Facebook"
+                    className="p-2 rounded-full bg-brand-surface/10 hover:bg-brand-base hover:text-brand-on-base transition-colors"
+                  >
+                    <Facebook className="w-4 h-4" aria-hidden="true" />
+                  </a>
+                )}
+                {social.tiktok && (
+                  <a
+                    href={social.tiktok}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Síguenos en TikTok"
+                    className="p-2 rounded-full bg-brand-surface/10 hover:bg-brand-base hover:text-brand-on-base transition-colors"
+                  >
+                    <Twitter className="w-4 h-4" aria-hidden="true" />
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Navigation column */}
@@ -103,14 +111,16 @@ export function Footer() {
                   Checkout
                 </Link>
               </li>
-              <li>
-                <a
-                  href="mailto:contacto@dulceinfancia.co"
-                  className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors"
-                >
-                  Contacto
-                </a>
-              </li>
+              {contact.email && (
+                <li>
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors"
+                  >
+                    Contacto
+                  </a>
+                </li>
+              )}
               <li>
                 <Link
                   href={routes.policies ?? "/politicas"}
@@ -135,14 +145,16 @@ export function Footer() {
                 </span>
               </li>
               <li>Colombia · Envíos internacionales</li>
-              <li className="pt-1">
-                <a
-                  href="mailto:contacto@dulceinfancia.co"
-                  className="hover:text-brand-base transition-colors"
-                >
-                  contacto@dulceinfancia.co
-                </a>
-              </li>
+              {contact.email && (
+                <li className="pt-1">
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className="hover:text-brand-base transition-colors"
+                  >
+                    {contact.email}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>

@@ -181,7 +181,7 @@ export const heroBanners: HeroBanner[] = [
     image: "/8683985.jpg",
     buttonText: "Ver Ofertas",
     buttonLink: `${routes.categoryBase}/sales`,
-    bgColorClass: "bg-brand-accent/20",
+    bgColorClass: "bg-brand-base/20",
     textColorClass: "text-brand-ink",
   },
   {

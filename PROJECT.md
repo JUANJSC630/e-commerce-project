@@ -30,17 +30,17 @@ El objetivo principal es **establecer una marca confiable** en el mercado hispan
 
 ## Stack Tecnológico
 
-| Capa               | Tecnología                   | Decisión                                              |
-| ------------------ | ---------------------------- | ----------------------------------------------------- |
-| Framework          | Next.js 14 (App Router)      | SSR + ISR para SEO, routing nativo                    |
-| Lenguaje           | TypeScript                   | Tipado fuerte en productos, carrito, config           |
-| Estilos            | Tailwind CSS v4              | Sistema de tokens OKLCH, dark mode ready              |
-| Componentes        | shadcn/ui (Radix UI)         | Accesibilidad base, composable                        |
-| Fuentes            | Google Fonts via `next/font` | Sin layout shift, optimización automática             |
-| Notificaciones     | Sonner                       | Toast system unificado (migrar desde react-hot-toast) |
-| Estado del carrito | React Context + Provider     | Sin dependencias externas, extensible                 |
-| Mock data          | `src/lib/mock-data.ts`       | Datos locales hasta integración de backend real       |
-| Deploy objetivo    | Vercel                       | Edge network, integración nativa Next.js              |
+| Capa               | Tecnología                              | Decisión                                              |
+| ------------------ | --------------------------------------- | ----------------------------------------------------- |
+| Framework          | Next.js 15.3.3 (App Router + Turbopack) | SSR + ISR para SEO, routing nativo                    |
+| Lenguaje           | TypeScript                              | Tipado fuerte en productos, carrito, config           |
+| Estilos            | Tailwind CSS v4                         | Sistema de tokens OKLCH, dark mode ready              |
+| Componentes        | shadcn/ui (Radix UI)                    | Accesibilidad base, composable                        |
+| Fuentes            | Google Fonts via `next/font`            | Sin layout shift, optimización automática             |
+| Notificaciones     | Sonner                                  | Toast system unificado (migrar desde react-hot-toast) |
+| Estado del carrito | React Context + Provider                | Sin dependencias externas, extensible                 |
+| Mock data          | `src/lib/mock-data.ts`                  | Datos locales hasta integración de backend real       |
+| Deploy objetivo    | Vercel                                  | Edge network, integración nativa Next.js              |
 
 ---
 

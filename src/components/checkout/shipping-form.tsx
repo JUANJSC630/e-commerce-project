@@ -209,7 +209,7 @@ export function ShippingForm({
 
   return (
     <div className="max-w-2xl text-foreground">
-      <h2 className="font-montserrat font-semibold text-xl mb-6">Información de envío</h2>
+      <h2 className="font-display font-semibold text-xl mb-6">Información de envío</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

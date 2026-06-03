@@ -14,7 +14,10 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand column */}
           <div className="lg:col-span-1">
-            <Link href={routes.home} className="font-display font-bold text-xl text-brand-surface hover:text-brand-base transition-colors">
+            <Link
+              href={routes.home}
+              className="font-display font-bold text-xl text-brand-surface hover:text-brand-base transition-colors"
+            >
               {brand.name}
             </Link>
             <p className="mt-3 text-sm text-brand-surface/70 leading-relaxed max-w-xs">
@@ -85,22 +88,34 @@ export function Footer() {
             </h2>
             <ul className="space-y-2.5" role="list">
               <li>
-                <Link href={routes.cart} className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors">
+                <Link
+                  href={routes.cart}
+                  className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors"
+                >
                   Mi carrito
                 </Link>
               </li>
               <li>
-                <Link href={routes.checkout} className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors">
+                <Link
+                  href={routes.checkout}
+                  className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors"
+                >
                   Checkout
                 </Link>
               </li>
               <li>
-                <a href="mailto:contacto@dulceinfancia.co" className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors">
+                <a
+                  href="mailto:contacto@dulceinfancia.co"
+                  className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors"
+                >
                   Contacto
                 </a>
               </li>
               <li>
-                <Link href={routes.policies ?? "/politicas"} className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors">
+                <Link
+                  href={routes.policies ?? "/politicas"}
+                  className="text-sm text-brand-surface/80 hover:text-brand-base transition-colors"
+                >
                   Políticas de envío
                 </Link>
               </li>
@@ -136,7 +151,9 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-brand-surface/10">
         <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-brand-surface/50">
-          <p>&copy; {year} {brand.copyright}</p>
+          <p>
+            &copy; {year} {brand.copyright}
+          </p>
           <p>{brand.footerSubtext}</p>
         </div>
       </div>

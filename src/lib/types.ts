@@ -22,9 +22,19 @@ export interface CartItem extends Product {
 
 export interface CartContextType {
   items: CartItem[]
-  addItem: (product: Product, quantity: number, selectedSize?: string, selectedColor?: string) => void
+  addItem: (
+    product: Product,
+    quantity: number,
+    selectedSize?: string,
+    selectedColor?: string,
+  ) => void
   removeItem: (productId: string, selectedSize?: string, selectedColor?: string) => void
-  updateItemQuantity: (productId: string, quantity: number, selectedSize?: string, selectedColor?: string) => void
+  updateItemQuantity: (
+    productId: string,
+    quantity: number,
+    selectedSize?: string,
+    selectedColor?: string,
+  ) => void
   clearCart: () => void
   getItemCount: () => number
   getSubtotal: () => number

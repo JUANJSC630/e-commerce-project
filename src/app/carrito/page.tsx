@@ -29,10 +29,12 @@ export default function CartPage() {
     return (
       <div className="container mx-auto px-4 py-12 text-center min-h-[60vh] flex flex-col items-center justify-center">
         <ShoppingBag className="w-24 h-24 text-brand-surface-alt mb-6" />
-        <h1 className="text-3xl font-display font-bold text-brand-ink mb-4">Tu carrito está vacío</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-ink mb-4">
+          Tu carrito está vacío
+        </h1>
         <p className="text-brand-muted mb-8 max-w-md">
-          Parece que aún no has añadido ninguna prenda adorable. ¡Explora nuestras colecciones y encuentra algo
-          especial!
+          Parece que aún no has añadido ninguna prenda adorable. ¡Explora nuestras colecciones y
+          encuentra algo especial!
         </p>
         <Button asChild size="lg">
           <Link href="/">Descubrir Productos</Link>

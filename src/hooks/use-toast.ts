@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * Este archivo es un proxy al hook use-sonner para mantener compatibilidad con código existente 
+ * Este archivo es un proxy al hook use-sonner para mantener compatibilidad con código existente
  * que usa el antiguo sistema de toast.
  */
 

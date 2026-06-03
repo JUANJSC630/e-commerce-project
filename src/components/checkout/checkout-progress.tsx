@@ -9,9 +9,9 @@ interface CheckoutProgressProps {
 export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) {
   return (
     <div className="w-full py-6">
-      <div 
+      <div
         className="flex items-center justify-between"
-        role="navigation" 
+        role="navigation"
         aria-label="Checkout progress"
       >
         {steps.map((step, index) => {
@@ -30,7 +30,7 @@ export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) 
                     !isCompleted && !isCurrent && "border-border text-muted-foreground",
                   )}
                   role="status"
-                  aria-label={`Step ${stepNumber}: ${step} - ${isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming'}`}
+                  aria-label={`Step ${stepNumber}: ${step} - ${isCompleted ? "completed" : isCurrent ? "current" : "upcoming"}`}
                   tabIndex={0}
                   aria-current={isCurrent ? "step" : undefined}
                   aria-labelledby={`step-label-${stepNumber}`}

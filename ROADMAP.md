@@ -1,4 +1,5 @@
 # Roadmap — Dulce Infancia Shop
+
 > Actualizado: 2026-06-03 | Score técnico base: 6/20 → estimado actual: **12/20** (ver AUDIT.md)
 
 ---
@@ -11,21 +12,21 @@ El esqueleto del e-commerce está construido con Next.js 14 App Router, Tailwind
 
 ## Módulos Existentes
 
-| Módulo | Ruta | Estado | Notas |
-|--------|------|--------|-------|
-| Home | `/` | ✅ Funcional | Hero carousel, grid productos, features section |
-| Categoría Bebés | `/category/babies` | ✅ Funcional | Conectado a mock-data |
-| Categoría Niñas | `/category/girls` | ✅ Funcional | Conectado a mock-data |
-| Categoría Niños | `/category/boys` | ✅ Funcional | Conectado a mock-data |
-| Ofertas | `/category/sales` | ✅ Funcional | Filtra productos con `isOnSale` |
-| Esenciales | `/essentials` | ✅ Funcional | Categoría especial |
-| Todos los productos | `/products` | ✅ Funcional | Grilla completa, simulación de loading |
-| Carrito | `/carrito` | ⚠️ Parcial | Funciona, bugs activos (ver sección bugs) |
-| Checkout flow | `/checkout-flow` | ⚠️ Parcial | Multi-paso, bugs activos (ver sección bugs) |
-| Cart Context | — | ✅ Sólido | Provider/Context limpio y extensible |
-| Sistema de tema | `globals.css` | ✅ Base buena | OKLCH variables, dark mode ready |
-| Store config | `store.config.ts` | ✅ Centralizado | Brand, nav, rutas, categorías, pagos |
-| Mock data | `lib/mock-data.ts` | ✅ Completo | Productos en español con tipos correctos |
+| Módulo              | Ruta               | Estado          | Notas                                           |
+| ------------------- | ------------------ | --------------- | ----------------------------------------------- |
+| Home                | `/`                | ✅ Funcional    | Hero carousel, grid productos, features section |
+| Categoría Bebés     | `/category/babies` | ✅ Funcional    | Conectado a mock-data                           |
+| Categoría Niñas     | `/category/girls`  | ✅ Funcional    | Conectado a mock-data                           |
+| Categoría Niños     | `/category/boys`   | ✅ Funcional    | Conectado a mock-data                           |
+| Ofertas             | `/category/sales`  | ✅ Funcional    | Filtra productos con `isOnSale`                 |
+| Esenciales          | `/essentials`      | ✅ Funcional    | Categoría especial                              |
+| Todos los productos | `/products`        | ✅ Funcional    | Grilla completa, simulación de loading          |
+| Carrito             | `/carrito`         | ⚠️ Parcial      | Funciona, bugs activos (ver sección bugs)       |
+| Checkout flow       | `/checkout-flow`   | ⚠️ Parcial      | Multi-paso, bugs activos (ver sección bugs)     |
+| Cart Context        | —                  | ✅ Sólido       | Provider/Context limpio y extensible            |
+| Sistema de tema     | `globals.css`      | ✅ Base buena   | OKLCH variables, dark mode ready                |
+| Store config        | `store.config.ts`  | ✅ Centralizado | Brand, nav, rutas, categorías, pagos            |
+| Mock data           | `lib/mock-data.ts` | ✅ Completo     | Productos en español con tipos correctos        |
 
 ---
 
@@ -33,39 +34,39 @@ El esqueleto del e-commerce está construido con Next.js 14 App Router, Tailwind
 
 ### 🔴 P0 — Bloquean uso real
 
-| Módulo | Ruta | Descripción |
-|--------|------|-------------|
-| Menú hamburger / nav móvil | `layout.tsx` | El `<nav>` está con `hidden md:flex`. En móvil NO hay forma de navegar. Implementar botón hamburger que abra un `Sheet` con los links del nav. | ✅ Completado |
-| **Página de detalle de producto** | `/products/[id]` | Imagen, talla/color selector, descripción, CTA agregar al carrito, productos relacionados, breadcrumb. | ✅ Completado |
-| **Footer** | `layout.tsx` → `components/layout/footer.tsx` | 4 columnas: marca + redes, colecciones, ayuda, información/moneda. | ✅ Completado |
+| Módulo                            | Ruta                                          | Descripción                                                                                                                                    |
+| --------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Menú hamburger / nav móvil        | `layout.tsx`                                  | El `<nav>` está con `hidden md:flex`. En móvil NO hay forma de navegar. Implementar botón hamburger que abra un `Sheet` con los links del nav. | ✅ Completado |
+| **Página de detalle de producto** | `/products/[id]`                              | Imagen, talla/color selector, descripción, CTA agregar al carrito, productos relacionados, breadcrumb.                                         | ✅ Completado |
+| **Footer**                        | `layout.tsx` → `components/layout/footer.tsx` | 4 columnas: marca + redes, colecciones, ayuda, información/moneda.                                                                             | ✅ Completado |
 
 ### 🟠 P1 — Importantes para release
 
-| Módulo | Ruta | Descripción |
-|--------|------|-------------|
-| **Buscador** | `/search?q=` | Barra de búsqueda en el header + página de resultados filtrando mock-data por nombre/categoría. |
-| **Breadcrumbs** | Componente global | Orientación del usuario en categorías y detalle. Componente `breadcrumb.tsx` ya existe en shadcn/ui. |
-| **Filtros en categorías** | Componente en `category-page.tsx` | Filtrar por precio, talla, color. Sidebar en desktop, drawer en móvil. |
+| Módulo                    | Ruta                              | Descripción                                                                                          |
+| ------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Buscador**              | `/search?q=`                      | Barra de búsqueda en el header + página de resultados filtrando mock-data por nombre/categoría.      |
+| **Breadcrumbs**           | Componente global                 | Orientación del usuario en categorías y detalle. Componente `breadcrumb.tsx` ya existe en shadcn/ui. |
+| **Filtros en categorías** | Componente en `category-page.tsx` | Filtrar por precio, talla, color. Sidebar en desktop, drawer en móvil.                               |
 
 ### 🟡 P2 — Para una segunda iteración
 
-| Módulo | Ruta | Descripción |
-|--------|------|-------------|
-| **Wishlist / Favoritos** | `/favoritos` | El botón corazón en ProductCard existe pero no persiste. Implementar con localStorage o Context similar al carrito. |
-| **Página de cuenta** | `/cuenta` | Login/registro básico. Sin backend real, puede ser mock con localStorage. |
-| **Historial de pedidos** | `/cuenta/pedidos` | Lista de órdenes simuladas. |
-| **Imágenes reales** | `public/` | Todo usa `/placeholder.svg`. Requiere assets reales o servicio como Unsplash/Cloudinary. |
-| **Banner de promoción** | `layout.tsx` (header) | Barra superior con mensaje de envío gratuito u oferta. Colapsable. |
+| Módulo                   | Ruta                  | Descripción                                                                                                         |
+| ------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Wishlist / Favoritos** | `/favoritos`          | El botón corazón en ProductCard existe pero no persiste. Implementar con localStorage o Context similar al carrito. |
+| **Página de cuenta**     | `/cuenta`             | Login/registro básico. Sin backend real, puede ser mock con localStorage.                                           |
+| **Historial de pedidos** | `/cuenta/pedidos`     | Lista de órdenes simuladas.                                                                                         |
+| **Imágenes reales**      | `public/`             | Todo usa `/placeholder.svg`. Requiere assets reales o servicio como Unsplash/Cloudinary.                            |
+| **Banner de promoción**  | `layout.tsx` (header) | Barra superior con mensaje de envío gratuito u oferta. Colapsable.                                                  |
 
 ### 🟢 P3 — Polish post-lanzamiento
 
-| Módulo | Ruta | Descripción |
-|--------|------|-------------|
-| **Página 404 personalizada** | `app/not-found.tsx` | Usa el default de Next.js. Crear con branding y links de vuelta. |
+| Módulo                       | Ruta                  | Descripción                                                                                                                  |
+| ---------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Página 404 personalizada** | `app/not-found.tsx`   | Usa el default de Next.js. Crear con branding y links de vuelta.                                                             |
 | **Página de éxito de orden** | `/order-success/[id]` | Actualmente `OrderConfirmation` vive dentro del checkout flow. Debería ser página independiente para permitir compartir URL. |
-| **SEO por página** | `generateMetadata()` | Cada página de categoría y detalle debería exportar metadata con título, descripción y OG tags. |
-| **Sitemap** | `app/sitemap.ts` | Generación automática del sitemap para SEO. |
-| **robots.txt** | `public/robots.txt` | Archivo básico. |
+| **SEO por página**           | `generateMetadata()`  | Cada página de categoría y detalle debería exportar metadata con título, descripción y OG tags.                              |
+| **Sitemap**                  | `app/sitemap.ts`      | Generación automática del sitemap para SEO.                                                                                  |
+| **robots.txt**               | `public/robots.txt`   | Archivo básico.                                                                                                              |
 
 ---
 
@@ -73,35 +74,35 @@ El esqueleto del e-commerce está construido con Next.js 14 App Router, Tailwind
 
 ### 🔴 P0 — Fix inmediato
 
-| # | Bug | Archivo | Estado |
-|---|-----|---------|--------|
-| B1 | Sin nav móvil | `layout.tsx` + `mobile-nav.tsx` (nuevo) | ✅ Resuelto |
-| B2 | `priority={true}` en TODOS los ProductCards | `product-card.tsx` | ✅ Resuelto |
-| B3 | Touch targets de 10px en dots del banner | `page.tsx` | ✅ Resuelto |
-| B4 | Skeleton permanente en carrito | `carrito/page.tsx` | ✅ Resuelto |
+| #   | Bug                                         | Archivo                                 | Estado      |
+| --- | ------------------------------------------- | --------------------------------------- | ----------- |
+| B1  | Sin nav móvil                               | `layout.tsx` + `mobile-nav.tsx` (nuevo) | ✅ Resuelto |
+| B2  | `priority={true}` en TODOS los ProductCards | `product-card.tsx`                      | ✅ Resuelto |
+| B3  | Touch targets de 10px en dots del banner    | `page.tsx`                              | ✅ Resuelto |
+| B4  | Skeleton permanente en carrito              | `carrito/page.tsx`                      | ✅ Resuelto |
 
 ### 🟠 P1 — Antes de release
 
-| # | Bug | Archivo | Estado |
-|---|-----|---------|--------|
-| B5 | Dos sistemas de toast (`react-hot-toast` + `sonner`) | `layout.tsx`, `checkout-flow`, `add-to-cart-button` | ✅ Resuelto |
-| B6 | `window.location.href` en checkout | `checkout-flow/page.tsx` | ✅ Resuelto |
-| B7 | `window.confirm()` para vaciar carrito | `carrito/page.tsx` | ✅ Resuelto |
-| B8 | Botón favorito sin `aria-label` | `product-card.tsx` | ✅ Resuelto |
-| B9 | Radio buttons de pago sin roles ARIA | `payment-form.tsx` | ✅ Resuelto |
-| B10 | Fuentes Montserrat + Inter (genéricas) | `layout.tsx` | ✅ Resuelto |
+| #   | Bug                                                  | Archivo                                             | Estado      |
+| --- | ---------------------------------------------------- | --------------------------------------------------- | ----------- |
+| B5  | Dos sistemas de toast (`react-hot-toast` + `sonner`) | `layout.tsx`, `checkout-flow`, `add-to-cart-button` | ✅ Resuelto |
+| B6  | `window.location.href` en checkout                   | `checkout-flow/page.tsx`                            | ✅ Resuelto |
+| B7  | `window.confirm()` para vaciar carrito               | `carrito/page.tsx`                                  | ✅ Resuelto |
+| B8  | Botón favorito sin `aria-label`                      | `product-card.tsx`                                  | ✅ Resuelto |
+| B9  | Radio buttons de pago sin roles ARIA                 | `payment-form.tsx`                                  | ✅ Resuelto |
+| B10 | Fuentes Montserrat + Inter (genéricas)               | `layout.tsx`                                        | ✅ Resuelto |
 
 ### 🟡 P2 — Siguiente iteración
 
-| # | Bug | Archivo | Estado |
-|---|-----|---------|--------|
-| B11 | Colores hex hardcodeados fuera del sistema de tokens | `tailwind.config.ts` | ⏳ Pendiente |
-| B12 | `console.log` en producción | `product-card.tsx` | ✅ Resuelto |
-| B13 | Estado `isHovered` causa re-renders excesivos | `product-card.tsx` | ✅ Resuelto |
-| B14 | Validación duplicada en checkout | `checkout-flow/page.tsx` + `payment-form.tsx` | ⏳ Pendiente |
-| B15 | `src/lib/fonts.ts` nunca importado | `lib/fonts.ts` | ✅ Resuelto |
-| B16 | Hero `100vh` → `100dvh` | `page.tsx` | ✅ Resuelto |
-| B17 | Alt text en imágenes decorativas del hero | `page.tsx` | ✅ Resuelto |
+| #   | Bug                                                  | Archivo                                       | Estado       |
+| --- | ---------------------------------------------------- | --------------------------------------------- | ------------ |
+| B11 | Colores hex hardcodeados fuera del sistema de tokens | `tailwind.config.ts`                          | ⏳ Pendiente |
+| B12 | `console.log` en producción                          | `product-card.tsx`                            | ✅ Resuelto  |
+| B13 | Estado `isHovered` causa re-renders excesivos        | `product-card.tsx`                            | ✅ Resuelto  |
+| B14 | Validación duplicada en checkout                     | `checkout-flow/page.tsx` + `payment-form.tsx` | ⏳ Pendiente |
+| B15 | `src/lib/fonts.ts` nunca importado                   | `lib/fonts.ts`                                | ✅ Resuelto  |
+| B16 | Hero `100vh` → `100dvh`                              | `page.tsx`                                    | ✅ Resuelto  |
+| B17 | Alt text en imágenes decorativas del hero            | `page.tsx`                                    | ✅ Resuelto  |
 
 ---
 
@@ -109,19 +110,20 @@ El esqueleto del e-commerce está construido con Next.js 14 App Router, Tailwind
 
 El AUDIT detectó que el diseño actual parece generado por IA:
 
-| Anti-patrón | Manifestación | Fix |
-|-------------|---------------|-----|
-| Tipografía monocultivo | Montserrat + Inter | Ver B10 arriba |
-| Icon grid de features | 4 cards idénticas con icono + texto | Rediseñar sección con más personalidad |
-| Hero genérico centrado | Overlay + título centrado + botón CTA | Composición asimétrica, texto a la izquierda |
-| Centrado total | Casi todos los headings en `text-center` | Variar alineación por sección |
-| ProductCards uniformes | Grid idéntico sin variación | Alternar tamaños de cards en featured sections |
+| Anti-patrón            | Manifestación                            | Fix                                            |
+| ---------------------- | ---------------------------------------- | ---------------------------------------------- |
+| Tipografía monocultivo | Montserrat + Inter                       | Ver B10 arriba                                 |
+| Icon grid de features  | 4 cards idénticas con icono + texto      | Rediseñar sección con más personalidad         |
+| Hero genérico centrado | Overlay + título centrado + botón CTA    | Composición asimétrica, texto a la izquierda   |
+| Centrado total         | Casi todos los headings en `text-center` | Variar alineación por sección                  |
+| ProductCards uniformes | Grid idéntico sin variación              | Alternar tamaños de cards en featured sections |
 
 ---
 
 ## Plan de Ejecución (orden recomendado)
 
-### Fase 1 — Funcionalidad base  ✅ COMPLETADO
+### Fase 1 — Funcionalidad base ✅ COMPLETADO
+
 ```
 [x] Página detalle de producto /products/[id]  — módulo nuevo
 [x] Footer completo con links y copyright       — módulo nuevo
@@ -129,7 +131,8 @@ El AUDIT detectó que el diseño actual parece generado por IA:
 
 > Nav móvil ya completado en la sesión anterior.
 
-### Fase 2 — Bug fixes críticos  ✅ COMPLETADO
+### Fase 2 — Bug fixes críticos ✅ COMPLETADO
+
 ```
 [x] Unificar toast → sonner, eliminar react-hot-toast
 [x] window.confirm → AlertDialog
@@ -144,7 +147,8 @@ El AUDIT detectó que el diseño actual parece generado por IA:
 [x] Nav móvil hamburger + drawer
 ```
 
-### Fase 3 — Identidad visual  ⏳ EN PROGRESO
+### Fase 3 — Identidad visual ⏳ EN PROGRESO
+
 ```
 [x] Nueva tipografía (Atkinson Hyperlegible body font)  — B10
 [ ] Migrar colores hex brand a CSS vars OKLCH             — B11
@@ -152,6 +156,7 @@ El AUDIT detectó que el diseño actual parece generado por IA:
 ```
 
 ### Fase 4 — Módulos P1
+
 ```
 [ ] Buscador (header + página de resultados)
 [ ] Breadcrumbs en categorías y detalle
@@ -159,6 +164,7 @@ El AUDIT detectó que el diseño actual parece generado por IA:
 ```
 
 ### Fase 5 — Módulos P2
+
 ```
 [ ] Wishlist con localStorage
 [ ] Imágenes reales de productos
@@ -166,6 +172,7 @@ El AUDIT detectó que el diseño actual parece generado por IA:
 ```
 
 ### Fase 6 — Polish y SEO
+
 ```
 [ ] Página 404 personalizada
 [ ] generateMetadata() por página
@@ -224,4 +231,4 @@ src/
 
 ---
 
-*Para el análisis técnico completo de issues existentes ver `AUDIT.md`*
+_Para el análisis técnico completo de issues existentes ver `AUDIT.md`_

@@ -1,4 +1,5 @@
 # PROJECT — Dulce Infancia Shop
+
 > Documento vivo de visión, propósito y alcance del proyecto  
 > Última actualización: 2026-06-03
 
@@ -14,13 +15,13 @@ El objetivo principal es **establecer una marca confiable** en el mercado hispan
 
 ## Nombre y Marca Actual
 
-| Campo | Valor |
-|-------|-------|
-| Nombre | **Dulce Infancia** |
-| Tagline | *Ropa adorable para los más pequeños* |
-| Mercado objetivo | Colombia y mercado hispanohablante |
-| Moneda | COP (pesos colombianos) |
-| Idioma | Español (es-CO) |
+| Campo            | Valor                                                                      |
+| ---------------- | -------------------------------------------------------------------------- |
+| Nombre           | **Dulce Infancia**                                                         |
+| Tagline          | _Ropa adorable para los más pequeños_                                      |
+| Mercado objetivo | Colombia y mercado hispanohablante                                         |
+| Moneda           | COP (pesos colombianos)                                                    |
+| Idioma           | Español (es-CO)                                                            |
 | Identidad visual | Paleta cálida, tono amigable y confiable, orientado a padres de 25-40 años |
 
 > **Nota arquitectónica**: El proyecto está diseñado para ser un **white-label configurable**. Toda la información de marca, rutas, navegación, textos y colores están centralizados en `src/config/store.config.ts` y `src/config/theme.config.ts`. Clonar para otro cliente requiere únicamente actualizar esos dos archivos.
@@ -29,17 +30,17 @@ El objetivo principal es **establecer una marca confiable** en el mercado hispan
 
 ## Stack Tecnológico
 
-| Capa | Tecnología | Decisión |
-|------|-----------|---------|
-| Framework | Next.js 14 (App Router) | SSR + ISR para SEO, routing nativo |
-| Lenguaje | TypeScript | Tipado fuerte en productos, carrito, config |
-| Estilos | Tailwind CSS v4 | Sistema de tokens OKLCH, dark mode ready |
-| Componentes | shadcn/ui (Radix UI) | Accesibilidad base, composable |
-| Fuentes | Google Fonts via `next/font` | Sin layout shift, optimización automática |
-| Notificaciones | Sonner | Toast system unificado (migrar desde react-hot-toast) |
-| Estado del carrito | React Context + Provider | Sin dependencias externas, extensible |
-| Mock data | `src/lib/mock-data.ts` | Datos locales hasta integración de backend real |
-| Deploy objetivo | Vercel | Edge network, integración nativa Next.js |
+| Capa               | Tecnología                   | Decisión                                              |
+| ------------------ | ---------------------------- | ----------------------------------------------------- |
+| Framework          | Next.js 14 (App Router)      | SSR + ISR para SEO, routing nativo                    |
+| Lenguaje           | TypeScript                   | Tipado fuerte en productos, carrito, config           |
+| Estilos            | Tailwind CSS v4              | Sistema de tokens OKLCH, dark mode ready              |
+| Componentes        | shadcn/ui (Radix UI)         | Accesibilidad base, composable                        |
+| Fuentes            | Google Fonts via `next/font` | Sin layout shift, optimización automática             |
+| Notificaciones     | Sonner                       | Toast system unificado (migrar desde react-hot-toast) |
+| Estado del carrito | React Context + Provider     | Sin dependencias externas, extensible                 |
+| Mock data          | `src/lib/mock-data.ts`       | Datos locales hasta integración de backend real       |
+| Deploy objetivo    | Vercel                       | Edge network, integración nativa Next.js              |
 
 ---
 
@@ -47,16 +48,16 @@ El objetivo principal es **establecer una marca confiable** en el mercado hispan
 
 ### Categorías de productos (actuales y planificadas)
 
-| Categoría | Estado | Descripción |
-|-----------|--------|-------------|
-| Bebés (0-24m) | ✅ Activa | Bodies, ranitas, gorros, botitas, sets |
-| Niñas | ✅ Activa | Vestidos, faldas, chaquetas, tops |
-| Niños | ✅ Activa | Conjuntos, pantalones, camisetas |
-| Ofertas / Sales | ✅ Activa | Productos con `isOnSale: true` y descuento visible |
-| Esenciales | ✅ Activa | Prendas básicas de alta rotación |
-| Accesorios para celulares | 🔲 Planificada | Fase 2 — Capas de tendencia viral |
-| Artículos para el hogar | 🔲 Planificada | Fase 2 — Alta demanda en redes sociales |
-| Productos virales | 🔲 Planificada | Fase 3 — Selección curada de tendencias TikTok/Instagram |
+| Categoría                 | Estado         | Descripción                                              |
+| ------------------------- | -------------- | -------------------------------------------------------- |
+| Bebés (0-24m)             | ✅ Activa      | Bodies, ranitas, gorros, botitas, sets                   |
+| Niñas                     | ✅ Activa      | Vestidos, faldas, chaquetas, tops                        |
+| Niños                     | ✅ Activa      | Conjuntos, pantalones, camisetas                         |
+| Ofertas / Sales           | ✅ Activa      | Productos con `isOnSale: true` y descuento visible       |
+| Esenciales                | ✅ Activa      | Prendas básicas de alta rotación                         |
+| Accesorios para celulares | 🔲 Planificada | Fase 2 — Capas de tendencia viral                        |
+| Artículos para el hogar   | 🔲 Planificada | Fase 2 — Alta demanda en redes sociales                  |
+| Productos virales         | 🔲 Planificada | Fase 3 — Selección curada de tendencias TikTok/Instagram |
 
 ### Propuesta de valor diferenciadora
 
@@ -150,6 +151,7 @@ Confirmación / Post-compra                                           │
 | PayU | Media | Latinoamérica |
 
 **Requisitos de seguridad**:
+
 - PCI DSS compliance (los datos de tarjeta NUNCA deben pasar por nuestro servidor; siempre tokenizados por el gateway)
 - HTTPS obligatorio
 - Validación de formularios en cliente Y servidor
@@ -161,6 +163,7 @@ Confirmación / Post-compra                                           │
 **Estado actual**: No implementado. Existe confirmación de orden en checkout pero sin persistencia.
 
 **Flujo planificado**:
+
 ```
 Cliente realiza compra
   → Número de orden generado (UUID o secuencial)
@@ -175,19 +178,20 @@ Cliente realiza compra
 
 **Herramientas planificadas**:
 
-| Herramienta | Propósito | Prioridad |
-|-------------|-----------|-----------|
-| Meta Pixel (Facebook/Instagram) | Retargeting, conversiones, audiencias similares | Alta |
-| Google Analytics 4 + Tag Manager | Embudo de conversión, comportamiento de usuario | Alta |
-| TikTok Pixel | Audiencias de productos virales | Media |
-| Open Graph / Twitter Cards | Previsualizaciones en redes al compartir productos | Alta |
-| Email marketing (MailerLite / Klaviyo) | Abandono de carrito, newsletters, reactivación | Media |
-| Cupones y descuentos | Código promo en checkout | Media |
-| Wishlist compartible | Viralidad orgánica en redes | Baja |
-| Reviews y calificaciones | Social proof en detalle de producto | Media |
-| Banners de countdown | Urgencia en ofertas con tiempo limitado | Baja |
+| Herramienta                            | Propósito                                          | Prioridad |
+| -------------------------------------- | -------------------------------------------------- | --------- |
+| Meta Pixel (Facebook/Instagram)        | Retargeting, conversiones, audiencias similares    | Alta      |
+| Google Analytics 4 + Tag Manager       | Embudo de conversión, comportamiento de usuario    | Alta      |
+| TikTok Pixel                           | Audiencias de productos virales                    | Media     |
+| Open Graph / Twitter Cards             | Previsualizaciones en redes al compartir productos | Alta      |
+| Email marketing (MailerLite / Klaviyo) | Abandono de carrito, newsletters, reactivación     | Media     |
+| Cupones y descuentos                   | Código promo en checkout                           | Media     |
+| Wishlist compartible                   | Viralidad orgánica en redes                        | Baja      |
+| Reviews y calificaciones               | Social proof en detalle de producto                | Media     |
+| Banners de countdown                   | Urgencia en ofertas con tiempo limitado            | Baja      |
 
 **SEO técnico**:
+
 - `generateMetadata()` por ruta (título, descripción, OG, robots)
 - Structured data `Product` schema (schema.org) en detalle de producto
 - `sitemap.ts` generado automáticamente
@@ -206,6 +210,7 @@ Fase 4             → Microservicios: inventario, pedidos, pagos separados
 ```
 
 **Principios de diseño para escalar**:
+
 - `store.config.ts` centraliza toda la configuración — agregar categoría = 1 objeto en el array
 - Tipos TypeScript estrictos en `types.ts` — cualquier nueva propiedad de producto se propaga automáticamente
 - Componentes sin acoplamiento a datos específicos — `ProductCard` recibe `Product` genérico
@@ -218,21 +223,21 @@ Fase 4             → Microservicios: inventario, pedidos, pagos separados
 
 ### Paleta actual (OKLCH)
 
-| Token | Valor | Uso |
-|-------|-------|-----|
-| `--brand-base` | `oklch(0.75 0.15 75)` | Botones, precio destacado, CTA |
-| `--brand-on-base` | `oklch(0.15 0.02 60)` | Texto sobre botones |
-| `--brand-surface` | `oklch(0.98 0.008 75)` | Fondo de página, cards |
-| `--brand-surface-alt` | `oklch(0.95 0.01 75)` | Secciones alternativas, inputs |
-| `--brand-muted` | `oklch(0.60 0.015 60)` | Texto secundario, bordes |
-| `--brand-ink` | `oklch(0.20 0.015 55)` | Títulos, texto principal |
+| Token                 | Valor                  | Uso                            |
+| --------------------- | ---------------------- | ------------------------------ |
+| `--brand-base`        | `oklch(0.75 0.15 75)`  | Botones, precio destacado, CTA |
+| `--brand-on-base`     | `oklch(0.15 0.02 60)`  | Texto sobre botones            |
+| `--brand-surface`     | `oklch(0.98 0.008 75)` | Fondo de página, cards         |
+| `--brand-surface-alt` | `oklch(0.95 0.01 75)`  | Secciones alternativas, inputs |
+| `--brand-muted`       | `oklch(0.60 0.015 60)` | Texto secundario, bordes       |
+| `--brand-ink`         | `oklch(0.20 0.015 55)` | Títulos, texto principal       |
 
 ### Tipografía (pendiente reemplazo)
 
-| Rol | Actual | Recomendado |
-|-----|--------|-------------|
-| Display / Headings | Montserrat | **Baloo 2** o **Nunito** (cálida, redondeada) |
-| Body / UI | Inter | **Atkinson Hyperlegible** (accesible) o **Source Sans 3** |
+| Rol                | Actual     | Recomendado                                               |
+| ------------------ | ---------- | --------------------------------------------------------- |
+| Display / Headings | Montserrat | **Baloo 2** o **Nunito** (cálida, redondeada)             |
+| Body / UI          | Inter      | **Atkinson Hyperlegible** (accesible) o **Source Sans 3** |
 
 ### Tono de comunicación
 
@@ -246,33 +251,38 @@ Fase 4             → Microservicios: inventario, pedidos, pagos separados
 ## KPIs y Métricas de Éxito
 
 ### Técnicas (Año 1)
-| Métrica | Objetivo |
-|---------|----------|
-| Lighthouse Performance | ≥ 90 |
-| Lighthouse Accessibility | ≥ 95 |
-| LCP | < 2.5s |
-| CLS | < 0.1 |
-| Uptime | ≥ 99.9% |
-| Mobile conversion rate | ≥ 2.5% |
+
+| Métrica                  | Objetivo |
+| ------------------------ | -------- |
+| Lighthouse Performance   | ≥ 90     |
+| Lighthouse Accessibility | ≥ 95     |
+| LCP                      | < 2.5s   |
+| CLS                      | < 0.1    |
+| Uptime                   | ≥ 99.9%  |
+| Mobile conversion rate   | ≥ 2.5%   |
 
 ### Negocio (Año 1)
-| Métrica | Objetivo |
-|---------|----------|
-| Tasa de conversión general | ≥ 3% |
-| Tasa de abandono de carrito | ≤ 65% |
-| Valor promedio de orden | ≥ $85,000 COP |
-| Tasa de recompra | ≥ 25% |
-| NPS (Net Promoter Score) | ≥ 50 |
+
+| Métrica                     | Objetivo      |
+| --------------------------- | ------------- |
+| Tasa de conversión general  | ≥ 3%          |
+| Tasa de abandono de carrito | ≤ 65%         |
+| Valor promedio de orden     | ≥ $85,000 COP |
+| Tasa de recompra            | ≥ 25%         |
+| NPS (Net Promoter Score)    | ≥ 50          |
 
 ---
 
 ## Fases del Proyecto
 
 ### Fase 0 — Fundación ✅ (actual)
+
 Scaffolding con Next.js, sistema de diseño, carrito funcional, checkout multi-paso, categorías con mock-data.
 
 ### Fase 1 — MVP Lanzable (próxima)
+
 Todo lo necesario para abrir al público:
+
 - Nav móvil funcional
 - Página de detalle de producto
 - Footer
@@ -281,6 +291,7 @@ Todo lo necesario para abrir al público:
 - Dominio y deploy en Vercel
 
 ### Fase 2 — Crecimiento
+
 - Buscador y filtros avanzados
 - Integración de pasarela de pago real (MercadoPago prioritario)
 - CMS headless para gestión de productos sin código
@@ -289,6 +300,7 @@ Todo lo necesario para abrir al público:
 - Analytics y Meta Pixel
 
 ### Fase 3 — Escala
+
 - Nuevas categorías (accesorios, hogar, productos virales)
 - Sistema de reviews y valoraciones
 - Programa de referidos
@@ -297,6 +309,7 @@ Todo lo necesario para abrir al público:
 - Búsqueda con IA (recomendaciones personalizadas)
 
 ### Fase 4 — Optimización
+
 - A/B testing en hero, CTA, checkout
 - Personalización por comportamiento
 - App móvil nativa o PWA instalable
@@ -306,15 +319,15 @@ Todo lo necesario para abrir al público:
 
 ## Referencias Cruzadas
 
-| Documento | Contenido |
-|-----------|-----------|
-| [ROADMAP.md](./ROADMAP.md) | Estado actual de módulos, bugs pendientes, plan de ejecución técnico por fases |
-| [AUDIT.md](./AUDIT.md) | Auditoría técnica completa: accesibilidad, performance, responsive, theming (score 6/20) |
-| [`src/config/store.config.ts`](./src/config/store.config.ts) | Toda la configuración de la marca: nombre, rutas, nav, categorías, pagos, banners |
-| [`src/config/theme.config.ts`](./src/config/theme.config.ts) | Paleta de colores OKLCH y tipografía |
-| [`src/lib/types.ts`](./src/lib/types.ts) | Tipos TypeScript del dominio: `Product`, `CartItem`, `CartContextType` |
-| [`src/lib/mock-data.ts`](./src/lib/mock-data.ts) | Catálogo de productos de prueba en español |
+| Documento                                                    | Contenido                                                                                |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| [ROADMAP.md](./ROADMAP.md)                                   | Estado actual de módulos, bugs pendientes, plan de ejecución técnico por fases           |
+| [AUDIT.md](./AUDIT.md)                                       | Auditoría técnica completa: accesibilidad, performance, responsive, theming (score 6/20) |
+| [`src/config/store.config.ts`](./src/config/store.config.ts) | Toda la configuración de la marca: nombre, rutas, nav, categorías, pagos, banners        |
+| [`src/config/theme.config.ts`](./src/config/theme.config.ts) | Paleta de colores OKLCH y tipografía                                                     |
+| [`src/lib/types.ts`](./src/lib/types.ts)                     | Tipos TypeScript del dominio: `Product`, `CartItem`, `CartContextType`                   |
+| [`src/lib/mock-data.ts`](./src/lib/mock-data.ts)             | Catálogo de productos de prueba en español                                               |
 
 ---
 
-*Este documento debe actualizarse al completar cada fase y al tomar decisiones arquitectónicas significativas.*
+_Este documento debe actualizarse al completar cada fase y al tomar decisiones arquitectónicas significativas._

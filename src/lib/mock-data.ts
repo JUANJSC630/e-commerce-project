@@ -17,7 +17,8 @@ export const allMockProducts: Product[] = [
     colors: ["#F2F2F2", "#C3BDBF"],
     rating: 4.9,
     reviewCount: 112,
-    description: "Suave body de algodón orgánico con un lindo estampado de nubes. Perfecto para el uso diario.", // Español
+    description:
+      "Suave body de algodón orgánico con un lindo estampado de nubes. Perfecto para el uso diario.", // Español
   },
   {
     id: "baby-002",
@@ -69,7 +70,8 @@ export const allMockProducts: Product[] = [
     colors: ["#F67280"],
     rating: 4.9,
     reviewCount: 102,
-    description: "Una falda de tul divertida y brillante, perfecta para fiestas o jugar a disfrazarse.", // Español
+    description:
+      "Una falda de tul divertida y brillante, perfecta para fiestas o jugar a disfrazarse.", // Español
   },
   {
     id: "girls-003",
@@ -135,7 +137,8 @@ export const allMockProducts: Product[] = [
     colors: ["#F2F2F2", "#C3BDBF", "#A6A19F"],
     rating: 4.9,
     reviewCount: 150,
-    description: "Pack de tres camisetas esenciales de manga larga en colores neutros. Suaves y versátiles.", // Español
+    description:
+      "Pack de tres camisetas esenciales de manga larga en colores neutros. Suaves y versátiles.", // Español
   },
   {
     id: "essentials-002",
@@ -160,7 +163,8 @@ export const allMockProducts: Product[] = [
     isNew: true,
     rating: 4.8,
     reviewCount: 120,
-    description: "Pijamas enterizos esenciales para recién nacidos y bebés. Cierres a presión fáciles.", // Español
+    description:
+      "Pijamas enterizos esenciales para recién nacidos y bebés. Cierres a presión fáciles.", // Español
   },
 ]
 
@@ -182,10 +186,7 @@ export const getEssentialProducts = (): Product[] => {
 }
 
 export const getProductById = (id: string): Product | undefined => {
-  return (
-    allMockProducts.find((p) => p.id === id) ??
-    mockProducts.find((p) => p.id === id)
-  )
+  return allMockProducts.find((p) => p.id === id) ?? mockProducts.find((p) => p.id === id)
 }
 
 export const getRelatedProducts = (product: Product, limit = 4): Product[] => {
@@ -249,4 +250,4 @@ export const mockProducts = [
     isOnSale: false,
     category: "Bebés",
   },
-];
+]

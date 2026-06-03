@@ -1,19 +1,14 @@
-"use client";
+"use client"
 
-import React from "react";
-import { ProductCard } from "@/components/product/product-card";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Package, Gift, ShieldCheck, Tag } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { mockProducts } from "@/lib/mock-data";
-import {
-  heroBanners,
-  featuredCategories,
-  homeFeatures,
-  routes,
-} from "@/config/store.config";
-import type { LucideIcon } from "lucide-react";
+import React from "react"
+import { ProductCard } from "@/components/product/product-card"
+import { Button } from "@/components/ui/button"
+import { ArrowRight, Package, Gift, ShieldCheck, Tag } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { mockProducts } from "@/lib/mock-data"
+import { heroBanners, featuredCategories, homeFeatures, routes } from "@/config/store.config"
+import type { LucideIcon } from "lucide-react"
 
 /* Map icon name strings from store.config to actual Lucide components */
 const iconMap: Record<string, LucideIcon> = {
@@ -21,19 +16,19 @@ const iconMap: Record<string, LucideIcon> = {
   Gift,
   ShieldCheck,
   Tag,
-};
+}
 
 export default function HomePage() {
-  const [currentBanner, setCurrentBanner] = React.useState(0);
+  const [currentBanner, setCurrentBanner] = React.useState(0)
 
   React.useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentBanner((prev) => (prev + 1) % heroBanners.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+      setCurrentBanner((prev) => (prev + 1) % heroBanners.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [])
 
-  const products = mockProducts;
+  const products = mockProducts
 
   return (
     <div>
@@ -65,9 +60,7 @@ export default function HomePage() {
                 >
                   {banner.title}
                 </h1>
-                <p
-                  className={`text-lg md:text-xl ${banner.textColorClass} max-w-2xl mb-8`}
-                >
+                <p className={`text-lg md:text-xl ${banner.textColorClass} max-w-2xl mb-8`}>
                   {banner.description}
                 </p>
                 <Button size="lg" variant="default" asChild>
@@ -148,11 +141,7 @@ export default function HomePage() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {products.map((product, index) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  priority={index < 4}
-                />
+                <ProductCard key={product.id} product={product} priority={index < 4} />
               ))}
             </div>
             <div className="text-center mt-12">
@@ -171,23 +160,21 @@ export default function HomePage() {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
               {homeFeatures.map((item) => {
-                const Icon = iconMap[item.icon];
+                const Icon = iconMap[item.icon]
                 return (
                   <div key={item.title} className="flex flex-col items-center p-6">
-                    {Icon && (
-                      <Icon className="w-10 h-10 text-brand-base mb-4" />
-                    )}
+                    {Icon && <Icon className="w-10 h-10 text-brand-base mb-4" />}
                     <h3 className="font-display font-semibold text-lg text-brand-ink mb-2">
                       {item.title}
                     </h3>
                     <p className="text-sm text-brand-muted">{item.description}</p>
                   </div>
-                );
+                )
               })}
             </div>
           </div>
         </section>
       </main>
     </div>
-  );
+  )
 }

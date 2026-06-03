@@ -7,17 +7,17 @@ import { cn } from "@/lib/utils"
 
 // Create a context for the accordion to manage and share state
 interface AccordionContextValue {
-  openItems: string[];
-  toggleItem: (itemId: string) => void;
+  openItems: string[]
+  toggleItem: (itemId: string) => void
 }
 
-const AccordionContext = React.createContext<AccordionContextValue | undefined>(undefined);
+const AccordionContext = React.createContext<AccordionContextValue | undefined>(undefined)
 interface AccordionProps {
-  className?: string;
-  children: React.ReactNode;
-  defaultOpenItems?: string[];
-  type?: "single" | "multiple";
-  collapsible?: boolean;
+  className?: string
+  children: React.ReactNode
+  defaultOpenItems?: string[]
+  type?: "single" | "multiple"
+  collapsible?: boolean
 }
 
 function Accordion({
@@ -28,46 +28,42 @@ function Accordion({
   collapsible = false,
   ...props
 }: AccordionProps) {
-  const [openItems, setOpenItems] = React.useState<string[]>(defaultOpenItems);
-  
-  const toggleItem = React.useCallback((itemId: string) => {
-    setOpenItems(prev => {
-      // If the item is already open
-      if (prev.includes(itemId)) {
-        // For single type, only close if collapsible is true
-        if (type === "single" && !collapsible) {
-          return prev;
+  const [openItems, setOpenItems] = React.useState<string[]>(defaultOpenItems)
+
+  const toggleItem = React.useCallback(
+    (itemId: string) => {
+      setOpenItems((prev) => {
+        // If the item is already open
+        if (prev.includes(itemId)) {
+          // For single type, only close if collapsible is true
+          if (type === "single" && !collapsible) {
+            return prev
+          }
+          // Otherwise remove the item
+          return prev.filter((id) => id !== itemId)
+        } else {
+          // For single type, replace all items with this one
+          if (type === "single") {
+            return [itemId]
+          }
+          // For multiple type, add this item
+          return [...prev, itemId]
         }
-        // Otherwise remove the item
-        return prev.filter(id => id !== itemId);
-      } else {
-        // For single type, replace all items with this one
-        if (type === "single") {
-          return [itemId];
-        }
-        // For multiple type, add this item
-        return [...prev, itemId];
-      }
-    });
-  }, [type, collapsible]);
-  
+      })
+    },
+    [type, collapsible],
+  )
+
   return (
     <AccordionContext.Provider value={{ openItems, toggleItem }}>
-      <div 
-        data-slot="accordion" 
-        className={className} 
-        {...props}
-      >
+      <div data-slot="accordion" className={className} {...props}>
         {children}
       </div>
     </AccordionContext.Provider>
-  );
+  )
 }
 
-function AccordionItem({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function AccordionItem({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="accordion-item"
@@ -86,7 +82,7 @@ function AccordionTrigger({
   ...props
 }: React.ComponentProps<"button"> & {
   id?: string
-  ariaControls?: string  
+  ariaControls?: string
   ariaExpanded?: boolean
 }) {
   return (
@@ -98,26 +94,22 @@ function AccordionTrigger({
       data-state={ariaExpanded ? "open" : "closed"}
       className={cn(
         "focus-visible:border-ring focus-visible:ring-ring/50 flex w-full items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50",
-        className
+        className,
       )}
       {...props}
     >
       {children}
-      <ChevronDownIcon 
+      <ChevronDownIcon
         className={cn(
           "text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200",
-          ariaExpanded && "rotate-180"
-        )} 
+          ariaExpanded && "rotate-180",
+        )}
       />
     </button>
   )
 }
 
-function AccordionContent({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"div">) {
+function AccordionContent({ className, children, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="accordion-content"

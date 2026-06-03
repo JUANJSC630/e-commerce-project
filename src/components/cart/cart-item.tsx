@@ -17,10 +17,12 @@ export function CartItem({ item, isMiniCart = false }: CartItemProps) {
   const { removeItem, updateItemQuantity } = useCart()
 
   return (
-    <div className={`flex gap-3 ${isMiniCart ? "py-3" : "py-4 border-b border-brand-muted/50"} last:border-b-0`}>
+    <div
+      className={`flex gap-3 ${isMiniCart ? "py-3" : "py-4 border-b border-brand-muted/50"} last:border-b-0`}
+    >
       <div
         className={`relative ${isMiniCart ? "w-16 h-16" : "w-24 h-24 md:w-32 md:h-32"} rounded-md overflow-hidden bg-brand-surface-alt/50`}
-        style={{ position: 'relative' }}
+        style={{ position: "relative" }}
       >
         <Image
           src={item.image || "/placeholder.svg"}
@@ -61,8 +63,12 @@ export function CartItem({ item, isMiniCart = false }: CartItemProps) {
       >
         <QuantitySelector
           quantity={item.quantity}
-          onDecrease={() => updateItemQuantity(item.id, item.quantity - 1, item.selectedSize, item.selectedColor)}
-          onIncrease={() => updateItemQuantity(item.id, item.quantity + 1, item.selectedSize, item.selectedColor)}
+          onDecrease={() =>
+            updateItemQuantity(item.id, item.quantity - 1, item.selectedSize, item.selectedColor)
+          }
+          onIncrease={() =>
+            updateItemQuantity(item.id, item.quantity + 1, item.selectedSize, item.selectedColor)
+          }
         />
         {isMiniCart && (
           <p className="text-sm font-semibold text-brand-ink mt-1">

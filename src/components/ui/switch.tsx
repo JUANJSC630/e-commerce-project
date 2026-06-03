@@ -22,7 +22,7 @@ const switchVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 )
 
 const thumbVariants = cva(
@@ -38,10 +38,11 @@ const thumbVariants = cva(
     defaultVariants: {
       size: "default",
     },
-  }
+  },
 )
 
-export interface SwitchProps extends React.ComponentPropsWithoutRef<"button">, VariantProps<typeof switchVariants> {
+export interface SwitchProps
+  extends React.ComponentPropsWithoutRef<"button">, VariantProps<typeof switchVariants> {
   checked?: boolean
   onCheckedChange?: (checked: boolean) => void
   disabled?: boolean
@@ -50,7 +51,10 @@ export interface SwitchProps extends React.ComponentPropsWithoutRef<"button">, V
 }
 
 const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
-  ({ className, checked = false, onCheckedChange, disabled = false, size, variant, ...props }, ref) => {
+  (
+    { className, checked = false, onCheckedChange, disabled = false, size, variant, ...props },
+    ref,
+  ) => {
     const [isChecked, setIsChecked] = React.useState(checked)
 
     React.useEffect(() => {
@@ -86,10 +90,10 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         ref={ref}
         {...props}
       >
-        <span 
+        <span
           className={cn(
             "flex items-center justify-center",
-            disabled && "cursor-not-allowed opacity-50"
+            disabled && "cursor-not-allowed opacity-50",
           )}
         >
           <span
@@ -100,7 +104,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         <span className="sr-only">Toggle</span>
       </button>
     )
-  }
+  },
 )
 Switch.displayName = "Switch"
 

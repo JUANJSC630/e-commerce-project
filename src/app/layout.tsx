@@ -1,16 +1,16 @@
-import type React from "react";
-import type { Metadata } from "next";
-import "../styles/globals.css";
-import { Montserrat, Atkinson_Hyperlegible } from "next/font/google";
-import { CartProvider } from "@/components/cart/cart-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { MiniCart } from "@/components/cart/mini-cart";
-import { CartCounter } from "@/components/cart/cart-counter";
-import { MobileNav } from "@/components/layout/mobile-nav";
-import { Footer } from "@/components/layout/footer";
-import Link from "next/link";
-import { RadixThemeProvider } from "@/components/theme-provider";
-import { brand, seo, navigation, routes } from "@/config/store.config";
+import type React from "react"
+import type { Metadata } from "next"
+import "../styles/globals.css"
+import { Montserrat, Atkinson_Hyperlegible } from "next/font/google"
+import { CartProvider } from "@/components/cart/cart-provider"
+import { Toaster } from "@/components/ui/sonner"
+import { MiniCart } from "@/components/cart/mini-cart"
+import { CartCounter } from "@/components/cart/cart-counter"
+import { MobileNav } from "@/components/layout/mobile-nav"
+import { Footer } from "@/components/layout/footer"
+import Link from "next/link"
+import { RadixThemeProvider } from "@/components/theme-provider"
+import { brand, seo, navigation, routes } from "@/config/store.config"
 
 /*
  * Font loading — to change fonts:
@@ -21,25 +21,25 @@ const displayFont = Montserrat({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
-});
+})
 
 const bodyFont = Atkinson_Hyperlegible({
   subsets: ["latin"],
   weight: ["400", "700"],
   variable: "--font-body",
   display: "swap",
-});
+})
 
 export const metadata: Metadata = {
   title: seo.title,
   description: seo.description,
   generator: seo.generator,
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html
@@ -52,10 +52,7 @@ export default function RootLayout({
           <CartProvider>
             <header className="py-4 border-b border-brand-muted/30 bg-brand-surface sticky top-0 z-50">
               <div className="container mx-auto px-4 flex justify-between items-center">
-                <Link
-                  href={routes.home}
-                  className="font-display font-bold text-2xl text-brand-ink"
-                >
+                <Link href={routes.home} className="font-display font-bold text-2xl text-brand-ink">
                   {brand.logoImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={brand.logoImage} alt={brand.name} className="h-8 w-auto" />
@@ -65,7 +62,10 @@ export default function RootLayout({
                 </Link>
 
                 {/* Desktop navigation — items driven by navigation[] in store.config.ts */}
-                <nav className="hidden md:flex space-x-6 items-center" aria-label="Navegación principal">
+                <nav
+                  className="hidden md:flex space-x-6 items-center"
+                  aria-label="Navegación principal"
+                >
                   {navigation.map((item) => (
                     <Link
                       key={item.href}
@@ -94,5 +94,5 @@ export default function RootLayout({
         </RadixThemeProvider>
       </body>
     </html>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
 const toggleVariants = {
   default: "bg-transparent",
   outline:
     "border border-input bg-transparent shadow-xs hover:bg-accent hover:text-accent-foreground",
-};
+}
 
 function Toggle({
   className,
@@ -15,9 +15,9 @@ function Toggle({
   pressed,
   ...props
 }: {
-  className?: string;
-  variant?: keyof typeof toggleVariants;
-  pressed?: boolean;
+  className?: string
+  variant?: keyof typeof toggleVariants
+  pressed?: boolean
 }) {
   return (
     <button
@@ -27,7 +27,7 @@ function Toggle({
       className={cn(toggleVariants[variant], className)}
       {...props}
     />
-  );
+  )
 }
 
-export { Toggle };
+export { Toggle }

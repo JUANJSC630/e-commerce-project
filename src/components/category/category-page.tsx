@@ -29,7 +29,9 @@ export function CategoryPage({ category, title, description, emptyMessage }: Cat
           ))}
         </div>
       ) : (
-        <p className="text-center text-brand-muted">{emptyMessage ?? "Aún no hay productos en esta categoría. ¡Vuelve pronto!"}</p>
+        <p className="text-center text-brand-muted">
+          {emptyMessage ?? "Aún no hay productos en esta categoría. ¡Vuelve pronto!"}
+        </p>
       )}
       {/* Space for potential future additions like filters or pagination */}
     </div>

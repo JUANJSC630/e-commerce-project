@@ -14,7 +14,7 @@ export function useSonner() {
     loading: sonnerToast.loading,
     promise: sonnerToast.promise,
     custom: sonnerToast.custom,
-    dismiss: sonnerToast.dismiss
+    dismiss: sonnerToast.dismiss,
   }
 }
 

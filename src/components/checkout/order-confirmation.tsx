@@ -33,65 +33,65 @@ interface OrderConfirmationProps {
 }
 
 // Simplified validation just for final confirmation
-const validateOrderData = (orderData: OrderConfirmationProps['orderData']) => {
-  const { shipping, payment, items } = orderData;
-  
+const validateOrderData = (orderData: OrderConfirmationProps["orderData"]) => {
+  const { shipping, payment, items } = orderData
+
   // Check if we have all required shipping fields
-  const requiredShippingFields = ['firstName', 'lastName', 'email', 'address', 'city'];
+  const requiredShippingFields = ["firstName", "lastName", "email", "address", "city"]
   const shippingValid = requiredShippingFields.every(
-    field => shipping[field as keyof typeof shipping]?.toString().trim() !== ''
-  );
-  
+    (field) => shipping[field as keyof typeof shipping]?.toString().trim() !== "",
+  )
+
   // Check if we have a payment method
-  const paymentValid = !!payment.method;
-  
+  const paymentValid = !!payment.method
+
   // Check if we have items
-  const itemsValid = items && items.length > 0;
-  
+  const itemsValid = items && items.length > 0
+
   return {
     isValid: shippingValid && paymentValid && itemsValid,
     shippingValid,
     paymentValid,
-    itemsValid
-  };
-};
+    itemsValid,
+  }
+}
 
 interface SectionData {
-  icon: React.ElementType;
-  title: string;
-  data: Record<string, string | number | undefined>;
-  fields: string[];
-  bgColor: string;
+  icon: React.ElementType
+  title: string
+  data: Record<string, string | number | undefined>
+  fields: string[]
+  bgColor: string
 }
 
 export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirmationProps) {
   const [isProcessing, setIsProcessing] = useState(false)
-  const [validationState, setValidationState] = useState({ isValid: true, message: '' })
-  
+  const [validationState, setValidationState] = useState({ isValid: true, message: "" })
+
   // Validate data when component mounts
   useEffect(() => {
-    const validationResult = validateOrderData(orderData);
+    const validationResult = validateOrderData(orderData)
     setValidationState({
       isValid: validationResult.isValid,
-      message: !validationResult.isValid 
-        ? 'Por favor revisa los datos antes de confirmar tu pedido.' 
-        : ''
-    });
-  }, [orderData]);
-  
+      message: !validationResult.isValid
+        ? "Por favor revisa los datos antes de confirmar tu pedido."
+        : "",
+    })
+  }, [orderData])
+
   const handleConfirm = async () => {
     // Final validation before processing the order
-    const validationResult = validateOrderData(orderData);
-    
+    const validationResult = validateOrderData(orderData)
+
     if (!validationResult.isValid) {
       setValidationState({
         isValid: false,
-        message: 'Por favor revisa los datos antes de confirmar tu pedido.'
-      });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+        message: "Por favor revisa los datos antes de confirmar tu pedido.",
+      })
+      window.scrollTo({ top: 0, behavior: "smooth" })
+      return
     }
-    
+
     setIsProcessing(true)
     await new Promise((resolve) => setTimeout(resolve, 2000))
     onConfirm()
@@ -100,7 +100,8 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
   const subtotal = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shippingCost = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
   const total = subtotal + shippingCost
-  const formatPrice = (n: number) => `${locale.currencySymbol}${n.toLocaleString(locale.dateLocale)}`
+  const formatPrice = (n: number) =>
+    `${locale.currencySymbol}${n.toLocaleString(locale.dateLocale)}`
 
   const sections: SectionData[] = [
     {
@@ -120,23 +121,28 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
     {
       icon: Truck,
       title: "Información de entrega",
-      data: { estimated: shipping.estimatedDays, cost: shippingCost === 0 ? "Gratis" : formatPrice(shippingCost) },
+      data: {
+        estimated: shipping.estimatedDays,
+        cost: shippingCost === 0 ? "Gratis" : formatPrice(shippingCost),
+      },
       fields: ["estimated", "cost"],
       bgColor: "bg-brand-surface-alt/30",
     },
-  ];
+  ]
 
   return (
     <div className="max-w-2xl text-foreground">
       <h2 className="font-display font-semibold text-xl mb-6">Confirmar pedido</h2>
-      
+
       {!validationState.isValid && (
         <div className="bg-destructive/10 border border-destructive text-destructive rounded-lg p-4 mb-6">
           <p className="font-medium">{validationState.message}</p>
-          <p className="text-sm mt-1">Regresa a los pasos anteriores para completar la información requerida.</p>
+          <p className="text-sm mt-1">
+            Regresa a los pasos anteriores para completar la información requerida.
+          </p>
         </div>
       )}
-      
+
       <div className="space-y-6">
         {sections.map((section) => (
           <div key={section.title} className={`${section.bgColor} rounded-xl p-4`}>
@@ -147,8 +153,9 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
             <div className="text-sm space-y-1">
               {section.fields.map((field) => {
                 let value = (section.data as Record<string, string | number | undefined>)[field]
-                if (field === "cardNumber" && typeof value === 'string') value = `Tarjeta terminada en ****${value.slice(-4)}`
-                if (field === "method" && typeof value === 'string') {
+                if (field === "cardNumber" && typeof value === "string")
+                  value = `Tarjeta terminada en ****${value.slice(-4)}`
+                if (field === "method" && typeof value === "string") {
                   if (value === "card") value = "Tarjeta de Crédito/Débito"
                   else if (value === "mercadopago") value = "MercadoPago"
                   else if (value === "bank") value = "Transferencia Bancaria"
@@ -168,7 +175,10 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
           <h3 className="font-semibold mb-4">Resumen del pedido</h3>
           <div className="space-y-3 mb-4">
             {orderData.items.map((item) => (
-              <div key={`${item.id}-${item.size}-${item.color}`} className="flex justify-between text-sm">
+              <div
+                key={`${item.id}-${item.size}-${item.color}`}
+                className="flex justify-between text-sm"
+              >
                 <div>
                   <p className="font-medium">{item.name}</p>
                   <p className="text-muted-foreground">
@@ -208,12 +218,18 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
           </p>
         </div>
         <div className="flex gap-4 pt-6">
-          <Button type="button" variant="outline" onClick={onBack} className="flex-1" disabled={isProcessing}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="flex-1"
+            disabled={isProcessing}
+          >
             Volver al pago
           </Button>
-          <Button 
-            onClick={handleConfirm} 
-            className="flex-1" 
+          <Button
+            onClick={handleConfirm}
+            className="flex-1"
             disabled={isProcessing || !validationState.isValid}
           >
             {isProcessing ? (

@@ -28,7 +28,9 @@ export function SalesPageComponent({ title, description, emptyMessage }: SalesPa
           ))}
         </div>
       ) : (
-        <p className="text-center text-brand-muted">{emptyMessage ?? "No hay artículos en oferta en este momento. ¡Vuelve más tarde!"}</p>
+        <p className="text-center text-brand-muted">
+          {emptyMessage ?? "No hay artículos en oferta en este momento. ¡Vuelve más tarde!"}
+        </p>
       )}
     </div>
   )

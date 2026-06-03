@@ -270,7 +270,8 @@ export const categories: CategoryConfig[] = [
 export const essentialsConfig = {
   title: "Esenciales de Cada Día",
   description: "Básicos cómodos, duraderos y versátiles para el armario de tu hijo/a.",
-  emptyMessage: "No se encontraron productos esenciales. Por favor, revisa nuestras otras categorías.",
+  emptyMessage:
+    "No se encontraron productos esenciales. Por favor, revisa nuestras otras categorías.",
 }
 
 // ─── SEO / Metadata ───────────────────────────────────────────────────────────

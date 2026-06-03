@@ -1,18 +1,19 @@
 # Audit — Dulce Infancia Shop
+
 > Generado: 2026-06-03 | Última revisión: 2026-06-03 | Score base: 6/20 → Score actual estimado: **16/20** (en progreso)
 
 ---
 
 ## Resumen Ejecutivo
 
-| # | Dimensión | Score | Hallazgo Principal |
-|---|-----------|-------|-------------------|
-| 1 | Accessibility | 1/4 | Sin nav móvil, touch targets de 10px, custom radio buttons sin roles ARIA |
-| 2 | Performance | 1/4 | `priority={true}` en TODAS las imágenes, dual sistema de toasts |
-| 3 | Responsive Design | 1/4 | Navegación completamente oculta en móvil sin alternativa |
-| 4 | Theming | 2/4 | Colores de marca en hex hardcodeados fuera del sistema de tokens |
-| 5 | Anti-Patterns | 1/4 | Montserrat + Inter (ambas en lista de rechazo), icon grid, hero genérico centrado |
-| **Total** | | **6/20** | **Poor — Major Overhaul** |
+| #         | Dimensión         | Score    | Hallazgo Principal                                                                |
+| --------- | ----------------- | -------- | --------------------------------------------------------------------------------- |
+| 1         | Accessibility     | 1/4      | Sin nav móvil, touch targets de 10px, custom radio buttons sin roles ARIA         |
+| 2         | Performance       | 1/4      | `priority={true}` en TODAS las imágenes, dual sistema de toasts                   |
+| 3         | Responsive Design | 1/4      | Navegación completamente oculta en móvil sin alternativa                          |
+| 4         | Theming           | 2/4      | Colores de marca en hex hardcodeados fuera del sistema de tokens                  |
+| 5         | Anti-Patterns     | 1/4      | Montserrat + Inter (ambas en lista de rechazo), icon grid, hero genérico centrado |
+| **Total** |                   | **6/20** | **Poor — Major Overhaul**                                                         |
 
 **Issues por severidad**: 4×P0 · 6×P1 · 5×P2 · 3×P3
 
@@ -33,21 +34,25 @@
 ## P0 — Bloqueantes (fix inmediato)
 
 ### ✅ 1. Sin navegación móvil — RESUELTO
+
 - **Archivo**: `src/components/layout/mobile-nav.tsx` (nuevo)
 - **Solución aplicada**: Componente `MobileNav` con botón hamburger, drawer lateral completo con todos los links del nav, backdrop con click-outside para cerrar, navegación por teclado, `aria-label` correcto, y se oculta en `md:` igual que el nav desktop.
 - **Estándar WCAG 2.4.1 — cumplido**
 
 ### ✅ 2. `priority={true}` en TODOS los ProductCards — RESUELTO
+
 - **Archivo**: `src/components/product/product-card.tsx`
 - **Solución aplicada**: `priority` es prop opcional con `default = false`. En `page.tsx` solo las primeras 4 cards reciben `priority={index < 4}`. Resto lazy.
 - **Core Web Vitals LCP — mejorado**
 
 ### ✅ 3. Touch targets de 10px en banner dots — RESUELTO
+
 - **Archivo**: `src/app/page.tsx`
 - **Solución aplicada**: Cada dot envuelto en `<button>` con `p-3 -m-3 flex items-center justify-center`. Área táctil efectiva ≥ 44×44px, punto visual se mantiene pequeño con `<span>` interno.
 - **Estándar WCAG 2.5.5 — cumplido**
 
 ### ✅ 4. Skeleton permanente en "También te puede interesar" — RESUELTO
+
 - **Archivo**: `src/app/carrito/page.tsx`
 - **Solución aplicada**: Sección de skeleton eliminada completamente. Se re-implementará cuando exista lógica real de productos relacionados.
 
@@ -56,29 +61,35 @@
 ## P1 — Mayores (fix antes de release)
 
 ### ✅ 5. Dos sistemas de toast activos simultáneamente — RESUELTO
+
 - **Archivos afectados**: `layout.tsx`, `checkout-flow/page.tsx`, `add-to-cart-button.tsx`, `carrito/page.tsx`
 - **Solución aplicada**: `react-hot-toast` eliminado completamente del bundle (`npm uninstall`). Todo migrado a `sonner` vía `useSonner` hook y `{ toast } from "sonner"`. `<Toaster>` de `@/components/ui/sonner` en layout.
 
 ### ✅ 6. Botón de favorito sin aria-label — RESUELTO
+
 - **Archivo**: `src/components/product/product-card.tsx`
 - **Solución aplicada**: `aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}` + `aria-pressed={isFavorite}` ya presentes.
 - **Estándar WCAG 1.1.1 + 4.1.2 — cumplido**
 
 ### ✅ 7. PaymentForm: radio buttons custom sin roles ARIA — RESUELTO
+
 - **Archivo**: `src/components/checkout/payment-form.tsx`
 - **Solución aplicada**: `role="radiogroup"` en el contenedor, `role="radio"` + `aria-checked` + `tabIndex` en cada opción. Navegación por teclado con flechas ↑↓←→ y activación con Enter/Espacio.
 - **Estándar WCAG 4.1.2 — cumplido**
 
 ### ✅ 8. `window.location.href` en lugar de router de Next.js — RESUELTO
+
 - **Archivo**: `src/app/checkout-flow/page.tsx`
 - **Solución aplicada**: Ya usaba `router.push()` de `next/navigation`. Toast migrado a sonner eliminando la dependencia de react-hot-toast.
 
 ### ✅ 9. `window.confirm()` para vaciar carrito — RESUELTO
+
 - **Archivo**: `src/app/carrito/page.tsx`
 - **Solución aplicada**: `window.confirm()` reemplazado por `AlertDialog` de shadcn/ui con botones "Cancelar" y "Vaciar" estilizados. Estado `isClearDialogOpen` controla el modal.
 - **Estándar WCAG 3.3.4 — cumplido**
 
 ### ✅ 10. Fuentes en lista de rechazo (Montserrat + Inter) — RESUELTO
+
 - **Archivos**: `src/app/layout.tsx`, `src/config/theme.config.ts`
 - **Solución aplicada**: `Inter` reemplazada por `Atkinson_Hyperlegible` (subsets: latin, weights: 400/700). `Montserrat` se mantiene como display font (no es la fuente de cuerpo genérica). Ambas declaradas con `display: "swap"` y CSS variables `--font-display` / `--font-body`.
 
@@ -87,6 +98,7 @@
 ## P2 — Menores (fix en siguiente iteración)
 
 ### ⏳ 11. Colores de marca hardcodeados en hex — PENDIENTE
+
 - **Archivo**: `tailwind.config.ts:16-22`
 - **Colores afectados**: `brand.charcoal (#2F2F2F)`, `brand.goldenYellow (#F1C40F)`, `brand.taupe`, `brand.silver`, `brand.offWhite`
 - **Problema**: No participan en el sistema de CSS variables. En dark mode quedan inconsistentes con los tokens oklch.
@@ -94,19 +106,23 @@
 - **Comando**: `/colorize`
 
 ### ✅ 12. `console.log` en producción — RESUELTO
+
 - **Archivo**: `src/components/product/product-card.tsx`
 - **Solución aplicada**: No existen `console.log` en el archivo. Ya eliminados previamente.
 
 ### ✅ 13. Estado `isHovered` causa re-renders en ProductCard — RESUELTO
+
 - **Archivo**: `src/components/product/product-card.tsx`
 - **Solución aplicada**: El componente ya usa `group-hover:` de Tailwind CSS puro. No hay estado `isHovered` ni handlers `onMouseEnter`/`onMouseLeave`.
 
 ### ⏳ 14. Lógica de validación duplicada — PENDIENTE
+
 - **Archivos**: `src/app/checkout-flow/page.tsx` y `src/components/checkout/payment-form.tsx`
 - **Problema**: `validatePaymentData` existe en dos lugares con implementaciones distintas (payment-form incluye Luhn y validación por tipo; checkout-flow es simplista).
 - **Fix pendiente**: Extraer la versión robusta a `src/lib/validation.ts` e importarla en ambos.
 
 ### ✅ 15. Duplicación de declaración de fuentes — RESUELTO
+
 - **Solución aplicada**: `src/lib/fonts.ts` eliminado. Solo queda la declaración activa en `layout.tsx`.
 
 ---
@@ -114,14 +130,17 @@
 ## P3 — Polish (cuando haya tiempo)
 
 ### ✅ 16. `<nav>` sin aria-label — RESUELTO
+
 - **Archivo**: `src/app/layout.tsx`
 - **Solución aplicada**: `aria-label="Navegación principal"` ya presente en el `<nav>` desktop. La nueva `MobileNav` tiene `aria-label="Navegación móvil"` en su `<nav>` interior.
 
 ### ✅ 17. Hero hardcodea la altura del header — RESUELTO
+
 - **Archivo**: `src/app/page.tsx`
 - **Solución aplicada**: `h-[calc(100vh-80px)]` → `h-[calc(100dvh-80px)]`. `dvh` (dynamic viewport height) se ajusta correctamente en mobile browsers que muestran/ocultan la barra del navegador.
 
 ### ✅ 18. Alt text inapropiado en imágenes decorativas del hero — RESUELTO
+
 - **Archivo**: `src/app/page.tsx`
 - **Solución aplicada**: `alt=""` ya presente en todas las imágenes del hero carousel. El texto semántico está en el overlay HTML.
 
@@ -129,13 +148,13 @@
 
 ## Patrones Sistémicos
 
-| Patrón | Archivos afectados | Impacto |
-|--------|-------------------|---------|
-| `priority={true}` en todo | product-card, page.tsx, category pages | Performance global |
-| Colores de dos sistemas mezclados | 8+ componentes | Theming inconsistente |
-| Centrado total sin composición | Todas las páginas | Anti-pattern de diseño |
-| Validación duplicada en componentes | checkout-flow, payment-form | Mantenibilidad |
-| Texto de error sin icono accesible | Solo firstName en ShippingForm tiene icono | Inconsistencia UX |
+| Patrón                              | Archivos afectados                         | Impacto                |
+| ----------------------------------- | ------------------------------------------ | ---------------------- |
+| `priority={true}` en todo           | product-card, page.tsx, category pages     | Performance global     |
+| Colores de dos sistemas mezclados   | 8+ componentes                             | Theming inconsistente  |
+| Centrado total sin composición      | Todas las páginas                          | Anti-pattern de diseño |
+| Validación duplicada en componentes | checkout-flow, payment-form                | Mantenibilidad         |
+| Texto de error sin icono accesible  | Solo firstName en ShippingForm tiene icono | Inconsistencia UX      |
 
 ---
 
@@ -187,4 +206,4 @@ Siguiente ciclo — Re-audit
 
 ---
 
-*Para módulos faltantes (detalle de producto, buscador, etc.) ver `ROADMAP.md`*
+_Para módulos faltantes (detalle de producto, buscador, etc.) ver `ROADMAP.md`_

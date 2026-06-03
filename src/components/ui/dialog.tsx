@@ -3,11 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import ReactDOM from "react-dom"
 
-function Dialog({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function Dialog({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
 
   const openDialog = () => setIsOpen(true)
@@ -26,13 +22,7 @@ function Dialog({
   )
 }
 
-function DialogContent({
-  children,
-  onClose,
-}: {
-  children: React.ReactNode
-  onClose: () => void
-}) {
+function DialogContent({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -56,50 +46,26 @@ function DialogContent({
   }, [])
 
   return ReactDOM.createPortal(
-    <div
-      ref={contentRef}
-      role="dialog"
-      aria-modal="true"
-      tabIndex={-1}
-      className="dialog-content"
-    >
+    <div ref={contentRef} role="dialog" aria-modal="true" tabIndex={-1} className="dialog-content">
       {children}
       <button onClick={onClose} aria-label="Close dialog">
         Close
       </button>
     </div>,
-    document.body
+    document.body,
   )
 }
 
-function DialogTrigger({
-  onClick,
-}: {
-  onClick: () => void
-}) {
+function DialogTrigger({ onClick }: { onClick: () => void }) {
   return <button onClick={onClick}>Open Dialog</button>
 }
 
-function DialogPortal({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function DialogPortal({ children }: { children: React.ReactNode }) {
   return ReactDOM.createPortal(children, document.body)
 }
 
-function DialogOverlay({
-  onClick,
-}: {
-  onClick: () => void
-}) {
+function DialogOverlay({ onClick }: { onClick: () => void }) {
   return <div className="dialog-overlay" onClick={onClick} />
 }
 
-export {
-  Dialog,
-  DialogContent,
-  DialogPortal,
-  DialogOverlay,
-  DialogTrigger,
-}
+export { Dialog, DialogContent, DialogPortal, DialogOverlay, DialogTrigger }

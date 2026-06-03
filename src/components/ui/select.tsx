@@ -55,11 +55,11 @@ function Select({
   const [items, setItems] = React.useState<SelectItemType[]>([])
   const triggerRef = React.useRef<HTMLButtonElement>(null)
   const contentRef = React.useRef<HTMLDivElement>(null)
-  
+
   // Handle controlled or uncontrolled component
   const isControlled = controlledValue !== undefined
   const value = isControlled ? controlledValue : internalValue
-  
+
   const handleValueChange = React.useCallback(
     (newValue: string) => {
       if (!isControlled) {
@@ -69,28 +69,22 @@ function Select({
       setOpen(false)
       triggerRef.current?.focus()
     },
-    [isControlled, onValueChange]
+    [isControlled, onValueChange],
   )
-  
+
   // Handle item registration for keyboard navigation
-  const registerItem = React.useCallback(
-    (item: SelectItemType) => {
-      setItems((prevItems) => [...prevItems, item])
-    },
-    []
-  )
-  
-  const unregisterItem = React.useCallback(
-    (itemValue: string) => {
-      setItems((prevItems) => prevItems.filter((item) => item.value !== itemValue))
-    },
-    []
-  )
-  
+  const registerItem = React.useCallback((item: SelectItemType) => {
+    setItems((prevItems) => [...prevItems, item])
+  }, [])
+
+  const unregisterItem = React.useCallback((itemValue: string) => {
+    setItems((prevItems) => prevItems.filter((item) => item.value !== itemValue))
+  }, [])
+
   // Handle click outside to close dropdown
   React.useEffect(() => {
     if (!open) return
-    
+
     function handleClickOutside(event: MouseEvent) {
       if (
         contentRef.current &&
@@ -101,16 +95,16 @@ function Select({
         setOpen(false)
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside)
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [open])
-  
+
   // Hidden native select for form submission
   const nativeSelectId = React.useId()
-  
+
   return (
     <SelectContext.Provider
       value={{
@@ -126,7 +120,7 @@ function Select({
         registerItem,
         unregisterItem,
         triggerRef,
-        contentRef
+        contentRef,
       }}
     >
       <div data-slot="select" className="relative">
@@ -168,11 +162,11 @@ function SelectGroup({
   ...props
 }: SelectGroupProps & Omit<React.HTMLAttributes<HTMLDivElement>, "children">) {
   return (
-    <div 
-      data-slot="select-group" 
+    <div
+      data-slot="select-group"
       role="group"
       aria-label={label}
-      className={cn("px-1 py-1.5", className)} 
+      className={cn("px-1 py-1.5", className)}
       {...props}
     >
       {label && <div className="px-2 text-xs font-medium text-muted-foreground mb-1">{label}</div>}
@@ -187,27 +181,27 @@ function SelectTrigger({
   children,
   ...props
 }: {
-  className?: string;
-  size?: "sm" | "default";
-  children: React.ReactNode;
+  className?: string
+  size?: "sm" | "default"
+  children: React.ReactNode
 }) {
-  const { open, setOpen } = React.useContext(SelectContext) ?? {};
+  const { open, setOpen } = React.useContext(SelectContext) ?? {}
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (!setOpen) return;
+    if (!setOpen) return
 
     switch (event.key) {
       case "ArrowDown":
       case "Enter":
-        setOpen(true);
-        break;
+        setOpen(true)
+        break
       case "Escape":
-        setOpen(false);
-        break;
+        setOpen(false)
+        break
       default:
-        break;
+        break
     }
-  };
+  }
 
   return (
     <button
@@ -215,7 +209,7 @@ function SelectTrigger({
       data-size={size}
       className={cn(
         "border-input flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm",
-        className
+        className,
       )}
       aria-haspopup="listbox"
       aria-expanded={open}
@@ -225,24 +219,26 @@ function SelectTrigger({
     >
       {children}
     </button>
-  );
+  )
 }
 
 function SelectContent({
   className,
   children,
   ...props
-}: { className?: string; children: React.ReactNode }) {
+}: {
+  className?: string
+  children: React.ReactNode
+}) {
   return (
-    <div data-slot="select-content" className={cn("bg-white shadow-md rounded-md", className)} {...props}>
+    <div
+      data-slot="select-content"
+      className={cn("bg-white shadow-md rounded-md", className)}
+      {...props}
+    >
       {children}
     </div>
   )
 }
 
-export {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectTrigger,
-}
+export { Select, SelectContent, SelectGroup, SelectTrigger }

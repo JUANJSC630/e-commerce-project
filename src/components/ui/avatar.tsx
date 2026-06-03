@@ -3,17 +3,11 @@
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 
-function Avatar({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function Avatar({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="avatar"
-      className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
-        className
-      )}
+      className={cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", className)}
       {...props}
     />
   )
@@ -24,7 +18,7 @@ function AvatarImage({
   alt = "Avatar image",
   src,
   ...props
-}: { src: string } & Omit<React.ComponentProps<typeof Image>, 'src'>) {
+}: { src: string } & Omit<React.ComponentProps<typeof Image>, "src">) {
   return (
     <Image
       data-slot="avatar-image"
@@ -36,17 +30,11 @@ function AvatarImage({
   )
 }
 
-function AvatarFallback({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function AvatarFallback({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="avatar-fallback"
-      className={cn(
-        "bg-muted flex size-full items-center justify-center rounded-full",
-        className
-      )}
+      className={cn("bg-muted flex size-full items-center justify-center rounded-full", className)}
       {...props}
     />
   )

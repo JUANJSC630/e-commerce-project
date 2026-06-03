@@ -15,7 +15,7 @@ A fully accessible and keyboard navigable tabs component for React applications.
 ### Basic Example
 
 ```tsx
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 export function TabsDemo() {
   return (
@@ -25,46 +25,33 @@ export function TabsDemo() {
         <TabsTrigger value="password">Contraseña</TabsTrigger>
         <TabsTrigger value="settings">Configuración</TabsTrigger>
       </TabsList>
-      <TabsContent value="account">
-        Contenido de la cuenta.
-      </TabsContent>
-      <TabsContent value="password">
-        Cambie su contraseña aquí.
-      </TabsContent>
-      <TabsContent value="settings">
-        Configuración de su cuenta.
-      </TabsContent>
+      <TabsContent value="account">Contenido de la cuenta.</TabsContent>
+      <TabsContent value="password">Cambie su contraseña aquí.</TabsContent>
+      <TabsContent value="settings">Configuración de su cuenta.</TabsContent>
     </Tabs>
-  );
+  )
 }
 ```
 
 ### Controlled Mode
 
 ```tsx
-import { useState } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useState } from "react"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 export function ControlledTabsDemo() {
-  const [activeTab, setActiveTab] = useState("account");
-  
+  const [activeTab, setActiveTab] = useState("account")
+
   return (
-    <Tabs 
-      value={activeTab} 
-      onValueChange={setActiveTab}
-    >
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
       <TabsList>
         <TabsTrigger value="account">Cuenta</TabsTrigger>
         <TabsTrigger value="password">Contraseña</TabsTrigger>
       </TabsList>
-      <TabsContent value="account">
-        Contenido de la cuenta.
-      </TabsContent>
-      <TabsContent value="password">
-        Cambie su contraseña aquí.
-      </TabsContent>
+      <TabsContent value="account">Contenido de la cuenta.</TabsContent>
+      <TabsContent value="password">Cambie su contraseña aquí.</TabsContent>
     </Tabs>
-  );
+  )
 }
 ```
 
@@ -73,14 +60,14 @@ export function ControlledTabsDemo() {
 ```tsx
 <Tabs>
   <TabsList className="bg-muted p-1 rounded-lg">
-    <TabsTrigger 
-      value="tab1" 
+    <TabsTrigger
+      value="tab1"
       className="data-[state=active]:bg-background data-[state=active]:shadow rounded-md"
     >
       Tab 1
     </TabsTrigger>
-    <TabsTrigger 
-      value="tab2" 
+    <TabsTrigger
+      value="tab2"
       className="data-[state=active]:bg-background data-[state=active]:shadow rounded-md"
     >
       Tab 2
@@ -101,39 +88,39 @@ export function ControlledTabsDemo() {
 
 The main container component for the tabs.
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `value` | `string` | The controlled value of the tab to activate |
-| `defaultValue` | `string` | The default value of the tab to activate when initially rendered (uncontrolled) |
-| `onValueChange` | `(value: string) => void` | Callback called when the active tab changes |
-| `className` | `string` | Additional CSS classes |
+| Prop            | Type                      | Description                                                                     |
+| --------------- | ------------------------- | ------------------------------------------------------------------------------- |
+| `value`         | `string`                  | The controlled value of the tab to activate                                     |
+| `defaultValue`  | `string`                  | The default value of the tab to activate when initially rendered (uncontrolled) |
+| `onValueChange` | `(value: string) => void` | Callback called when the active tab changes                                     |
+| `className`     | `string`                  | Additional CSS classes                                                          |
 
 ### TabsList
 
 The container component for tab triggers.
 
-| Prop | Type | Description |
-|------|------|-------------|
+| Prop        | Type     | Description            |
+| ----------- | -------- | ---------------------- |
 | `className` | `string` | Additional CSS classes |
 
 ### TabsTrigger
 
 The clickable element that activates its associated tab content.
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `value` | `string` | A unique value for the tab |
-| `disabled` | `boolean` | When `true`, prevents the user from interacting with the tab |
-| `className` | `string` | Additional CSS classes |
+| Prop        | Type      | Description                                                  |
+| ----------- | --------- | ------------------------------------------------------------ |
+| `value`     | `string`  | A unique value for the tab                                   |
+| `disabled`  | `boolean` | When `true`, prevents the user from interacting with the tab |
+| `className` | `string`  | Additional CSS classes                                       |
 
 ### TabsContent
 
 The content displayed when its associated tab trigger is active.
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `value` | `string` | A unique value for the tab content, should match the value of the associated trigger |
-| `className` | `string` | Additional CSS classes |
+| Prop        | Type     | Description                                                                          |
+| ----------- | -------- | ------------------------------------------------------------------------------------ |
+| `value`     | `string` | A unique value for the tab content, should match the value of the associated trigger |
+| `className` | `string` | Additional CSS classes                                                               |
 
 ## Accessibility
 

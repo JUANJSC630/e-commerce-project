@@ -42,9 +42,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     : product.discountPercentage || 0
 
   return (
-    <div
-      className="group relative bg-card text-card-foreground rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border"
-    >
+    <div className="group relative bg-card text-card-foreground rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border">
       <Link
         href={`/products/${product.id}`}
         className="block relative aspect-[3/4] overflow-hidden bg-brand-surface"
@@ -66,7 +64,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         />
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.isNew && <Badge variant="new">Nuevo</Badge>}
-          {product.isOnSale && discountPercentage > 0 && <Badge variant="discount">-{discountPercentage}%</Badge>}
+          {product.isOnSale && discountPercentage > 0 && (
+            <Badge variant="discount">-{discountPercentage}%</Badge>
+          )}
         </div>
         <button
           onClick={handleToggleFavorite}
@@ -79,7 +79,12 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             isFavorite && "opacity-100",
           )}
         >
-          <Heart className={cn("w-4 h-4", isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
+          <Heart
+            className={cn(
+              "w-4 h-4",
+              isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground",
+            )}
+          />
         </button>
         <div
           className={cn(
@@ -96,7 +101,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       </Link>
       <div className="p-4 space-y-3">
         {product.category && (
-          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">{product.category}</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+            {product.category}
+          </p>
         )}
         <h3 className="font-display font-semibold text-foreground line-clamp-2 leading-tight h-10">
           {product.name}
@@ -120,7 +127,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </div>
         )}
         <div className="flex items-baseline gap-2">
-          <span className="font-bold text-lg text-foreground">${product.price.toLocaleString()}</span>
+          <span className="font-bold text-lg text-foreground">
+            ${product.price.toLocaleString()}
+          </span>
           {product.originalPrice && (
             <span className="text-sm text-muted-foreground line-through">
               ${product.originalPrice.toLocaleString()}

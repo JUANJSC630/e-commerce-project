@@ -4,7 +4,15 @@ import { use, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Star, ChevronRight, ShoppingCart, Heart, Truck, ShieldCheck, RotateCcw } from "lucide-react"
+import {
+  Star,
+  ChevronRight,
+  ShoppingCart,
+  Heart,
+  Truck,
+  ShieldCheck,
+  RotateCcw,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -26,12 +34,8 @@ export default function ProductDetailPage({ params }: PageProps) {
   const relatedProducts = getRelatedProducts(product)
   const { addItem, openCart } = useCart()
 
-  const [selectedSize, setSelectedSize] = useState<string | undefined>(
-    product.sizes?.[0]
-  )
-  const [selectedColor, setSelectedColor] = useState<string | undefined>(
-    product.colors?.[0]
-  )
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(product.sizes?.[0])
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(product.colors?.[0])
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
 
@@ -67,7 +71,9 @@ export default function ProductDetailPage({ params }: PageProps) {
                 Inicio
               </Link>
             </li>
-            <li aria-hidden="true"><ChevronRight className="w-3 h-3" /></li>
+            <li aria-hidden="true">
+              <ChevronRight className="w-3 h-3" />
+            </li>
             <li>
               <Link href={routes.products} className="hover:text-brand-base transition-colors">
                 Productos
@@ -75,7 +81,9 @@ export default function ProductDetailPage({ params }: PageProps) {
             </li>
             {product.category && (
               <>
-                <li aria-hidden="true"><ChevronRight className="w-3 h-3" /></li>
+                <li aria-hidden="true">
+                  <ChevronRight className="w-3 h-3" />
+                </li>
                 <li>
                   <Link href={categoryHref} className="hover:text-brand-base transition-colors">
                     {categoryLabel[product.category] ?? product.category}
@@ -83,7 +91,9 @@ export default function ProductDetailPage({ params }: PageProps) {
                 </li>
               </>
             )}
-            <li aria-hidden="true"><ChevronRight className="w-3 h-3" /></li>
+            <li aria-hidden="true">
+              <ChevronRight className="w-3 h-3" />
+            </li>
             <li className="text-brand-ink font-medium truncate max-w-[200px]" aria-current="page">
               {product.name}
             </li>
@@ -95,10 +105,14 @@ export default function ProductDetailPage({ params }: PageProps) {
           {/* Image */}
           <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-brand-surface shadow-sm border border-border">
             {product.isNew && (
-              <Badge variant="new" className="absolute top-4 left-4 z-10">Nuevo</Badge>
+              <Badge variant="new" className="absolute top-4 left-4 z-10">
+                Nuevo
+              </Badge>
             )}
             {product.isOnSale && discountPct > 0 && (
-              <Badge variant="discount" className="absolute top-4 left-4 z-10">-{discountPct}%</Badge>
+              <Badge variant="discount" className="absolute top-4 left-4 z-10">
+                -{discountPct}%
+              </Badge>
             )}
             <Image
               src={product.image || "/placeholder.svg"}
@@ -133,7 +147,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                         "w-4 h-4",
                         i < Math.floor(product.rating!)
                           ? "text-brand-base fill-brand-base"
-                          : "text-brand-muted"
+                          : "text-brand-muted",
                       )}
                     />
                   ))}
@@ -147,16 +161,19 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* Price */}
             <div className="flex items-baseline gap-3">
               <span className="font-bold text-3xl text-brand-ink">
-                {locale.currencySymbol}{product.price.toLocaleString(locale.dateLocale)}
+                {locale.currencySymbol}
+                {product.price.toLocaleString(locale.dateLocale)}
               </span>
               {product.originalPrice && (
                 <span className="text-lg text-muted-foreground line-through">
-                  {locale.currencySymbol}{product.originalPrice.toLocaleString(locale.dateLocale)}
+                  {locale.currencySymbol}
+                  {product.originalPrice.toLocaleString(locale.dateLocale)}
                 </span>
               )}
               {discountPct > 0 && (
                 <span className="text-sm font-semibold text-green-600">
-                  Ahorras {locale.currencySymbol}{(product.originalPrice! - product.price).toLocaleString(locale.dateLocale)}
+                  Ahorras {locale.currencySymbol}
+                  {(product.originalPrice! - product.price).toLocaleString(locale.dateLocale)}
                 </span>
               )}
             </div>
@@ -182,7 +199,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                         "w-8 h-8 rounded-full border-2 transition-all",
                         selectedColor === color
                           ? "border-brand-base scale-110 shadow-md"
-                          : "border-border hover:border-brand-muted"
+                          : "border-border hover:border-brand-muted",
                       )}
                       style={{ backgroundColor: color }}
                     />
@@ -207,7 +224,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                         "px-3 py-1.5 text-sm rounded-lg border-2 font-medium transition-all",
                         selectedSize === size
                           ? "border-brand-base bg-brand-base text-brand-on-base"
-                          : "border-border text-foreground hover:border-brand-muted bg-background"
+                          : "border-border text-foreground hover:border-brand-muted bg-background",
                       )}
                     >
                       {size}
@@ -243,11 +260,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             {/* CTAs */}
             <div className="flex gap-3 pt-1">
-              <Button
-                size="lg"
-                className="flex-1"
-                onClick={handleAddToCart}
-              >
+              <Button size="lg" className="flex-1" onClick={handleAddToCart}>
                 <ShoppingCart className="w-4 h-4 mr-2" aria-hidden="true" />
                 Agregar al carrito
               </Button>
@@ -259,7 +272,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   "w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all",
                   isFavorite
                     ? "border-red-400 bg-red-50 text-red-500"
-                    : "border-border text-muted-foreground hover:border-red-300 hover:text-red-400"
+                    : "border-border text-muted-foreground hover:border-red-300 hover:text-red-400",
                 )}
               >
                 <Heart className={cn("w-5 h-5", isFavorite && "fill-red-500")} aria-hidden="true" />
@@ -273,17 +286,22 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <p className="text-xs text-muted-foreground leading-tight">
                   Gratis desde{" "}
                   <span className="font-medium text-brand-ink">
-                    {locale.currencySymbol}{shipping.freeThreshold.toLocaleString(locale.dateLocale)}
+                    {locale.currencySymbol}
+                    {shipping.freeThreshold.toLocaleString(locale.dateLocale)}
                   </span>
                 </p>
               </div>
               <div className="flex flex-col items-center text-center gap-1">
                 <ShieldCheck className="w-5 h-5 text-brand-base" aria-hidden="true" />
-                <p className="text-xs text-muted-foreground leading-tight">Pago seguro garantizado</p>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  Pago seguro garantizado
+                </p>
               </div>
               <div className="flex flex-col items-center text-center gap-1">
                 <RotateCcw className="w-5 h-5 text-brand-base" aria-hidden="true" />
-                <p className="text-xs text-muted-foreground leading-tight">Devoluciones en {shipping.estimatedDays}</p>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  Devoluciones en {shipping.estimatedDays}
+                </p>
               </div>
             </div>
           </div>

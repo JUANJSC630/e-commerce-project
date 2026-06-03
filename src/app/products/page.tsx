@@ -1,51 +1,46 @@
 // app/products/page.tsx
-"use client"; // Necesario si planeamos añadir interactividad como filtros en el futuro.
+"use client" // Necesario si planeamos añadir interactividad como filtros en el futuro.
 
-import { useEffect, useState } from "react";
-import { ProductCard } from "@/components/product/product-card";
-import { allMockProducts } from "@/lib/mock-data"; // Importamos todos los productos
-import type { Product } from "@/lib/types";
+import { useEffect, useState } from "react"
+import { ProductCard } from "@/components/product/product-card"
+import { allMockProducts } from "@/lib/mock-data" // Importamos todos los productos
+import type { Product } from "@/lib/types"
 
 // Comentario: Esta es la página que muestra todos los productos disponibles.
 export default function AllProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     // Simulate an API call with setTimeout
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true)
+    setError(null)
 
     // Simulate fetching data with a slight delay to demonstrate the loading state
     const fetchData = async () => {
       try {
         // In a real app, this would be an actual API call
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        setProducts(allMockProducts);
+        await new Promise((resolve) => setTimeout(resolve, 800))
+        setProducts(allMockProducts)
       } catch (err) {
-        console.error("Error fetching products:", err);
-        setError(
-          "No pudimos cargar los productos. Por favor, inténtalo de nuevo más tarde."
-        );
+        console.error("Error fetching products:", err)
+        setError("No pudimos cargar los productos. Por favor, inténtalo de nuevo más tarde.")
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8 text-center">
         {/* Texto de UI en Español */}
-        <h1 className="text-4xl font-display font-bold text-brand-ink">
-          Todos Nuestros Productos
-        </h1>
+        <h1 className="text-4xl font-display font-bold text-brand-ink">Todos Nuestros Productos</h1>
         <p className="text-lg text-brand-muted mt-2">
-          Explora el catálogo completo de prendas adorables para bebés, niñas y
-          niños.
+          Explora el catálogo completo de prendas adorables para bebés, niñas y niños.
         </p>
       </header>
 
@@ -86,8 +81,7 @@ export default function AllProductsPage() {
           ) : (
             // Texto de UI en Español
             <p className="text-center text-brand-muted">
-              No hay productos disponibles en este momento. Por favor, ¡vuelve
-              pronto!
+              No hay productos disponibles en este momento. Por favor, ¡vuelve pronto!
             </p>
           )}
         </>
@@ -95,5 +89,5 @@ export default function AllProductsPage() {
 
       {/* Comentario: En el futuro, aquí se podrían añadir controles de filtrado, ordenamiento y paginación. */}
     </div>
-  );
+  )
 }

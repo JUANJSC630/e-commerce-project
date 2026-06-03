@@ -34,11 +34,7 @@ function ToggleGroup({
   ...props
 }: ToggleGroupProps) {
   return (
-    <div
-      data-slot="toggle-group"
-      className={cn("flex items-center", className)}
-      {...props}
-    >
+    <div data-slot="toggle-group" className={cn("flex items-center", className)} {...props}>
       <ToggleGroupContext.Provider value={{ variant, size }}>
         {children}
       </ToggleGroupContext.Provider>
@@ -63,24 +59,24 @@ function ToggleGroupItem({
 }: ToggleGroupItemProps) {
   // Consume context values
   const { variant, size } = React.useContext(ToggleGroupContext)
-  
+
   // Handle toggle functionality
   const [isPressed, setIsPressed] = React.useState<boolean>(pressed)
-  
+
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setIsPressed(!isPressed)
     onClick?.(event)
   }
-  
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     // Toggle on Space or Enter key
-    if (event.key === ' ' || event.key === 'Enter') {
+    if (event.key === " " || event.key === "Enter") {
       event.preventDefault()
       setIsPressed(!isPressed)
     }
     onKeyDown?.(event)
   }
-  
+
   return (
     <button
       data-slot="toggle-group-item"
@@ -91,7 +87,7 @@ function ToggleGroupItem({
         size === "sm" && "px-2 py-1 text-sm",
         size === "lg" && "px-6 py-3 text-lg",
         isPressed && "bg-primary text-primary-foreground",
-        className
+        className,
       )}
       role="button"
       aria-pressed={isPressed}

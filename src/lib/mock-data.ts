@@ -229,3 +229,5 @@ export const getRelatedProducts = (product: Product, limit = 4): Product[] =>
   allMockProducts
     .filter((p) => p.id !== product.id && p.category === product.category)
     .slice(0, limit)
+
+export const getFeaturedProducts = (limit = 8): Product[] => allMockProducts.slice(0, limit)

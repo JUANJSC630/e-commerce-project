@@ -1,0 +1,47 @@
+import { Package, Gift, ShieldCheck, Tag, type LucideIcon } from "lucide-react"
+import type { FeatureItem } from "@/config/store.config"
+
+const iconMap: Record<string, LucideIcon> = {
+  Package,
+  Gift,
+  ShieldCheck,
+  Tag,
+}
+
+interface TrustBarProps {
+  features: FeatureItem[]
+}
+
+export function TrustBar({ features }: TrustBarProps) {
+  // Triple-spread at module render time — static data, no useMemo needed
+  const items = [...features, ...features, ...features]
+
+  return (
+    <section
+      role="region"
+      aria-label="Nuestras garantías"
+      className="bg-brand-base overflow-hidden py-3"
+    >
+      <div className="flex animate-marquee whitespace-nowrap hover:[animation-play-state:paused]">
+        {items.map((item, i) => {
+          const Icon = iconMap[item.icon] ?? Package
+          return (
+            <span
+              key={`${item.icon}-${i}`}
+              className="inline-flex items-center gap-2.5 px-7 text-sm font-display font-semibold text-brand-on-base"
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+              <span>{item.title}</span>
+              {item.description && (
+                <span className="text-brand-on-base/55 font-normal">— {item.description}</span>
+              )}
+              <span className="ml-5 text-brand-on-base/30" aria-hidden="true">
+                ·
+              </span>
+            </span>
+          )
+        })}
+      </div>
+    </section>
+  )
+}

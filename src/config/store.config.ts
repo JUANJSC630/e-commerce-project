@@ -19,8 +19,6 @@ export interface HeroBanner {
   image: string
   buttonText: string
   buttonLink: string
-  bgColorClass: string
-  textColorClass: string
 }
 
 export interface FeaturedCategory {
@@ -172,8 +170,6 @@ export const heroBanners: HeroBanner[] = [
     image: "/pexels-matilda-wormwood-7484842.jpg",
     buttonText: "Ver Colección",
     buttonLink: routes.products,
-    bgColorClass: "bg-brand-surface-alt/60",
-    textColorClass: "text-brand-ink",
   },
   {
     title: "¡Ofertas Brillantes!",
@@ -181,8 +177,6 @@ export const heroBanners: HeroBanner[] = [
     image: "/8683985.jpg",
     buttonText: "Ver Ofertas",
     buttonLink: `${routes.categoryBase}/sales`,
-    bgColorClass: "bg-brand-base/20",
-    textColorClass: "text-brand-ink",
   },
   {
     title: "Comodidad y Estilo",
@@ -190,8 +184,6 @@ export const heroBanners: HeroBanner[] = [
     image: "/pexels-pixabay-272056.jpg",
     buttonText: "Comprar Ahora",
     buttonLink: routes.essentials,
-    bgColorClass: "bg-brand-muted/20",
-    textColorClass: "text-brand-ink",
   },
 ]
 
@@ -297,4 +289,34 @@ export const contact = {
   email: "",
   phone: "",
   address: "",
+}
+
+// ─── Home Page Content ────────────────────────────────────────────────────────
+
+/**
+ * All user-visible copy for the homepage.
+ * Change text here without touching any TSX file.
+ */
+export const homePageContent = {
+  hero: {
+    eyebrow: "Nueva temporada",
+    viewAllLabel: "Ver todo",
+  },
+  categories: {
+    eyebrow: "Colecciones",
+    heading: "Encuentra lo que buscas",
+  },
+  promise: {
+    quote:
+      "Cada prenda que ves aquí fue elegida a mano — como si fuera para nuestra propia familia.",
+    subtext: "No tenemos el catálogo más grande. Tenemos el que tiene sentido.",
+    ctaLabel: "Conocer la selección",
+  },
+  products: {
+    eyebrow: "Selección de la semana",
+    heading: "Lo más querido",
+    viewAllLabel: "Ver todo",
+    viewAllMobileLabel: "Ver todos los productos",
+    limit: 8,
+  },
 }

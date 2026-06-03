@@ -17,8 +17,8 @@ const { Pool } = pg
 
 const adapter = new PrismaPg(
   new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    connectionString: process.env.DATABASE_URL?.replace(/sslmode=require/, "sslmode=verify-full"),
+    ssl: { rejectUnauthorized: true },
   }),
 )
 const prisma = new PrismaClient({ adapter })

@@ -1,32 +1,20 @@
-"use client"
-
-import * as React from "react"
+import type { Metadata } from "next"
 import { ProductCard } from "@/components/product/product-card"
 import { getEssentialProducts } from "@/lib/mock-data"
-import type { Product } from "@/lib/types"
-import { essentialsConfig } from "@/config/store.config"
+import { essentialsConfig, pageSeo } from "@/config/store.config"
 
-export default function EssentialsPage(): React.ReactElement {
-  const [essentialProducts, setEssentialProducts] = React.useState<Product[]>([])
-  const [error, setError] = React.useState<string | null>(null)
+export const metadata: Metadata = {
+  title: pageSeo.essentials.title,
+  description: pageSeo.essentials.description,
+  openGraph: {
+    title: pageSeo.essentials.title,
+    description: pageSeo.essentials.description,
+    type: "website",
+  },
+}
 
-  React.useEffect(() => {
-    try {
-      setEssentialProducts(getEssentialProducts())
-    } catch (err) {
-      console.error("Error fetching essential products:", err)
-      setError("No se pudieron cargar los productos esenciales")
-    }
-  }, [])
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-4xl font-display font-bold text-brand-ink">{essentialsConfig.title}</h1>
-        <p className="text-lg text-destructive mt-4">{error}</p>
-      </div>
-    )
-  }
+export default function EssentialsPage() {
+  const essentialProducts = getEssentialProducts()
 
   return (
     <div className="container mx-auto px-4 py-8">

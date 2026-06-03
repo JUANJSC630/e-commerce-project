@@ -1,39 +1,32 @@
-"use client"
-
 import { ProductCard } from "@/components/product/product-card"
-import { getProductsByCategory } from "@/lib/mock-data"
 import type { Product } from "@/lib/types"
 
 interface CategoryPageProps {
-  category: string
+  products: Product[]
   title: string
   description: string
   emptyMessage?: string
 }
 
-export function CategoryPage({ category, title, description, emptyMessage }: CategoryPageProps) {
-  // Fetch products for the specified category
-  const products: Product[] = getProductsByCategory(category)
-
+export function CategoryPage({ products, title, description, emptyMessage }: CategoryPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
-      <header className="mb-8 text-center">
+      <header className="mb-8">
         <h1 className="text-4xl font-display font-bold text-brand-ink">{title}</h1>
         <p className="text-lg text-brand-muted mt-2">{description}</p>
       </header>
 
       {products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {products.map((product, index) => (
+            <ProductCard key={product.id} product={product} priority={index < 4} />
           ))}
         </div>
       ) : (
-        <p className="text-center text-brand-muted">
+        <p className="text-center text-brand-muted py-16">
           {emptyMessage ?? "Aún no hay productos en esta categoría. ¡Vuelve pronto!"}
         </p>
       )}
-      {/* Space for potential future additions like filters or pagination */}
     </div>
   )
 }

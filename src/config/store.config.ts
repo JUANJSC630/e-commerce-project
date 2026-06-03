@@ -44,6 +44,10 @@ export interface CategoryConfig {
   description: string
   /** Empty state message when no products exist */
   emptyMessage: string
+  /** SEO meta title for this category page */
+  metaTitle?: string
+  /** SEO meta description for this category page */
+  metaDescription?: string
 }
 
 export interface PaymentMethod {
@@ -106,6 +110,7 @@ export const routes = {
   checkout: "/checkout-flow",
   products: "/products",
   essentials: "/essentials",
+  search: "/search",
   policies: "/politicas",
   categoryBase: "/category", // e.g. /category/babies
 }
@@ -235,6 +240,8 @@ export const categories: CategoryConfig[] = [
     title: "Colección Bebés",
     description: "Ropa adorable y cómoda para tus pequeños (0-24 meses).",
     emptyMessage: "Aún no hay productos en esta categoría. ¡Vuelve pronto!",
+    metaTitle: `Ropa para Bebés (0-24m) — ${brand.name}`,
+    metaDescription: `Descubre ropa adorable y cómoda para bebés de 0 a 24 meses en ${brand.name}. Bodys, ranitas, conjuntos y más.`,
   },
   {
     key: "Girls",
@@ -242,6 +249,8 @@ export const categories: CategoryConfig[] = [
     title: "Moda Niñas",
     description: "Atuendos elegantes y divertidos para cada pequeña princesa.",
     emptyMessage: "Aún no hay productos en esta categoría. ¡Vuelve pronto!",
+    metaTitle: `Ropa para Niñas — ${brand.name}`,
+    metaDescription: `Vestidos, faldas, chaquetas y más para niñas en ${brand.name}. Moda infantil con estilo y calidad.`,
   },
   {
     key: "Boys",
@@ -249,6 +258,8 @@ export const categories: CategoryConfig[] = [
     title: "Moda Niños",
     description: "Looks frescos y cómodos para los más activos.",
     emptyMessage: "Aún no hay productos en esta categoría. ¡Vuelve pronto!",
+    metaTitle: `Ropa para Niños — ${brand.name}`,
+    metaDescription: `Camisetas, pantalones, sudaderas y más para niños en ${brand.name}. Ropa cómoda y duradera para los más activos.`,
   },
   {
     key: "Sales",
@@ -256,6 +267,8 @@ export const categories: CategoryConfig[] = [
     title: "Ofertas",
     description: "Las mejores prendas a precios increíbles.",
     emptyMessage: "No hay artículos en oferta en este momento. ¡Vuelve más tarde!",
+    metaTitle: `Ofertas de Ropa Infantil — ${brand.name}`,
+    metaDescription: `Aprovecha los mejores descuentos en ropa para bebés, niñas y niños en ${brand.name}. Calidad a precios increíbles.`,
   },
 ]
 
@@ -272,6 +285,41 @@ export const seo = {
   title: `${brand.name} Shop`,
   description: brand.tagline,
   generator: "e-commerce-project",
+}
+
+/**
+ * Per-page SEO metadata. Used by generateMetadata() in each page.
+ * Update here to change titles/descriptions without touching page files.
+ */
+export const pageSeo = {
+  home: {
+    title: `${brand.name} — Ropa infantil adorable`,
+    description: `${brand.description} Descubre bebés, niñas, niños y esenciales.`,
+  },
+  products: {
+    title: `Todos los Productos — ${brand.name}`,
+    description: `Explora el catálogo completo de prendas adorables para bebés, niñas y niños en ${brand.name}.`,
+  },
+  essentials: {
+    title: `Esenciales — ${brand.name}`,
+    description: `Básicos cómodos, duraderos y versátiles para el armario de tu hijo/a. Selección de esenciales en ${brand.name}.`,
+  },
+  search: {
+    title: `Buscar — ${brand.name}`,
+    description: `Encuentra prendas para bebés, niñas y niños en ${brand.name}.`,
+  },
+}
+
+/**
+ * Human-readable labels for product.category values.
+ * Used in breadcrumbs and product detail pages.
+ */
+export const categoryLabels: Record<string, string> = {
+  Babies: "Bebés",
+  Girls: "Niñas",
+  Boys: "Niños",
+  Essentials: "Esenciales",
+  Sales: "Ofertas",
 }
 
 // ─── Social Links (optional) ──────────────────────────────────────────────────

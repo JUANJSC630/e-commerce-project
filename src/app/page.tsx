@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { HeroSection } from "@/components/home/hero-section"
 import { TrustBar } from "@/components/home/trust-bar"
 import { CategoriesSection } from "@/components/home/categories-section"
@@ -9,8 +10,19 @@ import {
   homeFeatures,
   homePageContent,
   routes,
+  pageSeo,
 } from "@/config/store.config"
 import { getFeaturedProducts } from "@/lib/mock-data"
+
+export const metadata: Metadata = {
+  title: pageSeo.home.title,
+  description: pageSeo.home.description,
+  openGraph: {
+    title: pageSeo.home.title,
+    description: pageSeo.home.description,
+    type: "website",
+  },
+}
 
 export default function HomePage() {
   const { hero, categories, promise, products } = homePageContent

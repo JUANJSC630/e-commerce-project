@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Block user-specific and transactional routes
+Disallow: /carrito
+Disallow: /checkout-flow
+Disallow: /cuenta
+Disallow: /api/
+
+# Update this URL to your production domain before deploying
+Sitemap: https://dulceinfancia.com/sitemap.xml

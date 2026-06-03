@@ -231,3 +231,14 @@ export const getRelatedProducts = (product: Product, limit = 4): Product[] =>
     .slice(0, limit)
 
 export const getFeaturedProducts = (limit = 8): Product[] => allMockProducts.slice(0, limit)
+
+export const searchProducts = (query: string): Product[] => {
+  const q = query.toLowerCase().trim()
+  if (!q) return []
+  return allMockProducts.filter(
+    (p) =>
+      p.name.toLowerCase().includes(q) ||
+      p.category?.toLowerCase().includes(q) ||
+      p.description?.toLowerCase().includes(q),
+  )
+}

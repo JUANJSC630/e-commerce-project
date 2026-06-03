@@ -1,0 +1,249 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import type { Product } from "@prisma/client"
+
+interface ProductFormProps {
+  product?: Product
+}
+
+const CATEGORIES = ["niñas", "niños", "bebés", "ofertas", "essentials"]
+
+export function ProductForm({ product }: ProductFormProps) {
+  const router = useRouter()
+  const isEditing = !!product
+
+  const [form, setForm] = useState({
+    name: product?.name ?? "",
+    price: product?.price?.toString() ?? "",
+    originalPrice: product?.originalPrice?.toString() ?? "",
+    image: product?.image ?? "/placeholder.svg",
+    category: product?.category ?? "niñas",
+    description: product?.description ?? "",
+    stock: product?.stock?.toString() ?? "0",
+    sizes: product?.sizes?.join(", ") ?? "",
+    colors: product?.colors?.join(", ") ?? "",
+    isOnSale: product?.isOnSale ?? false,
+    isNew: product?.isNew ?? false,
+    isFeatured: product?.isFeatured ?? false,
+    isPublished: product?.isPublished ?? true,
+  })
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function set(field: string, value: string | boolean) {
+    setForm((f) => ({ ...f, [field]: value }))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    const body = {
+      name: form.name.trim(),
+      price: parseFloat(form.price),
+      originalPrice: form.originalPrice ? parseFloat(form.originalPrice) : null,
+      image: form.image.trim() || "/placeholder.svg",
+      category: form.category,
+      description: form.description.trim() || null,
+      stock: parseInt(form.stock, 10),
+      sizes: form.sizes
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      colors: form.colors
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean),
+      isOnSale: form.isOnSale,
+      isNew: form.isNew,
+      isFeatured: form.isFeatured,
+      isPublished: form.isPublished,
+    }
+
+    const url = isEditing ? `/api/admin/products/${product!.id}` : "/api/admin/products"
+    const method = isEditing ? "PUT" : "POST"
+
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+
+    setLoading(false)
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error ?? "Error al guardar el producto")
+      return
+    }
+
+    router.push("/admin/productos")
+    router.refresh()
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <h2 className="font-semibold text-slate-900">Información básica</h2>
+
+        <Field label="Nombre *">
+          <input
+            required
+            type="text"
+            value={form.name}
+            onChange={(e) => set("name", e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Precio *">
+            <input
+              required
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.price}
+              onChange={(e) => set("price", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Precio original">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.originalPrice}
+              onChange={(e) => set("originalPrice", e.target.value)}
+              className={inputClass}
+              placeholder="Solo si está en oferta"
+            />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Categoría">
+            <select
+              value={form.category}
+              onChange={(e) => set("category", e.target.value)}
+              className={inputClass}
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c} className="capitalize">
+                  {c}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Stock">
+            <input
+              type="number"
+              min="0"
+              value={form.stock}
+              onChange={(e) => set("stock", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+
+        <Field label="URL de imagen">
+          <input
+            type="text"
+            value={form.image}
+            onChange={(e) => set("image", e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Descripción">
+          <textarea
+            rows={3}
+            value={form.description}
+            onChange={(e) => set("description", e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Tallas (separadas por coma)">
+          <input
+            type="text"
+            value={form.sizes}
+            onChange={(e) => set("sizes", e.target.value)}
+            placeholder="XS, S, M, L, XL"
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Colores (separados por coma)">
+          <input
+            type="text"
+            value={form.colors}
+            onChange={(e) => set("colors", e.target.value)}
+            placeholder="Rosa, Azul, Blanco"
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-3">
+        <h2 className="font-semibold text-slate-900">Visibilidad y etiquetas</h2>
+        {(
+          [
+            { field: "isPublished", label: "Publicado", desc: "Visible en la tienda" },
+            { field: "isFeatured", label: "Destacado", desc: "Aparece en la sección de destacados" },
+            { field: "isNew", label: "Nuevo", desc: "Muestra la etiqueta NUEVO" },
+            { field: "isOnSale", label: "En oferta", desc: "Muestra la etiqueta OFERTA" },
+          ] as const
+        ).map(({ field, label, desc }) => (
+          <label key={field} className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={form[field]}
+              onChange={(e) => set(field, e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <div>
+              <span className="text-sm font-medium text-slate-900">{label}</span>
+              <p className="text-xs text-slate-400">{desc}</p>
+            </div>
+          </label>
+        ))}
+      </div>
+
+      {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg">{error}</p>}
+
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {loading ? "Guardando…" : isEditing ? "Guardar cambios" : "Crear producto"}
+        </button>
+        <Link
+          href="/admin/productos"
+          className="px-6 py-2.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+        >
+          Cancelar
+        </Link>
+      </div>
+    </form>
+  )
+}
+
+const inputClass =
+  "w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
+      {children}
+    </div>
+  )
+}

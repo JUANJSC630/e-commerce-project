@@ -15,6 +15,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -23,7 +26,9 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^0.511.0",
     "next": "15.3.3",
+    "next-auth": "^4.24.14",
     "next-themes": "^0.4.6",
+    "pg": "^8.21.0",
     "react": "^19.0.0",
     "react-day-picker": "8.10.1",
     "react-dom": "^19.0.0",
@@ -48,8 +53,10 @@
     "eslint-config-prettier": "^10.1.8",
     "postcss": "^8.5.4",
     "prettier": "^3.8.3",
+    "prisma": "^7.8.0",
     "tailwindcss": "^4.1.8",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.22.4",
     "tw-animate-css": "^1.3.2",
     "typescript": "^5"
   }

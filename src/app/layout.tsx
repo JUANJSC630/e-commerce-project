@@ -14,6 +14,7 @@ import Link from "next/link"
 import { Heart } from "lucide-react"
 import { RadixThemeProvider } from "@/components/theme-provider"
 import { brand, seo, navigation, routes } from "@/config/store.config"
+import { headers } from "next/headers"
 
 /*
  * Font loading — to change fonts:
@@ -40,11 +41,14 @@ export const metadata: Metadata = {
   generator: seo.generator,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headersList = await headers()
+  const pathname = headersList.get("x-pathname") ?? ""
+  const isAdmin = pathname.startsWith("/admin")
   return (
     <html
       lang="es"
@@ -54,55 +58,57 @@ export default function RootLayout({
       <body>
         <RadixThemeProvider>
           <CartProvider>
-            <PromoBanner />
-            <header className="py-4 border-b border-brand-muted/30 bg-brand-surface sticky top-0 z-50">
-              <div className="container mx-auto px-4 flex justify-between items-center">
-                <Link href={routes.home} className="font-display font-bold text-2xl text-brand-ink">
-                  {brand.logoImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={brand.logoImage} alt={brand.name} className="h-8 w-auto" />
-                  ) : (
-                    brand.name
-                  )}
-                </Link>
-
-                {/* Desktop navigation — items driven by navigation[] in store.config.ts */}
-                <nav
-                  className="hidden md:flex space-x-6 items-center"
-                  aria-label="Navegación principal"
-                >
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="text-brand-ink hover:text-brand-base transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </nav>
-
-                <div className="flex items-center space-x-4">
-                  <SearchBar />
-                  <Link
-                    href={routes.favorites}
-                    aria-label="Mis favoritos"
-                    className="hidden md:flex p-2 rounded-md text-brand-ink hover:text-brand-base hover:bg-brand-surface-alt transition-colors"
-                  >
-                    <Heart className="h-5 w-5" aria-hidden="true" />
+            {!isAdmin && <PromoBanner />}
+            {!isAdmin && (
+              <header className="py-4 border-b border-brand-muted/30 bg-brand-surface sticky top-0 z-50">
+                <div className="container mx-auto px-4 flex justify-between items-center">
+                  <Link href={routes.home} className="font-display font-bold text-2xl text-brand-ink">
+                    {brand.logoImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={brand.logoImage} alt={brand.name} className="h-8 w-auto" />
+                    ) : (
+                      brand.name
+                    )}
                   </Link>
-                  <CartCounter />
-                  <MobileNav />
-                </div>
-              </div>
-            </header>
 
-            <MiniCart />
+                  {/* Desktop navigation — items driven by navigation[] in store.config.ts */}
+                  <nav
+                    className="hidden md:flex space-x-6 items-center"
+                    aria-label="Navegación principal"
+                  >
+                    {navigation.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="text-brand-ink hover:text-brand-base transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </nav>
+
+                  <div className="flex items-center space-x-4">
+                    <SearchBar />
+                    <Link
+                      href={routes.favorites}
+                      aria-label="Mis favoritos"
+                      className="hidden md:flex p-2 rounded-md text-brand-ink hover:text-brand-base hover:bg-brand-surface-alt transition-colors"
+                    >
+                      <Heart className="h-5 w-5" aria-hidden="true" />
+                    </Link>
+                    <CartCounter />
+                    <MobileNav />
+                  </div>
+                </div>
+              </header>
+            )}
+
+            {!isAdmin && <MiniCart />}
             <main className="min-h-screen">{children}</main>
 
             <Toaster position="top-right" richColors closeButton />
 
-            <Footer />
+            {!isAdmin && <Footer />}
           </CartProvider>
         </RadixThemeProvider>
       </body>

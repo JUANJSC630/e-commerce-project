@@ -222,11 +222,12 @@ function FilterPanel({
 
 export function CategoryPage({
   products,
-  slug: _slug,
+  slug,
   title,
   description,
   emptyMessage,
 }: CategoryPageProps) {
+  void slug
   const {
     filters,
     filteredProducts,

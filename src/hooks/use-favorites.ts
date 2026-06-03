@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 
 const FAVORITES_KEY = "dulceInfanciaFavorites"
 
@@ -30,4 +30,21 @@ export function useFavorites(productId: string) {
   }, [productId])
 
   return { isFavorite, toggleFavorite }
+}
+
+/** Returns all favorited product IDs, kept in sync across the component lifecycle. */
+export function useAllFavoriteIds() {
+  const [ids, setIds] = useState<string[]>([])
+
+  useEffect(() => {
+    setIds(readIds())
+
+    function onStorage(e: StorageEvent) {
+      if (e.key === FAVORITES_KEY) setIds(readIds())
+    }
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
+  }, [])
+
+  return ids
 }

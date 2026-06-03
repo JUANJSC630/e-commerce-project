@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
-import { navigation } from "@/config/store.config"
+import { Menu, X, Search, Heart } from "lucide-react"
+import { navigation, routes } from "@/config/store.config"
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
@@ -46,6 +46,19 @@ export function MobileNav() {
               </button>
             </div>
 
+            {/* Search shortcut */}
+            <div className="px-4 py-3 border-b border-brand-muted/20">
+              <Link
+                href={routes.search}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-surface-alt text-brand-muted hover:text-brand-base transition-colors"
+                aria-label="Ir al buscador"
+              >
+                <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="text-sm">Buscar productos…</span>
+              </Link>
+            </div>
+
             <ul className="flex flex-col py-4" role="list">
               {navigation.map((item) => (
                 <li key={item.href}>
@@ -58,6 +71,16 @@ export function MobileNav() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href={routes.favorites}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-6 py-3 text-brand-ink hover:bg-brand-surface-alt hover:text-brand-base transition-colors text-base font-medium"
+                >
+                  <Heart className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Mis Favoritos
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>

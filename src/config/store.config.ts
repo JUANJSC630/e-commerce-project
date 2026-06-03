@@ -111,6 +111,7 @@ export const routes = {
   products: "/products",
   essentials: "/essentials",
   search: "/search",
+  favorites: "/favoritos",
   policies: "/politicas",
   categoryBase: "/category", // e.g. /category/babies
 }
@@ -308,6 +309,22 @@ export const pageSeo = {
     title: `Buscar — ${brand.name}`,
     description: `Encuentra prendas para bebés, niñas y niños en ${brand.name}.`,
   },
+  favorites: {
+    title: `Mis Favoritos — ${brand.name}`,
+    description: `Tus prendas guardadas en ${brand.name}. Revísalas y añádelas al carrito cuando quieras.`,
+  },
+}
+
+// ─── Promo Banner ─────────────────────────────────────────────────────────────
+
+/**
+ * Dismissible top-bar promotion. Set enabled: false to hide it entirely.
+ */
+export const promoBanner = {
+  enabled: true,
+  message: `🚚 Envío gratis en compras mayores a $${(150_000).toLocaleString("es-CO")}`,
+  ctaText: "Ver ofertas",
+  ctaHref: "/category/sales",
 }
 
 /**

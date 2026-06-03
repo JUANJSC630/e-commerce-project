@@ -7,8 +7,11 @@ import { Toaster } from "@/components/ui/sonner"
 import { MiniCart } from "@/components/cart/mini-cart"
 import { CartCounter } from "@/components/cart/cart-counter"
 import { MobileNav } from "@/components/layout/mobile-nav"
+import { SearchBar } from "@/components/search/search-bar"
+import { PromoBanner } from "@/components/layout/promo-banner"
 import { Footer } from "@/components/layout/footer"
 import Link from "next/link"
+import { Heart } from "lucide-react"
 import { RadixThemeProvider } from "@/components/theme-provider"
 import { brand, seo, navigation, routes } from "@/config/store.config"
 
@@ -51,6 +54,7 @@ export default function RootLayout({
       <body>
         <RadixThemeProvider>
           <CartProvider>
+            <PromoBanner />
             <header className="py-4 border-b border-brand-muted/30 bg-brand-surface sticky top-0 z-50">
               <div className="container mx-auto px-4 flex justify-between items-center">
                 <Link href={routes.home} className="font-display font-bold text-2xl text-brand-ink">
@@ -79,6 +83,14 @@ export default function RootLayout({
                 </nav>
 
                 <div className="flex items-center space-x-4">
+                  <SearchBar />
+                  <Link
+                    href={routes.favorites}
+                    aria-label="Mis favoritos"
+                    className="hidden md:flex p-2 rounded-md text-brand-ink hover:text-brand-base hover:bg-brand-surface-alt transition-colors"
+                  >
+                    <Heart className="h-5 w-5" aria-hidden="true" />
+                  </Link>
                   <CartCounter />
                   <MobileNav />
                 </div>

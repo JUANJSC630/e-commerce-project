@@ -242,3 +242,6 @@ export const searchProducts = (query: string): Product[] => {
       p.description?.toLowerCase().includes(q),
   )
 }
+
+export const getProductsByIds = (ids: string[]): Product[] =>
+  allMockProducts.filter((p) => ids.includes(p.id))

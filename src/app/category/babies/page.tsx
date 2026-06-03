@@ -20,6 +20,7 @@ export default function BabiesCategoryPage() {
   return (
     <CategoryPage
       products={products}
+      slug={config.slug}
       title={config.title}
       description={config.description}
       emptyMessage={config.emptyMessage}

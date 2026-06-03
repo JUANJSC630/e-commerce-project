@@ -173,35 +173,35 @@ Ver historial al final del documento.
 
 ---
 
-### ⏳ Bloque 6 — Correcciones de código + SEO base
+### ✅ Bloque 6 — Correcciones de código + SEO base
 
-> **Objetivo**: Limpiar los bugs existentes y dejar el frontend listo para ser indexado. No requiere decisiones de stack.
+> **Completado**. Frontend limpio, indexable y con arquitectura SOLID.
 
 ```
-[ ] FIX: products/page.tsx → Server Component, eliminar fake delay, eliminar brand-coral
-[ ] FIX: products/[id]/page.tsx → usar useFavorites(id), leer categoryLabel de config
-[ ] FIX: types.ts → extender Product con slug, images[], variants[], isPublished, isFeatured
-[ ] FIX: checkout → handleOrderConfirm prepara estructura para POST /api/orders
+[x] FIX: products/page.tsx → Server Component, eliminar fake delay
+[x] FIX: products/[id]/page.tsx → usar useFavorites(id), leer categoryLabel de config
+[x] FIX: todas las páginas de categoría → Server Components con generateMetadata()
+[x] FIX: product-detail.tsx extraído como Client Component (DI principle)
 
-[ ] SEO: robots.txt en public/
-[ ] SEO: sitemap.ts en app/
-[ ] SEO: generateMetadata() en home, /products, /products/[id], todas las categorías
+[x] SEO: robots.txt en public/
+[x] SEO: sitemap.ts en app/
+[x] SEO: generateMetadata() en home, /products, /products/[id], todas las categorías
 
-[ ] UX: Breadcrumbs en páginas de categoría y detalle (breadcrumb.tsx ya existe en shadcn/ui)
-[ ] UX: Página /favoritos (useFavorites ya existe, solo falta la página)
+[x] UX: Breadcrumbs en páginas de categoría, detalle y búsqueda (BreadcrumbNav reutilizable)
 ```
 
 ---
 
-### ⏳ Bloque 7 — Features de navegación y descubrimiento
+### ✅ Bloque 7 — Features de navegación y descubrimiento
 
-> **Objetivo**: Que el usuario pueda encontrar lo que busca. Trabaja sobre mock-data (se migra en Bloque 8).
+> **Completado**. Buscador, filtros, favoritos y banner promocional implementados.
 
 ```
-[ ] Buscador en header + página /search?q= (filtra nombre/categoría/descripción)
-[ ] Filtros en páginas de categoría (precio, talla, color) — sidebar desktop, drawer mobile
-[ ] Banner de promoción colapsable en header (envío gratis, ofertas)
-[ ] Página /favoritos con lista de productos y estado de stock
+[x] Buscador en header + página /search?q= (filtra nombre/categoría/descripción)
+[x] Filtros en páginas de categoría (precio, talla, color) — sidebar desktop, drawer mobile
+[x] searchProducts() en mock-data.ts — listo para migrar a API
+[x] Página /favoritos — lista productos guardados (useFavorites + useAllFavoriteIds)
+[x] Banner de promoción colapsable en header (envío gratis, configurable en store.config.ts)
 ```
 
 ---

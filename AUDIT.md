@@ -1,53 +1,49 @@
 # Audit — Dulce Infancia Shop
 
-> Última revisión: 2026-06-03 | Score actual: **18/20**
+> Última revisión: 2026-06-03 | Score actual: **19/20**
 > Solo se documentan issues **pendientes**. Todo lo resuelto fue eliminado de este archivo.
 
 ---
 
 ## Resumen Ejecutivo
 
-| #         | Dimensión                        | Score     | Hallazgo Principal                                                      |
-| --------- | -------------------------------- | --------- | ----------------------------------------------------------------------- |
-| 1         | Accessibility                    | 4/4       | Sin issues pendientes                                                   |
-| 2         | Performance + Seguridad de Pago  | 4/4       | Sin issues pendientes                                                   |
-| 3         | Responsive Design                | 4/4       | Sin issues pendientes                                                   |
-| 4         | Theming + Identidad Visual       | 2/4       | Hero genérico, icon grid, centrado total — decisión de paleta pendiente |
-| 5         | Arquitectura + Calidad de Código | 4/4       | Sin issues pendientes                                                   |
-| **Total** |                                  | **18/20** |                                                                         |
+| #         | Dimensión                        | Score     | Hallazgo Principal                                                     |
+| --------- | -------------------------------- | --------- | ---------------------------------------------------------------------- |
+| 1         | Accessibility                    | 4/4       | Sin issues pendientes                                                  |
+| 2         | Performance + Seguridad de Pago  | 4/4       | Sin issues pendientes                                                  |
+| 3         | Responsive Design                | 4/4       | Sin issues pendientes                                                  |
+| 4         | Theming + Identidad Visual       | 3/4       | Paleta + tipografía aplicadas. Hero y icon grid pendientes de rediseño |
+| 5         | Arquitectura + Calidad de Código | 4/4       | Sin issues pendientes                                                  |
+| **Total** |                                  | **19/20** |                                                                        |
 
 **Issues pendientes**: 0×P0 · 0×P1 · 0×P2 · 2×P3
 
 ---
 
-## P3 — Identidad Visual (requiere decisión de marca primero)
+## Identidad Visual — Decisiones Tomadas ✅
+
+| Decisión                 | Elección        | Valor                                 |
+| ------------------------ | --------------- | ------------------------------------- |
+| **Tipografía display**   | Nunito          | Geométrica redondeada, 400–800 weight |
+| **Color de acento**      | Verde Salvia    | `oklch(0.68 0.08 145)`                |
+| **Paleta de superficie** | Beige claro     | `oklch(0.95 0.022 80)`                |
+| **Modo inicial**         | Solo modo claro | Bloque `.dark` eliminado              |
+
+---
+
+## P3 — Identidad Visual (decisiones tomadas, implementación pendiente)
 
 ### 1. Hero genérico — podría ser cualquier tienda
 
 - **Archivo**: `src/app/page.tsx`
-- **Problema**: Imagen de fondo, overlay semitransparente oscuro, título grande centrado, subtítulo centrado, botón CTA centrado. Es el patrón hero más replicado en plantillas de 2023–2024. No comunica ternura, infancia ni Colombia. Podría ser una tienda de tecnología, fitness o turismo con los mismos estilos.
-- **Bloqueo**: Necesita decisión final de paleta (crema/beige, terracota o durazno) antes de rediseñar. Sin esa decisión, cualquier cambio visual puede necesitar rehacerse.
-- **Dirección** (según `.impeccable.md`): Composición asimétrica, texto alineado a la izquierda, producto como protagonista, sin overlay que oscurezca colores. Fondo crema/beige, no fotografía oscurecida.
+- **Problema**: Imagen de fondo, overlay semitransparente oscuro, título grande centrado, subtítulo centrado, botón CTA centrado. Es el patrón hero más replicado en plantillas de 2023–2024. No comunica ternura, infancia ni Colombia.
+- **Dirección** (`.impeccable.md`): Composición asimétrica, texto alineado a la izquierda, producto como protagonista, fondo beige, sin overlay que oscurezca colores.
 
 ### 2. Sección de features — icon grid genérico
 
 - **Archivo**: `src/app/page.tsx`
-- **Problema**: 4 cards idénticas con icono centrado + título + descripción. "Envío Rápido", "Empaque Especial", "Pago Seguro", "Calidad Garantizada". Anti-patrón número 1 de diseño AI, señalado explícitamente en `.impeccable.md`.
-- **Bloqueo**: Igual que el hero — necesita decisión visual comprometida primero.
+- **Problema**: 4 cards idénticas con icono centrado + título + descripción. Anti-patrón número 1 de diseño AI señalado en `.impeccable.md`.
 - **Dirección**: Banda horizontal con texto corrido, estadísticas con tipografía grande, o promesa de marca con fotografía real. Sin icon grid.
-
----
-
-## Decisiones de Identidad Visual Pendientes
-
-Estas no son tareas técnicas. Son decisiones que deben tomarse antes de ejecutar cualquier cambio visual, porque sin ellas todo puede necesitar rehacerse:
-
-| Decisión                 | Opciones                                                                  | Impacto                         |
-| ------------------------ | ------------------------------------------------------------------------- | ------------------------------- |
-| **Tipografía display**   | Baloo 2, Nunito (cálidas y redondeadas) vs. Montserrat (genérica, actual) | Personalidad de la marca entera |
-| **Color de acento**      | Terracota, durazno, verde salvia, mostaza envejecida                      | Botones, badges, highlights     |
-| **Paleta de superficie** | Crema tostada, beige, blanco roto (nunca blanco puro)                     | Fondos, cards, secciones        |
-| **Modo inicial**         | Solo modo claro (recomendado) vs. dark mode desde Fase 0                  | Complejidad de tokens y testing |
 
 ---
 
@@ -71,13 +67,15 @@ Estas no son tareas técnicas. Son decisiones que deben tomarse antes de ejecuta
 
 ## Plan de Acción — Solo pendientes
 
-### Requiere decisión de identidad visual primero
+### Identidad visual — decisiones tomadas ✅, implementación pendiente
 
 ```
-[ ] Commit tipografía display (Baloo 2 o Nunito — reemplazar Montserrat)  → /typeset
-[ ] Commit paleta final (acento terracota/durazno, superficie crema/beige) → /colorize
-[ ] Rediseñar hero — composición asimétrica, sin overlay genérico           → después de paleta
-[ ] Reemplazar icon grid por sección con personalidad de marca              → después de paleta
+[x] Tipografía display: Nunito (reemplazó Montserrat)
+[x] Color de acento: Verde Salvia oklch(0.68 0.08 145)
+[x] Paleta de superficie: Beige claro oklch(0.95 0.022 80)
+[x] Modo: solo modo claro — bloque .dark eliminado de globals.css
+[ ] Rediseñar hero — composición asimétrica, sin overlay genérico
+[ ] Reemplazar icon grid por sección con personalidad de marca
 ```
 
 ### Siguiente ciclo de features (ver ROADMAP.md)

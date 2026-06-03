@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "../styles/globals.css"
-import { Montserrat, Atkinson_Hyperlegible } from "next/font/google"
+import { Nunito, Atkinson_Hyperlegible } from "next/font/google"
 import { CartProvider } from "@/components/cart/cart-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { MiniCart } from "@/components/cart/mini-cart"
@@ -17,8 +17,9 @@ import { brand, seo, navigation, routes } from "@/config/store.config"
  *  1. Replace the import names and Google Fonts function calls below
  *  2. Update typography.displayFont / typography.bodyFont in src/config/theme.config.ts
  */
-const displayFont = Montserrat({
+const displayFont = Nunito({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-display",
   display: "swap",
 })

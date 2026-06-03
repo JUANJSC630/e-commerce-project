@@ -24,22 +24,22 @@
  */
 export const brandColors = {
   /** Primary accent — buttons, active states, price highlights */
-  base: "oklch(0.75 0.15 75)", // warm amber/gold
+  base: "oklch(0.68 0.08 145)", // verde salvia
 
   /** Foreground on top of base (e.g. button label) */
-  onBase: "oklch(0.15 0.02 60)", // near-black
+  onBase: "oklch(0.98 0 0)", // white
 
-  /** Warm off-white — page background, card fills */
-  surface: "oklch(0.98 0.008 75)", // soft warm white
+  /** Beige claro — page background, card fills */
+  surface: "oklch(0.95 0.022 80)", // beige claro
 
-  /** Slightly deeper warm surface — section backgrounds, input backgrounds */
-  surfaceAlt: "oklch(0.95 0.01 75)", // warm light gray
+  /** Slightly deeper beige — section backgrounds, input backgrounds */
+  surfaceAlt: "oklch(0.91 0.028 78)", // beige medio
 
   /** Muted tones — borders, secondary text, subtle icons */
-  muted: "oklch(0.60 0.015 60)", // warm medium gray
+  muted: "oklch(0.58 0.012 120)", // gris oliva suave
 
   /** Dark ink — headings, body text, footer background */
-  ink: "oklch(0.20 0.015 55)", // near-black charcoal
+  ink: "oklch(0.20 0.012 145)", // verde muy oscuro / casi negro
 }
 
 /**
@@ -54,10 +54,10 @@ export const brandColors = {
  */
 export const typography = {
   /** Font used for headings, logo, display text */
-  displayFont: "Montserrat", // ← replace with your chosen display font
+  displayFont: "Nunito",
 
   /** Font used for body text, labels, inputs */
-  bodyFont: "Inter", // ← replace with your chosen body font
+  bodyFont: "Atkinson Hyperlegible",
 }
 
 /**

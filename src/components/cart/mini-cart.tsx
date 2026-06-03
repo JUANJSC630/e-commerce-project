@@ -15,7 +15,8 @@ import {
   SheetDescription,
   SheetFooter,
   SheetClose,
-} from "@/components/ui/sheet" // Añadir SheetDescription
+} from "@/components/ui/sheet"
+import { routes, locale } from "@/config/store.config"
 
 export function MiniCart() {
   const { items, getSubtotal, getItemCount, isCartOpen, closeCart } = useCart()
@@ -37,40 +38,39 @@ export function MiniCart() {
           </button>
         </div>
         <SheetHeader className="px-6 pt-0 pb-4">
-          <SheetTitle className="text-brand-charcoal text-lg font-semibold">
-            Tu Carrito ({itemCount} {itemCount === 1 ? "item" : "items"})
+          <SheetTitle className="text-brand-ink text-lg font-semibold">
+            Tu Carrito ({itemCount} {itemCount === 1 ? "artículo" : "artículos"})
           </SheetTitle>
-          {/* Añadir SheetDescription para accesibilidad */}
-          <SheetDescription className="text-sm text-brand-taupe">
+          <SheetDescription className="text-sm text-brand-muted">
             Resumen de los productos en tu carrito de compras. Puedes modificar las cantidades o proceder al pago.
           </SheetDescription>
         </SheetHeader>
-        <Separator className="bg-brand-taupe/50" />
+        <Separator className="bg-brand-muted/50" />
         {itemCount > 0 ? (
           <>
             <ScrollArea className="flex-1 px-6 py-2">
-              <div className="divide-y divide-brand-taupe/30">
+              <div className="divide-y divide-brand-muted/30">
                 {items.map((item) => (
                   <CartItem key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} item={item} isMiniCart />
                 ))}
               </div>
             </ScrollArea>
-            <Separator className="bg-brand-taupe/50" />
+            <Separator className="bg-brand-muted/50" />
             <SheetFooter className="px-6 py-4 space-y-4">
-              <div className="flex justify-between text-base font-medium text-brand-charcoal">
+              <div className="flex justify-between text-base font-medium text-brand-ink">
                 <p>Subtotal</p>
-                <p>${subtotal.toLocaleString()}</p>
+                <p>{locale.currencySymbol}{subtotal.toLocaleString(locale.dateLocale)}</p>
               </div>
-              <p className="text-xs text-brand-taupe">Envío y descuentos calculados en el checkout.</p>
+              <p className="text-xs text-brand-muted">Envío y descuentos calculados en el checkout.</p>
               <div className="space-y-2">
                 <SheetClose asChild>
                   <Button asChild variant="default" className="w-full" onClick={closeCart}>
-                    <Link href="/checkout-flow">Finalizar Compra</Link>
+                    <Link href={routes.checkout}>Finalizar Compra</Link>
                   </Button>
                 </SheetClose>
                 <SheetClose asChild>
                   <Button asChild variant="outline" className="w-full" onClick={closeCart}>
-                    <Link href="/carrito">Ver Carrito</Link>
+                    <Link href={routes.cart}>Ver Carrito</Link>
                   </Button>
                 </SheetClose>
               </div>
@@ -78,12 +78,12 @@ export function MiniCart() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-            <ShoppingCart className="w-16 h-16 text-brand-silver mb-4" />
-            <p className="text-lg font-semibold text-brand-charcoal mb-2">Tu carrito está vacío</p>
-            <p className="text-sm text-brand-taupe mb-4">¡Añade algunos productos adorables para empezar!</p>
+            <ShoppingCart className="w-16 h-16 text-brand-muted mb-4" />
+            <p className="text-lg font-semibold text-brand-ink mb-2">Tu carrito está vacío</p>
+            <p className="text-sm text-brand-muted mb-4">¡Añade algunos productos adorables para empezar!</p>
             <SheetClose asChild>
               <Button variant="default" onClick={closeCart}>
-                <Link href="/">Seguir Comprando</Link>
+                <Link href={routes.home}>Seguir Comprando</Link>
               </Button>
             </SheetClose>
           </div>

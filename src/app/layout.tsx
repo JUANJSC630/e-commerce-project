@@ -8,23 +8,29 @@ import { MiniCart } from "@/components/cart/mini-cart";
 import { CartCounter } from "@/components/cart/cart-counter";
 import Link from "next/link";
 import { RadixThemeProvider } from "@/components/theme-provider";
+import { brand, seo, navigation, routes } from "@/config/store.config";
 
-const montserrat = Montserrat({
+/*
+ * Font loading — to change fonts:
+ *  1. Replace the import names and Google Fonts function calls below
+ *  2. Update typography.displayFont / typography.bodyFont in src/config/theme.config.ts
+ */
+const displayFont = Montserrat({
   subsets: ["latin"],
-  variable: "--font-montserrat",
+  variable: "--font-display",
   display: "swap",
 });
 
-const inter = Inter({
+const bodyFont = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-body",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Dulce Infancia Shop",
-  description: "Ropa adorable para los más pequeños.",
-  generator: "v0.dev",
+  title: seo.title,
+  description: seo.description,
+  generator: seo.generator,
 };
 
 export default function RootLayout({
@@ -36,96 +42,78 @@ export default function RootLayout({
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${montserrat.variable} ${inter.variable}`}
+      className={`${displayFont.variable} ${bodyFont.variable}`}
     >
       <body>
         <RadixThemeProvider>
           <CartProvider>
-            <header className="py-4 border-b border-brand-taupe/50 bg-brand-offWhite sticky top-0 z-50 bg-white">
+            <header className="py-4 border-b border-brand-muted/30 bg-brand-surface sticky top-0 z-50">
               <div className="container mx-auto px-4 flex justify-between items-center">
                 <Link
-                  href="/"
-                  className="font-montserrat font-bold text-2xl text-brand-charcoal"
+                  href={routes.home}
+                  className="font-display font-bold text-2xl text-brand-ink"
                 >
-                  Dulce Infancia
+                  {brand.logoImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={brand.logoImage} alt={brand.name} className="h-8 w-auto" />
+                  ) : (
+                    brand.name
+                  )}
                 </Link>
-                <nav className="hidden md:flex space-x-6 items-center">
-                  <Link
-                    href="/category/babies" // Ruta actualizada
-                    className="text-brand-charcoal hover:text-brand-goldenYellow transition-colors"
-                  >
-                    Bebés {/* Texto actualizado */}
-                  </Link>
-                  <Link
-                    href="/category/girls" // Ruta actualizada
-                    className="text-brand-charcoal hover:text-brand-goldenYellow transition-colors"
-                  >
-                    Niñas {/* Texto actualizado */}
-                  </Link>
-                  <Link
-                    href="/category/boys" // Ruta actualizada
-                    className="text-brand-charcoal hover:text-brand-goldenYellow transition-colors"
-                  >
-                    Niños {/* Texto actualizado */}
-                  </Link>
-                  <Link
-                    href="/category/sales" // Ruta actualizada
-                    className="text-brand-charcoal hover:text-brand-goldenYellow transition-colors"
-                  >
-                    Ofertas {/* Texto actualizado */}
-                  </Link>
-                  <Link
-                    href="/essentials" // Nueva ruta
-                    className="text-brand-charcoal hover:text-brand-goldenYellow transition-colors"
-                  >
-                    Esenciales {/* Nuevo enlace */}
-                  </Link>
+
+                {/* Desktop navigation — items driven by navigation[] in store.config.ts */}
+                <nav className="hidden md:flex space-x-6 items-center" aria-label="Navegación principal">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="text-brand-ink hover:text-brand-base transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
                 </nav>
+
                 <div className="flex items-center space-x-4">
                   <CartCounter />
                 </div>
               </div>
             </header>
+
             <MiniCart />
             <main className="min-h-screen">{children}</main>
+
             <Toaster
               position="top-right"
               reverseOrder={false}
               gutter={8}
-              containerClassName=""
-              containerStyle={{}}
               toastOptions={{
-                // Define default options
-                className: "",
                 duration: 5000,
                 removeDelay: 1000,
                 style: {
-                  background: "#fff",
-                  color: "#363636",
+                  background: "var(--brand-surface)",
+                  color: "var(--brand-ink)",
                 },
-
-                // Default options for specific types
                 success: {
                   duration: 3000,
                   iconTheme: {
-                    primary: "green",
-                    secondary: "black",
+                    primary: "var(--brand-base)",
+                    secondary: "var(--brand-on-base)",
                   },
                 },
               }}
             />
-            <footer className="py-10 bg-brand-charcoal text-brand-offWhite border-t border-brand-taupe/50">
+
+            <footer className="py-10 bg-brand-ink text-brand-surface border-t border-brand-muted/30">
               <div className="container mx-auto px-4 text-center">
                 <p>
-                  &copy; {new Date().getFullYear()} Dulce Infancia. Todos los
-                  derechos reservados.
+                  &copy; {new Date().getFullYear()} {brand.copyright}
                 </p>
-                <p className="text-sm mt-2 text-brand-silver">
-                  Diseñado con cariño para los más pequeños.
+                <p className="text-sm mt-2 text-brand-surface/70">
+                  {brand.footerSubtext}
                 </p>
               </div>
             </footer>
-            {/* ThemePanel is now integrated within RadixThemeProvider when in dev mode */}
           </CartProvider>
         </RadixThemeProvider>
       </body>

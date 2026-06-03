@@ -1,15 +1,17 @@
-// app/category/girls/page.tsx
 "use client"
 
 import { CategoryPage } from "@/components/category/category-page"
+import { categories } from "@/config/store.config"
 
-// Comentario: Página de categoría para "Niñas".
+const config = categories.find((c) => c.slug === "girls")!
+
 export default function GirlsCategoryPage() {
   return (
-    <CategoryPage 
-      category="Girls" // Internal category name used for data fetching
-      title="Moda Niñas" 
-      description="Atuendos elegantes y divertidos para cada pequeña princesa."
+    <CategoryPage
+      category={config.key}
+      title={config.title}
+      description={config.description}
+      emptyMessage={config.emptyMessage}
     />
   )
 }

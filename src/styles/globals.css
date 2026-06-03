@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
-
 body {
-  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
+  font-family: var(--font-display), var(--font-body), Arial, sans-serif;
 }
 
 @layer utilities {
@@ -11,8 +10,34 @@ body {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   BRAND TOKENS — These values come from src/config/theme.config.ts
+   To retheme: update theme.config.ts and mirror the oklch values here.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Brand accent (buttons, highlights, active states) */
+  --brand-base:        oklch(0.75 0.15 75);
+  /* Text on top of brand-base backgrounds */
+  --brand-on-base:     oklch(0.15 0.02 60);
+  /* Warm page background */
+  --brand-surface:     oklch(0.98 0.008 75);
+  /* Slightly deeper background for sections */
+  --brand-surface-alt: oklch(0.95 0.01 75);
+  /* Muted: borders, secondary text, subtle icons */
+  --brand-muted:       oklch(0.60 0.015 60);
+  /* Dark ink: headings, body text, footer background */
+  --brand-ink:         oklch(0.20 0.015 55);
+}
 
 @theme inline {
+  /* Expose brand tokens to Tailwind utility classes */
+  --color-brand-base:        var(--brand-base);
+  --color-brand-on-base:     var(--brand-on-base);
+  --color-brand-surface:     var(--brand-surface);
+  --color-brand-surface-alt: var(--brand-surface-alt);
+  --color-brand-muted:       var(--brand-muted);
+  --color-brand-ink:         var(--brand-ink);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

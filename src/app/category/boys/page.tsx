@@ -1,15 +1,17 @@
-// app/category/boys/page.tsx
 "use client"
 
 import { CategoryPage } from "@/components/category/category-page"
+import { categories } from "@/config/store.config"
 
-// Comentario: Página de categoría para "Niños".
+const config = categories.find((c) => c.slug === "boys")!
+
 export default function BoysCategoryPage() {
   return (
-    <CategoryPage 
-      category="Boys" // Internal category name used for data fetching
-      title="Colección Niños" 
-      description="Ropa genial y cómoda para pequeños aventureros activos."
+    <CategoryPage
+      category={config.key}
+      title={config.title}
+      description={config.description}
+      emptyMessage={config.emptyMessage}
     />
   )
 }

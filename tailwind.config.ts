@@ -13,12 +13,26 @@ const config: Config = {
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
+        /*
+         * Brand tokens — driven by CSS variables in globals.css.
+         * Change values in src/config/theme.config.ts, then mirror
+         * the oklch values in globals.css :root { --brand-* }.
+         * Never use hex values here; use the CSS variable references below.
+         */
         brand: {
-          charcoal: '#2F2F2F',
-          taupe: '#8B8589',  // Added taupe since it's also used in the essentials page
-          silver: '#E5E7EB',   // Color muy claro (casi blanco)
-          offWhite: '#FAF9F8', // Fondo blanco con un leve tinte cálido
-          goldenYellow: '#F1C40F', // Color de acento
+          base:       'var(--brand-base)',
+          'on-base':  'var(--brand-on-base)',
+          surface:    'var(--brand-surface)',
+          'surface-alt': 'var(--brand-surface-alt)',
+          muted:      'var(--brand-muted)',
+          ink:        'var(--brand-ink)',
+          /* Legacy aliases — kept for backward compat while migrating components */
+          charcoal:   'var(--brand-ink)',
+          offWhite:   'var(--brand-surface)',
+          silver:     'var(--brand-surface-alt)',
+          taupe:      'var(--brand-muted)',
+          goldenYellow: 'var(--brand-base)',
+          accent:     'var(--brand-base)',
         },
   			card: {
   				DEFAULT: 'hsl(var(--card))',
@@ -97,7 +111,11 @@ const config: Config = {
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		},
       fontFamily: {
-        montserrat: ['Montserrat', 'sans-serif']
+        /* These reference CSS variables set by next/font in layout.tsx */
+        display: ['var(--font-display)', 'sans-serif'],
+        body:    ['var(--font-body)', 'sans-serif'],
+        /* Legacy alias — components using font-montserrat still work */
+        montserrat: ['var(--font-display)', 'sans-serif'],
       }
   	}
   },

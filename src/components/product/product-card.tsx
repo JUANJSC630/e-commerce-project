@@ -25,16 +25,16 @@ interface ProductCardProps {
     discountPercentage?: number
     category?: string
   }
+  /** Only set true for above-the-fold cards (first 3-4 visible on load) */
+  priority?: boolean
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, priority = false }: ProductCardProps) {
   const [isImageLoaded, setIsImageLoaded] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
 
   const handleToggleFavorite = () => {
     setIsFavorite(!isFavorite)
-    console.log("Toggle wishlist para:", product.id)
   }
 
   const discountPercentage = product.originalPrice
@@ -44,16 +44,14 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div
       className="group relative bg-card text-card-foreground rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-brand-offWhite" style={{ position: 'relative' }}>
-        {!isImageLoaded && <div className="absolute inset-0 bg-brand-silver animate-pulse" />}
+      <div className="relative aspect-[3/4] overflow-hidden bg-brand-surface" style={{ position: 'relative' }}>
+        {!isImageLoaded && <div className="absolute inset-0 bg-brand-surface-alt animate-pulse" />}
         <Image
           src={product.image || "/placeholder.svg"}
           alt={product.name}
           fill
-          priority={true}
+          priority={priority}
           className={cn(
             "object-cover transition-all duration-500 group-hover:scale-105",
             isImageLoaded ? "opacity-100" : "opacity-0",
@@ -67,10 +65,12 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <button
           onClick={handleToggleFavorite}
+          aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+          aria-pressed={isFavorite}
           className={cn(
             "absolute top-3 right-3 p-2 rounded-full transition-all duration-200",
             "bg-background/80 backdrop-blur-sm hover:bg-background text-foreground",
-            "opacity-0 group-hover:opacity-100",
+            "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
             isFavorite && "opacity-100",
           )}
         >
@@ -78,11 +78,12 @@ export function ProductCard({ product }: ProductCardProps) {
         </button>
         <div
           className={cn(
-            "absolute inset-0 bg-brand-charcoal/20 flex items-center justify-center transition-opacity duration-300",
-            isHovered ? "opacity-100" : "opacity-0 pointer-events-none",
+            "absolute inset-0 bg-brand-ink/20 flex items-center justify-center",
+            "opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto",
+            "transition-opacity duration-300",
           )}
         >
-          <Button variant="secondary" size="sm" onClick={() => console.log("Quick view:", product.id)}>
+          <Button variant="secondary" size="sm">
             <Eye className="w-4 h-4 mr-2" /> Vista rápida
           </Button>
         </div>
@@ -91,7 +92,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {product.category && (
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">{product.category}</p>
         )}
-        <h3 className="font-montserrat font-semibold text-foreground line-clamp-2 leading-tight h-10">
+        <h3 className="font-display font-semibold text-foreground line-clamp-2 leading-tight h-10">
           {product.name}
         </h3>
         {product.rating !== undefined && product.reviewCount !== undefined && (
@@ -103,8 +104,8 @@ export function ProductCard({ product }: ProductCardProps) {
                   className={cn(
                     "w-3 h-3",
                     i < Math.floor(product.rating!)
-                      ? "text-brand-goldenYellow fill-brand-goldenYellow"
-                      : "text-brand-taupe",
+                      ? "text-brand-base fill-brand-base"
+                      : "text-brand-muted",
                   )}
                 />
               ))}
@@ -127,7 +128,7 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.sizes.slice(0, 3).map((size) => (
                 <span
                   key={size}
-                  className="text-xs px-1.5 py-0.5 bg-brand-offWhite rounded text-foreground border border-brand-taupe/50"
+                  className="text-xs px-1.5 py-0.5 bg-brand-surface rounded text-foreground border border-brand-muted/50"
                 >
                   {size}
                 </span>

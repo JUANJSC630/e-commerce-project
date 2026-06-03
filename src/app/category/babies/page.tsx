@@ -1,15 +1,17 @@
-// app/category/babies/page.tsx
 "use client"
 
 import { CategoryPage } from "@/components/category/category-page"
+import { categories } from "@/config/store.config"
 
-// Comentario: Esta es la página de categoría para "Bebés".
+const config = categories.find((c) => c.slug === "babies")!
+
 export default function BabiesCategoryPage() {
   return (
-    <CategoryPage 
-      category="Babies" // Internal category name used for data fetching
-      title="Colección Bebés" 
-      description="Ropa adorable y cómoda para tus pequeños (0-24 meses)."
+    <CategoryPage
+      category={config.key}
+      title={config.title}
+      description={config.description}
+      emptyMessage={config.emptyMessage}
     />
   )
 }

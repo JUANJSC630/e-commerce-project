@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { CheckoutProgress } from "@/components/checkout/checkout-progress"
 import { CartSummary } from "@/components/checkout/cart-summary"
@@ -10,6 +10,7 @@ import { PaymentForm } from "@/components/checkout/payment-form"
 import { OrderConfirmation } from "@/components/checkout/order-confirmation"
 import toast from "react-hot-toast"
 import { useCart } from "@/hooks/use-cart"
+import { locale, routes, brand, shipping as shippingConfig } from "@/config/store.config"
 
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
 
@@ -105,6 +106,7 @@ const validatePaymentData = (data: {
 
 export default function CheckoutPage() {
 	const { items, updateItemQuantity, removeItem, clearCart } = useCart()
+	const router = useRouter()
 	const [currentStep, setCurrentStep] = useState(1)
 	const [shippingData, setShippingData] = useState({
 		firstName: "",
@@ -115,7 +117,7 @@ export default function CheckoutPage() {
 		city: "",
 		state: "",
 		zipCode: "",
-		country: "Colombia",
+		country: locale.defaultCountry,
 	})
 	const [paymentData, setPaymentData] = useState<{
 		method: "card" | "mercadopago" | "bank"
@@ -185,13 +187,10 @@ export default function CheckoutPage() {
 		
 		if (shippingValidation.isValid && paymentValidation.isValid) {
 			toast.success("¡Pedido confirmado! Recibirás un email con los detalles.");
-			
-			// Here you would typically submit the order to your backend
+
 			setTimeout(() => {
 				clearCart();
-				// Redirect to home page after order completion
-				// If using next/router, import and use router. Otherwise, fallback to window.location:
-				window.location.href = '/';
+				router.push(routes.home);
 			}, 2000);
 		} else {
 			toast.error("Por favor revisa los datos de envío y pago antes de confirmar.");
@@ -209,11 +208,11 @@ export default function CheckoutPage() {
 		<div className="min-h-screen bg-background text-foreground">
 			<div className="container mx-auto px-4 py-8">
 				<div className="text-center mb-8">
-					<h1 className="font-montserrat font-bold text-3xl mb-2">
+					<h1 className="font-display font-bold text-3xl mb-2">
 						Finalizar Compra
 					</h1>
 					<p className="text-muted-foreground">
-						Completa tu pedido en Dulce Infancia.
+						Completa tu pedido en {brand.name}.
 					</p>
 				</div>
 				<CheckoutProgress currentStep={currentStep} steps={steps} />
@@ -221,7 +220,7 @@ export default function CheckoutPage() {
 					<div className="lg:col-span-2">
 						{currentStep === 1 && (
 							<div>
-								<h2 className="font-montserrat font-semibold text-xl mb-6">
+								<h2 className="font-display font-semibold text-xl mb-6">
 									Tu carrito de compras
 								</h2>
 								{cartItemsForSummary.length > 0 ? (
@@ -243,7 +242,7 @@ export default function CheckoutPage() {
 										</div>
 									</>
 								) : (
-									<div className="text-center py-12 bg-brand-offWhite/50 rounded-xl">
+									<div className="text-center py-12 bg-brand-surface/50 rounded-xl">
 										<svg 
 											xmlns="http://www.w3.org/2000/svg" 
 											width="64" 
@@ -262,7 +261,7 @@ export default function CheckoutPage() {
 										</svg>
 										<h3 className="text-xl font-semibold mb-2">Tu carrito está vacío</h3>
 										<p className="text-muted-foreground mb-6">Agrega productos para continuar con tu compra</p>
-										<Button onClick={() => window.location.href = '/'} className="px-8">
+										<Button onClick={() => router.push(routes.home)} className="px-8">
 											Volver a la tienda
 										</Button>
 									</div>

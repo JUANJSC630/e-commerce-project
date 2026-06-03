@@ -25,8 +25,8 @@ export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) 
                 <div
                   className={cn(
                     "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-200",
-                    isCompleted && "bg-brand-goldenYellow border-brand-goldenYellow text-brand-charcoal",
-                    isCurrent && "border-brand-goldenYellow text-brand-goldenYellow bg-brand-goldenYellow/10",
+                    isCompleted && "bg-brand-base border-brand-base text-brand-ink",
+                    isCurrent && "border-brand-base text-brand-base bg-brand-base/10",
                     !isCompleted && !isCurrent && "border-border text-muted-foreground",
                   )}
                   role="status"
@@ -58,7 +58,7 @@ export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) 
                 <div
                   className={cn(
                     "flex-1 h-0.5 mx-4 transition-all duration-200",
-                    isCompleted ? "bg-brand-goldenYellow" : "bg-border",
+                    isCompleted ? "bg-brand-base" : "bg-border",
                   )}
                   role="presentation"
                   aria-hidden="true"

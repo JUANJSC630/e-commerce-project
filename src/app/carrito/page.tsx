@@ -16,9 +16,9 @@ export default function CartPage() {
   if (itemCount === 0) {
     return (
       <div className="container mx-auto px-4 py-12 text-center min-h-[60vh] flex flex-col items-center justify-center">
-        <ShoppingBag className="w-24 h-24 text-brand-silver mb-6" />
-        <h1 className="text-3xl font-montserrat font-bold text-brand-charcoal mb-4">Tu carrito está vacío</h1>
-        <p className="text-brand-taupe mb-8 max-w-md">
+        <ShoppingBag className="w-24 h-24 text-brand-surface-alt mb-6" />
+        <h1 className="text-3xl font-display font-bold text-brand-ink mb-4">Tu carrito está vacío</h1>
+        <p className="text-brand-muted mb-8 max-w-md">
           Parece que aún no has añadido ninguna prenda adorable. ¡Explora nuestras colecciones y encuentra algo
           especial!
         </p>
@@ -40,13 +40,13 @@ export default function CartPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8">
-        <h1 className="text-3xl font-montserrat font-bold text-brand-charcoal">
+        <h1 className="text-3xl font-display font-bold text-brand-ink">
           Tu Carrito ({itemCount} {itemCount === 1 ? "artículo" : "artículos"})
         </h1>
       </header>
 
       <div className="grid lg:grid-cols-3 gap-8 items-start">
-        <section className="lg:col-span-2 bg-card p-6 rounded-2xl shadow-sm border border-brand-taupe/30">
+        <section className="lg:col-span-2 bg-card p-6 rounded-2xl shadow-sm border border-brand-muted/30">
           <div className="space-y-1">
             {" "}
             {/* Divide y vencerás para los bordes */}
@@ -86,14 +86,14 @@ export default function CartPage() {
 
       {/* Sección "También te puede interesar" (Placeholder) */}
       <section className="mt-16">
-        <h2 className="text-2xl font-montserrat font-semibold text-brand-charcoal mb-6">También te podría interesar</h2>
+        <h2 className="text-2xl font-display font-semibold text-brand-ink mb-6">También te podría interesar</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {/* Placeholder para productos relacionados */}
           {[1, 2, 3, 4].map((p) => (
-            <div key={p} className="bg-card p-4 rounded-lg shadow border border-brand-taupe/30">
-              <div className="aspect-square bg-brand-silver/50 rounded mb-2 animate-pulse"></div>
-              <div className="h-4 bg-brand-silver/50 rounded w-3/4 mb-1 animate-pulse"></div>
-              <div className="h-4 bg-brand-silver/50 rounded w-1/2 animate-pulse"></div>
+            <div key={p} className="bg-card p-4 rounded-lg shadow border border-brand-muted/30">
+              <div className="aspect-square bg-brand-surface-alt/50 rounded mb-2 animate-pulse"></div>
+              <div className="h-4 bg-brand-surface-alt/50 rounded w-3/4 mb-1 animate-pulse"></div>
+              <div className="h-4 bg-brand-surface-alt/50 rounded w-1/2 animate-pulse"></div>
             </div>
           ))}
         </div>

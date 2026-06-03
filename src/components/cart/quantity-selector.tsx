@@ -55,17 +55,17 @@ export function QuantitySelector({ quantity, onDecrease, onIncrease, min = 1, ma
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-brand-charcoal hover:bg-brand-taupe/20"
+        className="h-8 w-8 text-brand-ink hover:bg-brand-muted/20"
         onClick={onDecrease}
         disabled={validatedQuantity <= min}
       >
         <Minus className="h-4 w-4" />
       </Button>
-      <span className="w-10 text-center text-sm font-medium text-brand-charcoal">{validatedQuantity}</span>
+      <span className="w-10 text-center text-sm font-medium text-brand-ink">{validatedQuantity}</span>
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-brand-charcoal hover:bg-brand-taupe/20"
+        className="h-8 w-8 text-brand-ink hover:bg-brand-muted/20"
         onClick={onIncrease}
         disabled={max !== undefined && validatedQuantity >= max}
       >

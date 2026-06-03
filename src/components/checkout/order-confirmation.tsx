@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Check, MapPin, CreditCard, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { shipping, locale, routes } from "@/config/store.config"
 
 interface OrderConfirmationProps {
   orderData: {
@@ -97,8 +98,9 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
   }
 
   const subtotal = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = subtotal > 50000 ? 0 : 5000
-  const total = subtotal + shipping
+  const shippingCost = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
+  const total = subtotal + shippingCost
+  const formatPrice = (n: number) => `${locale.currencySymbol}${n.toLocaleString(locale.dateLocale)}`
 
   const sections: SectionData[] = [
     {
@@ -106,27 +108,27 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
       title: "Información de envío",
       data: orderData.shipping,
       fields: ["firstName", "lastName", "address", "city", "phone", "email"],
-      bgColor: "bg-brand-silver/30", // Fondo Silver claro
+      bgColor: "bg-brand-surface-alt/30", // Fondo Silver claro
     },
     {
       icon: CreditCard,
       title: "Método de pago",
       data: orderData.payment,
       fields: ["method", "cardNumber"],
-      bgColor: "bg-brand-silver/30",
+      bgColor: "bg-brand-surface-alt/30",
     },
     {
       icon: Truck,
       title: "Información de entrega",
-      data: { estimated: "3-5 días hábiles", cost: shipping === 0 ? "Gratis" : `$${shipping.toLocaleString()}` },
+      data: { estimated: shipping.estimatedDays, cost: shippingCost === 0 ? "Gratis" : formatPrice(shippingCost) },
       fields: ["estimated", "cost"],
-      bgColor: "bg-brand-silver/30",
+      bgColor: "bg-brand-surface-alt/30",
     },
   ];
 
   return (
     <div className="max-w-2xl text-foreground">
-      <h2 className="font-montserrat font-semibold text-xl mb-6">Confirmar pedido</h2>
+      <h2 className="font-display font-semibold text-xl mb-6">Confirmar pedido</h2>
       
       {!validationState.isValid && (
         <div className="bg-destructive/10 border border-destructive text-destructive rounded-lg p-4 mb-6">
@@ -139,7 +141,7 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
         {sections.map((section) => (
           <div key={section.title} className={`${section.bgColor} rounded-xl p-4`}>
             <div className="flex items-center gap-3 mb-3">
-              <section.icon className="w-5 h-5 text-brand-goldenYellow" />
+              <section.icon className="w-5 h-5 text-brand-base" />
               <h3 className="font-semibold">{section.title}</h3>
             </div>
             <div className="text-sm space-y-1">
@@ -180,26 +182,26 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
           <div className="border-t border-border pt-3 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span>${subtotal.toLocaleString()}</span>
+              <span>{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Envío</span>
-              <span>{shipping === 0 ? "Gratis" : `$${shipping.toLocaleString()}`}</span>
+              <span>{shippingCost === 0 ? "Gratis" : formatPrice(shippingCost)}</span>
             </div>
             <div className="flex justify-between text-lg font-semibold pt-2 border-t border-border">
               <span>Total</span>
-              <span className="text-brand-goldenYellow">${total.toLocaleString()}</span>
+              <span className="text-brand-base">{formatPrice(total)}</span>
             </div>
           </div>
         </div>
-        <div className="text-xs text-muted-foreground bg-brand-offWhite rounded-xl p-4 border border-border">
+        <div className="text-xs text-muted-foreground bg-brand-surface rounded-xl p-4 border border-border">
           <p>
             Al confirmar tu pedido, aceptas nuestros{" "}
-            <a href="#" className="text-brand-goldenYellow hover:underline">
+            <a href={routes.policies} className="text-brand-base hover:underline">
               términos y condiciones
             </a>{" "}
             y{" "}
-            <a href="#" className="text-brand-goldenYellow hover:underline">
+            <a href={routes.policies} className="text-brand-base hover:underline">
               política de privacidad
             </a>
             .

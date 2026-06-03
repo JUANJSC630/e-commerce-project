@@ -12,12 +12,12 @@ export function CartCounter() {
     <Button
       variant="ghost"
       size="icon"
-      className="relative text-brand-charcoal hover:bg-brand-taupe/20"
+      className="relative text-brand-ink hover:bg-brand-muted/20"
       onClick={toggleCart}
     >
       <ShoppingCart className="h-6 w-6" />
       {itemCount > 0 && (
-        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-goldenYellow text-xs font-bold text-brand-charcoal">
+        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-base text-xs font-bold text-brand-ink">
           {itemCount}
         </span>
       )}

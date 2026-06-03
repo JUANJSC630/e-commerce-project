@@ -7,17 +7,18 @@ import type { Product } from "@/lib/types"
 interface SalesPageProps {
   title: string
   description: string
+  emptyMessage?: string
 }
 
-export function SalesPageComponent({ title, description }: SalesPageProps) {
+export function SalesPageComponent({ title, description, emptyMessage }: SalesPageProps) {
   // Fetch products that are on sale
   const saleProducts: Product[] = getSaleProducts()
 
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8 text-center">
-        <h1 className="text-4xl font-montserrat font-bold text-brand-charcoal">{title}</h1>
-        <p className="text-lg text-brand-taupe mt-2">{description}</p>
+        <h1 className="text-4xl font-display font-bold text-brand-ink">{title}</h1>
+        <p className="text-lg text-brand-muted mt-2">{description}</p>
       </header>
 
       {saleProducts.length > 0 ? (
@@ -27,7 +28,7 @@ export function SalesPageComponent({ title, description }: SalesPageProps) {
           ))}
         </div>
       ) : (
-        <p className="text-center text-brand-taupe">No hay artículos en oferta en este momento. ¡Vuelve más tarde!</p>
+        <p className="text-center text-brand-muted">{emptyMessage ?? "No hay artículos en oferta en este momento. ¡Vuelve más tarde!"}</p>
       )}
     </div>
   )

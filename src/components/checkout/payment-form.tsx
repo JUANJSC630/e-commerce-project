@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { paymentMethods as configPaymentMethods } from "@/config/store.config"
+import type { LucideIcon } from "lucide-react"
+
+const methodIcons: Record<string, LucideIcon> = {
+  card: CreditCard,
+  mercadopago: Smartphone,
+  bank: Building,
+}
 
 interface PaymentData {
   method: "card" | "mercadopago" | "bank"
@@ -38,26 +46,10 @@ export function PaymentForm({ data, errors: externalErrors, onUpdate, onNext, on
     setErrors(externalErrors || {});
   }, [externalErrors])
 
-  const paymentMethods = [
-    {
-      id: "card" as const,
-      name: "Tarjeta de Crédito/Débito",
-      icon: CreditCard,
-      description: "Visa, Mastercard, American Express",
-    },
-    {
-      id: "mercadopago" as const,
-      name: "MercadoPago",
-      icon: Smartphone,
-      description: "Paga con tu cuenta de MercadoPago",
-    },
-    {
-      id: "bank" as const,
-      name: "Transferencia Bancaria",
-      icon: Building,
-      description: "Pago por transferencia bancaria",
-    },
-  ]
+  const paymentMethods = configPaymentMethods.map((m) => ({
+    ...m,
+    icon: methodIcons[m.id] ?? CreditCard,
+  }))
 
   const handleMethodChange = (method: PaymentData["method"]) => {
     setFormData((prev) => ({ ...prev, method }))
@@ -256,7 +248,7 @@ export function PaymentForm({ data, errors: externalErrors, onUpdate, onNext, on
 
   return (
     <div className="max-w-2xl text-foreground">
-      <h2 className="font-montserrat font-semibold text-xl mb-6">Método de pago</h2>
+      <h2 className="font-display font-semibold text-xl mb-6">Método de pago</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-3">
           <Label>Selecciona tu método de pago</Label>
@@ -268,17 +260,17 @@ export function PaymentForm({ data, errors: externalErrors, onUpdate, onNext, on
                 className={cn(
                   "border rounded-xl p-4 cursor-pointer transition-all",
                   formData.method === method.id
-                    ? "border-brand-goldenYellow bg-brand-goldenYellow/10"
+                    ? "border-brand-base bg-brand-base/10"
                     : "border-border hover:border-muted-foreground",
                 )}
-                onClick={() => handleMethodChange(method.id)}
+                onClick={() => handleMethodChange(method.id as PaymentData["method"])}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
                       "w-5 h-5 rounded-full border-2 transition-all",
                       formData.method === method.id
-                        ? "border-brand-goldenYellow bg-brand-goldenYellow"
+                        ? "border-brand-base bg-brand-base"
                         : "border-muted-foreground",
                     )}
                   >
@@ -297,7 +289,7 @@ export function PaymentForm({ data, errors: externalErrors, onUpdate, onNext, on
           })}
         </div>
         {formData.method === "card" && (
-          <div className="space-y-4 p-4 bg-brand-silver/30 rounded-xl">
+          <div className="space-y-4 p-4 bg-brand-surface-alt/30 rounded-xl">
             {" "}
             {/* Fondo Silver claro */}
             <div>
@@ -366,12 +358,12 @@ export function PaymentForm({ data, errors: externalErrors, onUpdate, onNext, on
           </div>
         )}
         {formData.method === "mercadopago" && (
-          <div className="p-4 bg-brand-goldenYellow/10 text-foreground rounded-xl">
+          <div className="p-4 bg-brand-base/10 text-foreground rounded-xl">
             <p className="text-sm">Serás redirigido a MercadoPago para completar tu pago de forma segura.</p>
           </div>
         )}
         {formData.method === "bank" && (
-          <div className="p-4 bg-brand-taupe/20 text-foreground rounded-xl">
+          <div className="p-4 bg-brand-muted/20 text-foreground rounded-xl">
             <p className="text-sm mb-2">Recibirás los datos bancarios por email.</p>
             <p className="text-xs text-muted-foreground">Tu pedido se procesará una vez confirmemos el pago.</p>
           </div>

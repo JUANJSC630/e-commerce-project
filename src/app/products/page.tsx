@@ -40,10 +40,10 @@ export default function AllProductsPage() {
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8 text-center">
         {/* Texto de UI en Español */}
-        <h1 className="text-4xl font-montserrat font-bold text-brand-charcoal">
+        <h1 className="text-4xl font-display font-bold text-brand-ink">
           Todos Nuestros Productos
         </h1>
-        <p className="text-lg text-brand-taupe mt-2">
+        <p className="text-lg text-brand-muted mt-2">
           Explora el catálogo completo de prendas adorables para bebés, niñas y
           niños.
         </p>
@@ -53,7 +53,7 @@ export default function AllProductsPage() {
       {isLoading && (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-coral"></div>
-          <span className="ml-3 text-brand-taupe">Cargando productos...</span>
+          <span className="ml-3 text-brand-muted">Cargando productos...</span>
         </div>
       )}
 
@@ -85,7 +85,7 @@ export default function AllProductsPage() {
             </div>
           ) : (
             // Texto de UI en Español
-            <p className="text-center text-brand-taupe">
+            <p className="text-center text-brand-muted">
               No hay productos disponibles en este momento. Por favor, ¡vuelve
               pronto!
             </p>

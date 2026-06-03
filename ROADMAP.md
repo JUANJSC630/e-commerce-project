@@ -7,161 +7,73 @@
 
 ## Estado General
 
-El **frontend está completo y sólido**. Flujo home → categoría → detalle → carrito → checkout funciona, identidad visual aplicada, arquitectura SOLID. Sin embargo, toda la tienda corre sobre datos hardcodeados en un archivo TypeScript. Para agregar un producto hoy hay que editar código, hacer commit y deployar. Eso cambia completamente a partir del Bloque 6.
+El **frontend y el panel de administración están construidos**. Flujo completo: home → categoría → detalle → carrito → checkout + dashboard admin multi-rol con CRUD de productos, pedidos, usuarios, roles y configuración. La tienda aún corre sobre datos mock en el frontend, pero el backend (Prisma + PostgreSQL) ya tiene los modelos reales. El siguiente paso es conectar el storefront al backend real.
 
 ---
 
-## Decisiones Arquitectónicas Pendientes
+## Decisiones Arquitectónicas — TOMADAS ✅
 
-Antes de arrancar el Bloque 6 hay que tomar estas decisiones. Sin ellas, cualquier trabajo de backend puede necesitar rehacerse.
-
-### Decisión 1 — Stack de gestión de contenido y productos
-
-| Opción                                   | Admin incluido                  | Imágenes                        | Inventario            | Para quién                                        |
-| ---------------------------------------- | ------------------------------- | ------------------------------- | --------------------- | ------------------------------------------------- |
-| **Sanity CMS + Supabase** ⭐             | Sanity Studio (visual, no-code) | CDN Sanity con transformaciones | Supabase (PostgreSQL) | Mejor balance velocidad/control                   |
-| **Medusa.js**                            | Admin completo de e-commerce    | Cualquier proveedor             | Nativo por variante   | Si se necesita e-commerce completo out-of-the-box |
-| **Custom (Next.js + Prisma + Supabase)** | Construir desde cero            | Supabase Storage / Cloudinary   | Personalizado         | Máximo control, máximo tiempo                     |
-
-**Recomendación**: Sanity + Supabase — Sanity Studio es la mejor interfaz de admin del mercado para contenido y productos. Supabase cubre pedidos, inventario y autenticación. El frontend Next.js ya construido necesita cambios mínimos.
-
-### Decisión 2 — Almacenamiento de imágenes
-
-| Opción                               | Costo             | Transformaciones automáticas  |
-| ------------------------------------ | ----------------- | ----------------------------- |
-| **Sanity CDN** (incluido con Sanity) | Gratis hasta 20GB | Sí (resize, WebP, AVIF, crop) |
-| **Cloudinary**                       | Gratis hasta 25GB | Sí (el más potente)           |
-| **Supabase Storage**                 | Gratis hasta 1GB  | No                            |
-
-### Decisión 3 — Autenticación del admin
-
-| Opción                                           | Integración                  | Costo                |
-| ------------------------------------------------ | ---------------------------- | -------------------- |
-| **Supabase Auth** (recomendado si usas Supabase) | Nativa con la base de datos  | Gratis               |
-| **NextAuth.js**                                  | Flexible, cualquier provider | Gratis               |
-| **Clerk**                                        | La más fácil de implementar  | Gratis hasta 10k MAU |
+| Decisión          | Elegida                                  | Razón                                                                 |
+| ----------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| Stack backend     | **Custom: Next.js + Prisma + PostgreSQL** | Máximo control, todo en un solo proyecto, sin dependencias externas    |
+| Base de datos     | **Prisma Postgres** (pooled)             | Prisma v7 con driver adapters, `PrismaPg` + `pg.Pool`, SSL verify-full |
+| Autenticación     | **NextAuth.js v4** (JWT + Credentials)   | Flexible, integrado con Prisma, roles y permisos custom               |
+| Imágenes          | **Por definir** (Cloudinary o similar)   | Actualmente placeholder; se decide al conectar productos reales       |
+| Panel admin       | **Custom en `/admin`** (Next.js)         | Dashboard completo propio, no Sanity Studio                           |
 
 ---
 
-## Brechas Críticas del Código Actual
+## Brechas Pendientes del Código
 
-Estos son bugs y problemas reales que existen HOY en el código, independientemente del stack que se elija. Se corrigen en el Bloque 6.
+### Storefront → Backend (alta prioridad)
 
-### `src/app/products/page.tsx` — 4 problemas
+| Problema                                    | Detalle                                                                         |
+| ------------------------------------------- | ------------------------------------------------------------------------------- |
+| Productos desde mock-data                   | El storefront lee de `mock-data.ts` en vez de la API/Prisma                     |
+| Checkout no guarda pedido                   | `handleOrderConfirm()` solo muestra toast + redirige, sin POST al backend       |
+| Imágenes placeholder                        | Todos los productos usan imágenes locales o `/placeholder.svg`                  |
+| Sin stock real en storefront                | No muestra "Sin stock" ni "Últimas X unidades" desde la base de datos           |
 
-| Problema                          | Detalle                                                                        |
-| --------------------------------- | ------------------------------------------------------------------------------ |
-| `"use client"` innecesario        | No usa estado ni efectos propios del cliente — puede ser Server Component      |
-| Fake 800ms delay con `setTimeout` | Simula una carga que no existe, solo deteriora la experiencia                  |
-| `brand-coral` no existe           | Token de color que no está definido en el sistema de diseño — falla silencioso |
-| `xl:grid-cols-5`                  | Raro para un grid de productos, rompe el layout en pantallas anchas            |
+### Código con bugs menores
 
-### `src/app/products/[id]/page.tsx` — 2 problemas
-
-| Problema                         | Detalle                                                                                        |
-| -------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `useState(false)` para favoritos | Debería usar `useFavorites(product.id)` — el estado se pierde al navegar                       |
-| `categoryLabel` mapa duplicado   | Traduce "Babies" → "Bebés" inline, pero esa lógica ya existe en `store.config.ts → categories` |
-
-### `src/lib/types.ts` — El modelo de datos es insuficiente
-
-El tipo `Product` actual no puede representar un producto real administrable:
-
-```typescript
-// ❌ HOY — no soporta admin real
-interface Product {
-  id: string
-  name: string
-  price: number
-  image: string // una sola imagen
-  category?: string // string libre, no relación
-  sizes?: string[] // sin stock por talla
-  colors?: string[] // solo hex, sin nombre
-}
-
-// ✅ NECESARIO — para admin + inventario real
-interface Product {
-  id: string
-  slug: string // URL: /products/body-algodon-nubes
-  name: string
-  description: string
-  price: number
-  compareAtPrice?: number // precio original tachado
-  category: string // relación a Category
-  images: ProductImage[] // múltiples imágenes con orden
-  variants: ProductVariant[] // talla+color con stock propio
-  isPublished: boolean // borrador o publicado
-  isFeatured: boolean // aparece en homepage
-  tags?: string[]
-}
-
-interface ProductVariant {
-  id: string
-  sku: string // código único por talla+color
-  size: string
-  color: string
-  colorName: string // "Verde", no "#3E3A3B"
-  stock: number // inventario real
-  lowStockThreshold: number // alerta de stock bajo
-}
-
-interface ProductImage {
-  url: string
-  alt: string
-  order: number
-}
-```
-
-### `src/app/checkout-flow/page.tsx` — El pedido no se guarda
-
-```typescript
-// ❌ HOY — el pedido desaparece después de este toast
-const handleOrderConfirm = () => {
-  toast.success("¡Pedido confirmado!")
-  setTimeout(() => {
-    clearCart()
-    router.push(routes.home)
-  }, 2000)
-}
-
-// ✅ NECESARIO — el pedido debe persistir en la base de datos
-const handleOrderConfirm = async () => {
-  const order = await createOrder({
-    // POST /api/orders
-    items: cartItems,
-    shipping: shippingData,
-    payment: paymentData,
-    total: getTotal(),
-  })
-  clearCart()
-  router.push(`/order-success/${order.id}`) // URL compartible
-}
-```
+| Archivo                       | Problema                                                                     |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `src/app/products/page.tsx`   | `brand-coral` token no existe en el sistema de diseño (falla silencioso)     |
+| `src/app/products/[id]/page.tsx` | `categoryLabel` mapa inline duplica lo que ya está en `store.config.ts`   |
 
 ---
 
 ## Módulos Existentes
 
-| Módulo              | Ruta               | Estado          | Notas                                                      |
-| ------------------- | ------------------ | --------------- | ---------------------------------------------------------- |
-| Home                | `/`                | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise         |
-| Categoría Bebés     | `/category/babies` | ✅ Funcional    | 5 productos mock                                           |
-| Categoría Niñas     | `/category/girls`  | ✅ Funcional    | 4 productos mock                                           |
-| Categoría Niños     | `/category/boys`   | ✅ Funcional    | 4 productos mock                                           |
-| Ofertas             | `/category/sales`  | ✅ Funcional    | Filtra `isOnSale: true`                                    |
-| Esenciales          | `/essentials`      | ✅ Funcional    | 3 productos mock                                           |
-| Todos los productos | `/products`        | ⚠️ Bugs         | Ver brechas arriba — fake delay, brand-coral, "use client" |
-| Detalle de producto | `/products/[id]`   | ⚠️ Bugs         | `useFavorites` no usado, categoryLabel duplicado           |
-| Carrito             | `/carrito`         | ✅ Funcional    | AlertDialog, edición de cantidad                           |
-| Checkout            | `/checkout-flow`   | ⚠️ Incompleto   | Valida y confirma pero **no guarda el pedido**             |
-| 404                 | —                  | ✅ Funcional    | Branding + CTAs                                            |
-| Error               | —                  | ✅ Funcional    | Botón reset + branding                                     |
-| Cart Context        | —                  | ✅ Sólido       | localStorage, extensible                                   |
-| useFavorites        | —                  | ✅ Funcional    | localStorage, persiste entre navegaciones                  |
-| Sistema de tema     | —                  | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                        |
-| store.config.ts     | —                  | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent              |
-| validation.ts       | —                  | ✅ Centralizado | Luhn, shipping, payment                                    |
-| mock-data.ts        | —                  | ✅ Temporal     | 17 productos — se reemplaza con Sanity en Bloque 8         |
+| Módulo                 | Ruta               | Estado          | Notas                                                            |
+| ---------------------- | ------------------ | --------------- | ---------------------------------------------------------------- |
+| Home                   | `/`                | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise               |
+| Categoría Bebés        | `/category/babies` | ✅ Funcional    | 5 productos mock                                                 |
+| Categoría Niñas        | `/category/girls`  | ✅ Funcional    | 4 productos mock                                                 |
+| Categoría Niños        | `/category/boys`   | ✅ Funcional    | 4 productos mock                                                 |
+| Ofertas                | `/category/sales`  | ✅ Funcional    | Filtra `isOnSale: true`                                          |
+| Esenciales             | `/essentials`      | ✅ Funcional    | 3 productos mock                                                 |
+| Todos los productos    | `/products`        | ⚠️ Bug menor    | `brand-coral` token no existe                                    |
+| Detalle de producto    | `/products/[id]`   | ⚠️ Bug menor    | categoryLabel duplicado                                          |
+| Carrito                | `/carrito`         | ✅ Funcional    | AlertDialog, edición de cantidad                                 |
+| Checkout               | `/checkout-flow`   | ⚠️ Incompleto   | Valida y confirma pero **no guarda el pedido** en backend        |
+| 404 (store)            | —                  | ✅ Funcional    | Branding + CTAs                                                  |
+| Error (store)          | —                  | ✅ Funcional    | Botón reset + branding                                           |
+| Cart Context           | —                  | ✅ Sólido       | localStorage, extensible                                         |
+| useFavorites           | —                  | ✅ Funcional    | localStorage, persiste entre navegaciones                        |
+| Sistema de tema        | —                  | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                              |
+| store.config.ts        | —                  | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                    |
+| validation.ts          | —                  | ✅ Centralizado | Luhn, shipping, payment                                          |
+| mock-data.ts           | —                  | ✅ Temporal     | 17 productos — se reemplaza al conectar storefront con Prisma    |
+| **Admin Dashboard**    | `/admin`           | ✅ Completo     | Stats, gráficos, accesos rápidos                                 |
+| **Admin Login**        | `/admin/login`     | ✅ Funcional    | NextAuth JWT + Credentials                                       |
+| **Admin Productos**    | `/admin/productos` | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                          |
+| **Admin Pedidos**      | `/admin/pedidos`   | ✅ CRUD         | Lista, detalle, cambio de estado                                 |
+| **Admin Usuarios**     | `/admin/usuarios`  | ✅ CRUD         | Gestión con asignación de rol                                    |
+| **Admin Roles**        | `/admin/roles`     | ✅ CRUD         | Permisos granulares por módulo                                   |
+| **Admin Settings**     | `/admin/settings`  | ✅ CRUD         | 9 secciones editables (brand, theme, shipping, etc.)             |
+| **Admin 404**          | `/admin/*`         | ✅ Profesional  | Página personalizada con branding                                |
+| **Admin Error**        | `/admin/*`         | ✅ Profesional  | Error boundary con retry + navegación                            |
 
 ---
 
@@ -206,201 +118,128 @@ Ver historial al final del documento.
 
 ---
 
-### ⏳ Bloque 8 — Backend: Sanity CMS para productos e imágenes
+### ✅ Bloque 8 — Admin Dashboard + Backend con Prisma
 
-> **Objetivo**: Agregar, editar y eliminar productos desde Sanity Studio sin tocar código. Las imágenes se suben desde el Studio y se sirven por el CDN de Sanity.
+> **Completado**. Panel de administración multi-rol con CRUD completo. Se decidió **Custom (Next.js + Prisma + PostgreSQL)** en vez de Sanity + Supabase por control total.
 
-**Prerequisito**: Tener tomadas las Decisiones 1 y 2 de arriba.
-
-#### Setup Sanity
+#### Infraestructura
 
 ```
-[ ] Crear proyecto en sanity.io
-[ ] Definir schema: Product, ProductVariant, Category, HeroBanner
-[ ] Configurar Sanity Studio en /admin/studio (o studio.dulceinfancia.co)
-[ ] Agregar NEXT_PUBLIC_SANITY_PROJECT_ID y SANITY_API_TOKEN al .env.local
-[ ] Proteger Studio con autenticación (Sanity Auth)
+[x] Prisma v7 con driver adapters (PrismaPg + pg.Pool)
+[x] Prisma Postgres como base de datos (pooled, SSL verify-full)
+[x] NextAuth.js v4 (JWT strategy, Credentials provider)
+[x] Middleware protege /admin/* → redirige a /admin/login si no autenticado
+[x] Route group (store) aísla layout de tienda del admin
+[x] prisma.config.ts con datasource URL desde .env
 ```
 
-#### Migración del frontend
+#### Modelos Prisma (ya migrados)
 
 ```
-[ ] Crear src/lib/sanity.ts con cliente GROQ y queries tipadas
-[ ] Crear src/lib/sanity-queries.ts:
-    - getProducts(filters?) → reemplaza allMockProducts
-    - getProductBySlug(slug) → reemplaza getProductById
-    - getFeaturedProducts(limit) → reemplaza getFeaturedProducts
-    - getProductsByCategory(categoryKey) → reemplaza getProductsByCategory
-    - getCategories() → categorías dinámicas desde Sanity
-    - getHeroBanners() → banners desde Sanity (no hardcoded en store.config)
-[ ] Actualizar todas las páginas para usar queries Sanity en lugar de mock-data
-[ ] Actualizar types.ts con tipos generados por Sanity (sanity generate)
-[ ] Configurar ISR (revalidate) o On-demand revalidation vía webhook
-[ ] Webhook: cuando se publica un producto en Sanity → revalida las páginas afectadas
-[ ] Eliminar src/lib/mock-data.ts una vez migrado
+[x] Role — nombre, slug, permisos granulares (JSON), isSystem
+[x] User — email, password (hashed), rol asignado, status (ACTIVE/INACTIVE)
+[x] Product — nombre, precio, categoría, stock, imágenes, flags (isOnSale, isNew, isFeatured, isPublished)
+[x] Order — cliente, estado (PENDING→CONFIRMED→SHIPPED→DELIVERED→CANCELLED), total, dirección, pago
+[x] OrderItem — producto, cantidad, precio, talla, color
+[x] Setting — key/value (JSON) para configuración dinámica
 ```
 
-#### Gestión de imágenes (CDN Sanity)
+#### Panel Admin (/admin)
 
 ```
-[ ] Usar @sanity/image-url para construir URLs con transformaciones
-[ ] Configurar next.config.ts para permitir cdn.sanity.io como dominio de imágenes
-[ ] Todas las imágenes de producto se sirven desde CDN Sanity (WebP automático)
-[ ] Placeholder blur hash automático vía Sanity image metadata
+[x] /admin — Dashboard: stats de ventas, pedidos, productos, usuarios + gráficos
+[x] /admin/login — Login con email/password
+[x] /admin/productos — CRUD completo de productos
+[x] /admin/pedidos — Lista de pedidos + cambio de estado
+[x] /admin/usuarios — CRUD de usuarios con asignación de rol
+[x] /admin/roles — CRUD de roles con permisos granulares por módulo
+[x] /admin/settings — Editor CRUD de 9 secciones de configuración:
+    - Brand (nombre, tagline, logo, favicon)
+    - Locale (moneda, idioma, zona horaria)
+    - Theme (colores primario/acento/superficie, border-radius)
+    - Typography (fuentes display/body, scale)
+    - Shipping (costo, umbral gratis, métodos)
+    - Payment methods (activar/desactivar métodos)
+    - Promo banner (texto, activo/inactivo)
+    - Social (Instagram, Facebook, TikTok, Pinterest)
+    - Contact (email, teléfono, dirección, horarios)
+[x] Sidebar responsive con navegación y permisos
+[x] Session provider (NextAuth) en layout admin
 ```
 
-#### Lo que el admin puede hacer desde Sanity Studio
+#### Calidad y UX del Admin
 
 ```
-✅ Crear producto (nombre, precio, descripción, categoría)
-✅ Subir múltiples imágenes por producto (drag & drop, crop, reorder)
-✅ Definir variantes (talla + color + nombre de color)
-✅ Publicar / despublicar productos (borrador vs activo)
-✅ Marcar productos como "Nuevo" o "En oferta"
-✅ Gestionar categorías (nombre, imagen, slug)
-✅ Editar los banners del hero de la homepage
-✅ Todo se refleja en la tienda en tiempo real (ISR / webhook)
+[x] Loading skeletons: /admin, /admin/productos, /admin/pedidos, /(store)
+[x] Error boundary profesional: /admin/error.tsx (retry + navegación)
+[x] 404 profesional: /admin/not-found.tsx (búsqueda fallida + navegación)
+[x] Fix hydration: roles-editor accordion (div role="button" en vez de button anidado)
+[x] Accesibilidad: Field con htmlFor, Toggle con role="switch" + aria-checked
+[x] API robusta: try-catch en request.json(), validación de keys
+```
+
+#### Optimización de Performance
+
+```
+[x] Middleware scoped solo a /admin/:path* (no catch-all)
+[x] next.config: image formats (avif, webp), 30-day cache TTL
+[x] experimental.optimizePackageImports: lucide-react, recharts, date-fns
+[x] Dynamic import de MiniCart en store layout
+[x] SSL: sslmode=verify-full + rejectUnauthorized: true
 ```
 
 ---
 
-### ⏳ Bloque 9 — Backend: Supabase para pedidos e inventario
+### ⏳ Bloque 9 — Conectar storefront al backend real
 
-> **Objetivo**: Los pedidos se guardan en la base de datos. El inventario se descuenta automáticamente. El admin puede ver y gestionar pedidos.
+> **Objetivo**: El storefront deja de leer mock-data.ts y consume productos/pedidos desde Prisma. El checkout guarda pedidos reales.
 
-**Prerequisito**: Bloque 8 completado (productos reales en Sanity).
-
-#### Setup Supabase
+#### Productos desde Prisma
 
 ```
-[ ] Crear proyecto en supabase.com
-[ ] Agregar SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY al .env.local
-[ ] Configurar autenticación de admin (Supabase Auth o NextAuth)
+[ ] Crear API routes: GET /api/products, GET /api/products/[id]
+[ ] Filtros por categoría, búsqueda, precio — query params
+[ ] Actualizar páginas de categoría para fetch desde API (o Server Component directo con Prisma)
+[ ] Actualizar /products y /products/[id] para leer de la base de datos
+[ ] getFeaturedProducts() → Prisma query con isFeatured: true
+[ ] Eliminar src/lib/mock-data.ts una vez migrado completamente
 ```
 
-#### Schema de base de datos (PostgreSQL via Supabase)
-
-```sql
--- Pedidos
-orders (
-  id uuid PRIMARY KEY,
-  order_number text UNIQUE,   -- DI-2026-001
-  status text,                -- pending | confirmed | shipped | delivered | cancelled
-  customer_email text,
-  customer_name text,
-  shipping_address jsonb,
-  payment_method text,
-  payment_status text,        -- pending | paid | failed
-  subtotal integer,           -- en centavos COP
-  shipping_cost integer,
-  total integer,
-  created_at timestamptz
-)
-
--- Items del pedido
-order_items (
-  id uuid PRIMARY KEY,
-  order_id uuid REFERENCES orders,
-  product_id text,            -- ID del producto en Sanity
-  variant_sku text,           -- talla + color
-  product_name text,
-  size text,
-  color text,
-  price integer,
-  quantity integer
-)
-
--- Inventario (sincronizado con variantes de Sanity)
-inventory (
-  variant_sku text PRIMARY KEY,
-  product_id text,
-  stock integer,
-  reserved integer,           -- en carrito pero no comprado
-  low_stock_threshold integer
-)
-```
-
-#### API Routes a crear
+#### Pedidos reales
 
 ```
-[ ] POST /api/orders
-    - Valida los items (stock disponible)
-    - Crea el registro en orders + order_items
-    - Descuenta stock en inventory
+[ ] POST /api/orders — crear pedido con validación de stock
+    - Descuenta stock en Product
     - Genera número de orden (DI-2026-001)
     - Retorna { orderId, orderNumber }
-
-[ ] GET  /api/orders/[id]
-    - Retorna el pedido completo (para /order-success/[id])
-    - Autenticado: retorna cualquier pedido
-    - Sin auth: solo si el email coincide
-
-[ ] GET  /api/admin/orders
-    - Lista paginada de todos los pedidos
-    - Solo accesible con rol admin
-
-[ ] PATCH /api/admin/orders/[id]
-    - Actualiza estado del pedido (confirmed → shipped → delivered)
-    - Solo accesible con rol admin
-
-[ ] GET  /api/inventory/check
-    - Verifica stock de un array de variantes
-    - Usado por el carrito antes del checkout
-```
-
-#### Cambios en el frontend
-
-```
 [ ] checkout-flow/page.tsx → handleOrderConfirm llama POST /api/orders
 [ ] Nueva página /order-success/[id] → muestra resumen del pedido guardado
-[ ] CarritoPage → verificar stock antes de ir al checkout
-[ ] ProductCard + detalle → mostrar "Sin stock" si stock = 0
-[ ] ProductCard + detalle → badge "Últimas X unidades" si stock <= threshold
+[ ] GET /api/orders/[id] — retorna pedido para página de confirmación
+```
+
+#### Stock en storefront
+
+```
+[ ] ProductCard → mostrar "Sin stock" si stock = 0
+[ ] ProductCard → badge "Últimas X unidades" si stock <= umbral
+[ ] Verificar stock antes de ir al checkout
+```
+
+#### Imágenes reales
+
+```
+[ ] Decidir proveedor: Cloudinary, UploadThing, o Supabase Storage
+[ ] Upload desde /admin/productos (crear/editar producto)
+[ ] Configurar next.config.ts con dominio del CDN elegido
+[ ] Migrar productos de placeholder a imágenes reales
 ```
 
 ---
 
-### ⏳ Bloque 10 — Dashboard de administración
-
-> **Objetivo**: Panel completo en `/admin` para gestionar pedidos, ver inventario y estadísticas básicas. Protegido con autenticación.
-
-```
-[ ] Autenticación admin: /admin/login con Supabase Auth o NextAuth
-[ ] Middleware protege /admin/** → redirige a /admin/login si no está autenticado
-
-[ ] /admin — Dashboard:
-    - Resumen: ventas del día, pedidos pendientes, stock bajo
-    - Gráfico de ventas (últimos 30 días)
-    - Acceso rápido a acciones frecuentes
-
-[ ] /admin/pedidos — Lista de pedidos:
-    - Tabla paginada: número, cliente, fecha, total, estado
-    - Filtros por estado y fecha
-    - Exportar a CSV
-
-[ ] /admin/pedidos/[id] — Detalle de pedido:
-    - Items, dirección de envío, método de pago
-    - Timeline de estados con fecha
-    - Botón para cambiar estado (pendiente → confirmado → enviado → entregado)
-    - Número de guía de envío (Interrapidísimo, Servientrega, Coordinadora)
-
-[ ] /admin/inventario — Stock por variante:
-    - Tabla de todas las variantes con stock actual
-    - Edición inline del stock
-    - Alertas de stock bajo (<threshold)
-
-[ ] /admin/productos — Vista de catálogo (read-only):
-    - Lista de productos de Sanity
-    - Link directo a editar en Sanity Studio
-    - Stock total por producto
-    (La edición de productos vive en Sanity Studio, no aquí)
-```
-
----
-
-### ⏳ Bloque 11 — Pagos reales con MercadoPago
+### ⏳ Bloque 10 — Pagos reales con MercadoPago
 
 > **Objetivo**: El cliente paga de verdad. El pedido se confirma solo cuando el pago es exitoso.
+> **Prerequisito**: Bloque 9 completado (pedidos reales guardados en DB).
 
 ```
 [ ] Crear cuenta de MercadoPago y obtener credenciales
@@ -420,7 +259,7 @@ inventory (
 
 ---
 
-### ⏳ Bloque 12 — Email transaccional
+### ⏳ Bloque 11 — Email transaccional
 
 > **Objetivo**: El cliente recibe email automático en cada evento importante.
 
@@ -442,7 +281,7 @@ inventory (
 
 ---
 
-### ⏳ Bloque 13 — Analytics y Marketing
+### ⏳ Bloque 12 — Analytics y Marketing
 
 > **Objetivo**: Medir conversiones, entender comportamiento y hacer retargeting.
 
@@ -462,7 +301,7 @@ inventory (
 
 ---
 
-### ⏳ Bloque 14 — Cuenta de cliente y post-compra
+### ⏳ Bloque 13 — Cuenta de cliente y post-compra
 
 > **Objetivo**: El cliente puede ver sus pedidos anteriores y gestionar su información.
 
@@ -472,9 +311,9 @@ inventory (
 [ ] /cuenta — panel: nombre, email, cambiar contraseña
 [ ] /cuenta/pedidos — historial de pedidos con estado
 [ ] /cuenta/pedidos/[id] — detalle de un pedido específico
-[ ] /favoritos — página de productos guardados (useFavorites + persistencia en Supabase si hay cuenta)
+[ ] /favoritos — página de productos guardados (useFavorites + persistencia en DB si hay cuenta)
 
-[ ] Autenticación: Supabase Auth (mismo sistema que el admin pero con rol 'customer')
+[ ] Autenticación: NextAuth con rol 'customer' (mismo sistema que el admin)
 [ ] Guest checkout: compra sin cuenta, con opción de crear una al final
 ```
 
@@ -551,6 +390,12 @@ inventory (
 [x] STANDARDS.md — checklist de calidad para cada PR
 ```
 
+### ✅ Bloque 6 — Correcciones de código + SEO base (ver arriba)
+
+### ✅ Bloque 7 — Features de navegación y descubrimiento (ver arriba)
+
+### ✅ Bloque 8 — Admin Dashboard + Backend con Prisma (ver arriba)
+
 ---
 
 ## Arquitectura Target (estado final)
@@ -559,31 +404,38 @@ inventory (
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         ADMIN (sin código)                          │
 │                                                                     │
-│  Sanity Studio                         /admin (Next.js)             │
-│  studio.dulceinfancia.co               dulceinfancia.co/admin       │
-│  ┌─────────────────────────┐           ┌─────────────────────────┐  │
-│  │ Crear/editar productos  │           │ Ver y gestionar pedidos │  │
-│  │ Subir/reordenar fotos   │           │ Actualizar estados      │  │
-│  │ Gestionar categorías    │           │ Ver inventario          │  │
-│  │ Editar banners del hero │           │ Alertas stock bajo      │  │
-│  │ Publicar/despublicar    │           │ Dashboard de ventas     │  │
-│  └─────────────────────────┘           └─────────────────────────┘  │
-└──────────────────┬──────────────────────────────┬───────────────────┘
-                   │                              │
-           Sanity API + CDN                Supabase (PostgreSQL)
-           (productos, imágenes)           (pedidos, inventario, clientes)
-                   │                              │
-                   └──────────────┬───────────────┘
-                                  │
-                    Next.js API Routes (/api/*)
-                    ├── /api/orders
-                    ├── /api/payments/create-preference
-                    ├── /api/payments/webhook (MercadoPago)
-                    ├── /api/inventory/check
-                    └── /api/admin/* (protegidas)
-                                  │
-                    Next.js Storefront (el proyecto actual)
-                    dulceinfancia.co
+│  /admin (Next.js — Custom Dashboard)                                │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ Dashboard: ventas, pedidos, stock bajo, gráficos            │    │
+│  │ Productos: CRUD completo, imágenes, stock, variantes        │    │
+│  │ Pedidos: lista, detalle, cambio de estado, guía de envío    │    │
+│  │ Usuarios: CRUD con asignación de roles                      │    │
+│  │ Roles: permisos granulares por módulo                       │    │
+│  │ Settings: 9 secciones de configuración editables            │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└──────────────────────────────────┬──────────────────────────────────┘
+                                   │
+                        Prisma ORM (v7, driver adapters)
+                                   │
+                        PostgreSQL (Prisma Postgres — pooled, SSL)
+                        ├── roles, users (auth + permisos)
+                        ├── products (catálogo + stock)
+                        ├── orders, order_items (pedidos)
+                        └── settings (configuración dinámica)
+                                   │
+                     Next.js API Routes (/api/*)
+                     ├── /api/auth/* (NextAuth — JWT)
+                     ├── /api/admin/settings (CRUD config)
+                     ├── /api/admin/orders (gestión pedidos)
+                     ├── /api/admin/products (gestión productos)
+                     ├── /api/admin/users (gestión usuarios)
+                     ├── /api/admin/roles (gestión roles)
+                     ├── /api/orders (crear pedido — PENDIENTE)
+                     ├── /api/payments/* (MercadoPago — PENDIENTE)
+                     └── /api/products (catálogo público — PENDIENTE)
+                                   │
+                     Next.js Storefront (/(store) route group)
+                     dulceinfancia.co
 ```
 
 ---
@@ -593,29 +445,47 @@ inventory (
 ```
 src/
 ├── app/
-│   ├── layout.tsx                    ← Header + Footer + CartProvider
-│   ├── page.tsx                      ← Home — Server Component, 36 líneas
-│   ├── not-found.tsx                 ← 404 con branding ✅
-│   ├── error.tsx                     ← Error runtime ✅
+│   ├── (store)/                      ← Route group — layout de tienda (header+footer)
+│   │   ├── layout.tsx                ← Header + Footer + CartProvider + MiniCart (dynamic)
+│   │   ├── loading.tsx               ← Skeleton de carga
+│   │   └── page.tsx                  ← Home — Server Component
+│   ├── admin/                        ← Panel de administración ✅
+│   │   ├── layout.tsx                ← Sidebar + SessionProvider
+│   │   ├── loading.tsx               ← Skeleton admin
+│   │   ├── error.tsx                 ← Error boundary profesional
+│   │   ├── not-found.tsx             ← 404 profesional
+│   │   ├── page.tsx                  ← Dashboard con stats + gráficos
+│   │   ├── login/page.tsx            ← Login NextAuth
+│   │   ├── productos/               ← CRUD productos
+│   │   ├── pedidos/                  ← CRUD pedidos
+│   │   ├── usuarios/                 ← CRUD usuarios
+│   │   ├── roles/                    ← CRUD roles + permisos
+│   │   └── settings/                 ← Editor de 9 secciones de config
+│   ├── api/
+│   │   ├── auth/[...nextauth]/       ← NextAuth (JWT + Credentials)
+│   │   └── admin/                    ← APIs protegidas (settings, orders, products, users, roles)
+│   ├── not-found.tsx                 ← 404 global con branding
+│   ├── error.tsx                     ← Error global
 │   ├── carrito/page.tsx              ← Carrito con AlertDialog
 │   ├── checkout-flow/page.tsx        ← 4 pasos — pendiente: POST /api/orders
-│   ├── essentials/page.tsx
 │   ├── products/
-│   │   ├── page.tsx                  ← ⚠️ BUGS (ver brechas arriba)
-│   │   └── [id]/page.tsx             ← ⚠️ BUGS (ver brechas arriba)
-│   ├── search/page.tsx               ← (PENDIENTE — Bloque 7)
-│   ├── favoritos/page.tsx            ← (PENDIENTE — Bloque 6)
-│   ├── admin/                        ← (PENDIENTE — Bloque 10)
+│   │   ├── page.tsx                  ← Catálogo (aún lee mock-data)
+│   │   └── [id]/page.tsx             ← Detalle producto
 │   └── category/
-│       ├── babies/page.tsx
-│       ├── girls/page.tsx
-│       ├── boys/page.tsx
-│       └── sales/page.tsx
+│       ├── babies/, girls/, boys/, sales/
 ├── components/
+│   ├── admin/                        ← Componentes del dashboard ✅
+│   │   ├── sidebar.tsx               ← Navegación con permisos
+│   │   ├── session-provider.tsx      ← NextAuth SessionProvider
+│   │   ├── products/                 ← Tabla, formularios de producto
+│   │   ├── orders/                   ← Tabla, detalle de pedido
+│   │   ├── users/                    ← Tabla, formularios de usuario
+│   │   ├── roles/                    ← Editor de roles y permisos
+│   │   └── settings/                 ← Editor CRUD de 9 secciones
 │   ├── home/                         ← 5 componentes SOLID ✅
 │   ├── cart/                         ← Sistema completo ✅
 │   ├── checkout/                     ← 5 pasos ✅
-│   ├── layout/                       ← Header, footer, nav ✅
+│   ├── layout/                       ← Footer, mobile-nav ✅
 │   ├── product/product-card.tsx      ← Product type, formatPrice, useFavorites ✅
 │   └── ui/                           ← shadcn/ui
 ├── config/
@@ -623,14 +493,22 @@ src/
 │   └── theme.config.ts               ← Paleta OKLCH + tipografía
 ├── hooks/
 │   ├── use-cart.ts                   ← CartContext wrapper ✅
-│   ├── use-favorites.ts              ← localStorage por ID ✅
+│   ├── use-favorites.ts             ← localStorage por ID ✅
 │   ├── use-mobile.tsx
-│   └── use-sonner.ts                 ← Toast unificado ✅
-└── lib/
-    ├── mock-data.ts                  ← TEMPORAL — se reemplaza en Bloque 8
-    ├── types.ts                      ← Product, CartItem — ampliar en Bloque 6
-    ├── validation.ts                 ← Luhn + shipping + payment ✅
-    └── utils.ts                      ← cn(), formatPrice() ✅
+│   └── use-sonner.ts                ← Toast unificado ✅
+├── lib/
+│   ├── prisma.ts                    ← Cliente Prisma (PrismaPg + pg.Pool, SSL)
+│   ├── auth.ts                      ← authOptions de NextAuth
+│   ├── settings.ts                  ← Loader: DB overrides sobre file defaults
+│   ├── settings-keys.ts            ← Constantes de keys de settings
+│   ├── mock-data.ts                 ← TEMPORAL — se reemplaza en Bloque 9
+│   ├── types.ts                     ← Product, CartItem
+│   ├── validation.ts               ← Luhn + shipping + payment ✅
+│   └── utils.ts                     ← cn(), formatPrice() ✅
+├── prisma/
+│   ├── schema.prisma                ← 6 modelos: Role, User, Product, Order, OrderItem, Setting
+│   └── migrations/                  ← Migraciones aplicadas
+└── middleware.ts                     ← Protege /admin/* (NextAuth JWT)
 ```
 
 ---

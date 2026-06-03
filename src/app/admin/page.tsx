@@ -191,7 +191,7 @@ export default async function AdminDashboard() {
           {orderStatusCards.map((card) => {
             const Icon = card.icon
             return (
-              <a
+              <Link
                 key={card.label}
                 href={card.href}
                 className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3 hover:border-indigo-300 transition-colors"
@@ -203,7 +203,7 @@ export default async function AdminDashboard() {
                   <p className="text-xl font-bold text-slate-900">{card.value}</p>
                   <p className="text-xs text-slate-500">{card.label}</p>
                 </div>
-              </a>
+              </Link>
             )
           })}
         </div>

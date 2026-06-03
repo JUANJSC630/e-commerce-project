@@ -1,6 +1,6 @@
 import type React from "react"
+import dynamic from "next/dynamic"
 import { CartProvider } from "@/components/cart/cart-provider"
-import { MiniCart } from "@/components/cart/mini-cart"
 import { CartCounter } from "@/components/cart/cart-counter"
 import { MobileNav } from "@/components/layout/mobile-nav"
 import { SearchBar } from "@/components/search/search-bar"
@@ -9,6 +9,8 @@ import { Footer } from "@/components/layout/footer"
 import Link from "next/link"
 import { Heart } from "lucide-react"
 import { brand, navigation, routes } from "@/config/store.config"
+
+const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (

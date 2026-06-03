@@ -164,9 +164,17 @@ export function RolesEditor({ roles, canCreate, canEdit, canDelete }: RolesEdito
             className="bg-white rounded-xl border border-slate-200 overflow-hidden"
           >
             {/* Header */}
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => toggleExpand(role.id)}
-              className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  toggleExpand(role.id)
+                }
+              }}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-3 text-left">
                 <div>
@@ -201,7 +209,7 @@ export function RolesEditor({ roles, canCreate, canEdit, canDelete }: RolesEdito
                   <ChevronDown className="h-4 w-4 text-slate-400" />
                 )}
               </div>
-            </button>
+            </div>
 
             {/* Permission grid */}
             {isExpanded && (

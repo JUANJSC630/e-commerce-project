@@ -181,6 +181,19 @@ export const getEssentialProducts = (): Product[] => {
   )
 }
 
+export const getProductById = (id: string): Product | undefined => {
+  return (
+    allMockProducts.find((p) => p.id === id) ??
+    mockProducts.find((p) => p.id === id)
+  )
+}
+
+export const getRelatedProducts = (product: Product, limit = 4): Product[] => {
+  return allMockProducts
+    .filter((p) => p.id !== product.id && p.category === product.category)
+    .slice(0, limit)
+}
+
 export const mockProducts = [
   {
     id: "1",

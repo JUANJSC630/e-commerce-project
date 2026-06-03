@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Heart, Eye, Star } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { AddToCartButton } from "@/components/cart/add-to-cart-button"
@@ -45,7 +45,12 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     <div
       className="group relative bg-card text-card-foreground rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border"
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-brand-surface" style={{ position: 'relative' }}>
+      <Link
+        href={`/products/${product.id}`}
+        className="block relative aspect-[3/4] overflow-hidden bg-brand-surface"
+        aria-label={`Ver detalles de ${product.name}`}
+        tabIndex={0}
+      >
         {!isImageLoaded && <div className="absolute inset-0 bg-brand-surface-alt animate-pulse" />}
         <Image
           src={product.image || "/placeholder.svg"}
@@ -82,12 +87,13 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             "opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto",
             "transition-opacity duration-300",
           )}
+          aria-hidden="true"
         >
-          <Button variant="secondary" size="sm">
-            <Eye className="w-4 h-4 mr-2" /> Vista rápida
-          </Button>
+          <span className="flex items-center gap-1.5 bg-background/90 text-foreground text-sm font-medium px-3 py-1.5 rounded-full">
+            <Eye className="w-4 h-4" aria-hidden="true" /> Ver producto
+          </span>
         </div>
-      </div>
+      </Link>
       <div className="p-4 space-y-3">
         {product.category && (
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">{product.category}</p>

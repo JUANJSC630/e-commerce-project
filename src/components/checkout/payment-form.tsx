@@ -251,30 +251,49 @@ export function PaymentForm({ data, errors: externalErrors, onUpdate, onNext, on
       <h2 className="font-display font-semibold text-xl mb-6">Método de pago</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-3">
-          <Label>Selecciona tu método de pago</Label>
+          <Label id="payment-method-legend">Selecciona tu método de pago</Label>
+          <div role="radiogroup" aria-labelledby="payment-method-legend" className="space-y-3">
           {paymentMethods.map((method) => {
             const Icon = method.icon
+            const isSelected = formData.method === method.id
             return (
               <div
                 key={method.id}
+                role="radio"
+                aria-checked={isSelected}
+                tabIndex={isSelected ? 0 : -1}
                 className={cn(
                   "border rounded-xl p-4 cursor-pointer transition-all",
-                  formData.method === method.id
+                  isSelected
                     ? "border-brand-base bg-brand-base/10"
                     : "border-border hover:border-muted-foreground",
                 )}
                 onClick={() => handleMethodChange(method.id as PaymentData["method"])}
+                onKeyDown={(e) => {
+                  const ids = paymentMethods.map((m) => m.id)
+                  const cur = ids.indexOf(method.id)
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    handleMethodChange(method.id as PaymentData["method"])
+                  } else if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                    e.preventDefault()
+                    handleMethodChange(ids[(cur + 1) % ids.length] as PaymentData["method"])
+                  } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                    e.preventDefault()
+                    handleMethodChange(ids[(cur - 1 + ids.length) % ids.length] as PaymentData["method"])
+                  }
+                }}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
                       "w-5 h-5 rounded-full border-2 transition-all",
-                      formData.method === method.id
+                      isSelected
                         ? "border-brand-base bg-brand-base"
                         : "border-muted-foreground",
                     )}
                   >
-                    {formData.method === method.id && (
+                    {isSelected && (
                       <div className="w-full h-full rounded-full bg-background scale-50" />
                     )}
                   </div>
@@ -287,6 +306,7 @@ export function PaymentForm({ data, errors: externalErrors, onUpdate, onNext, on
               </div>
             )
           })}
+          </div>
         </div>
         {formData.method === "card" && (
           <div className="space-y-4 p-4 bg-brand-surface-alt/30 rounded-xl">

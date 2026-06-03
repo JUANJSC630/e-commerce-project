@@ -40,7 +40,7 @@ export default function HomePage() {
       <main>
         {/* ── Hero Section ────────────────────────────────────────────── */}
         <section
-          className="relative h-[calc(100vh-80px)] min-h-[450px] md:min-h-[500px] lg:min-h-[600px] overflow-hidden"
+          className="relative h-[calc(100dvh-80px)] min-h-[450px] md:min-h-[500px] lg:min-h-[600px] overflow-hidden"
           aria-label="Banner principal"
         >
           {heroBanners.map((banner, index) => (

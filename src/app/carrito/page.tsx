@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useCart } from "@/hooks/use-cart"
 import { CartItem } from "@/components/cart/cart-item"
 import { CartSummary } from "@/components/cart/cart-summary"
@@ -7,10 +8,21 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
 import { useSonner } from "@/hooks/use-sonner"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog"
 
 export default function CartPage() {
   const { items, getItemCount, clearCart } = useCart()
   const { success, error } = useSonner()
+  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false)
   const itemCount = getItemCount()
 
   if (itemCount === 0) {
@@ -57,21 +69,7 @@ export default function CartPage() {
           <div className="mt-6 flex justify-end">
             <Button
               variant="outline"
-              onClick={() => {
-                if (window.confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
-                  try {
-                    clearCart();
-                    success('Carrito vaciado con éxito', {
-                      description: 'Se han eliminado todos los productos del carrito.'
-                    });
-                  } catch (err) {
-                    console.error('Error clearing cart:', err);
-                    error('No se pudo vaciar el carrito', {
-                      description: 'Ha ocurrido un problema. Por favor, intenta de nuevo.'
-                    });
-                  }
-                }
-              }}
+              onClick={() => setIsClearDialogOpen(true)}
               className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               Vaciar Carrito
@@ -84,20 +82,43 @@ export default function CartPage() {
         </aside>
       </div>
 
-      {/* Sección "También te puede interesar" (Placeholder) */}
-      <section className="mt-16">
-        <h2 className="text-2xl font-display font-semibold text-brand-ink mb-6">También te podría interesar</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {/* Placeholder para productos relacionados */}
-          {[1, 2, 3, 4].map((p) => (
-            <div key={p} className="bg-card p-4 rounded-lg shadow border border-brand-muted/30">
-              <div className="aspect-square bg-brand-surface-alt/50 rounded mb-2 animate-pulse"></div>
-              <div className="h-4 bg-brand-surface-alt/50 rounded w-3/4 mb-1 animate-pulse"></div>
-              <div className="h-4 bg-brand-surface-alt/50 rounded w-1/2 animate-pulse"></div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Confirm clear cart dialog */}
+      {isClearDialogOpen && (
+        <AlertDialog>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Vaciar el carrito?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Se eliminarán todos los productos del carrito. Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setIsClearDialogOpen(false)}>
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  try {
+                    clearCart()
+                    setIsClearDialogOpen(false)
+                    success("Carrito vaciado con éxito", {
+                      description: "Se han eliminado todos los productos del carrito.",
+                    })
+                  } catch (err) {
+                    console.error("Error clearing cart:", err)
+                    error("No se pudo vaciar el carrito", {
+                      description: "Ha ocurrido un problema. Por favor, intenta de nuevo.",
+                    })
+                  }
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Vaciar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   )
 }

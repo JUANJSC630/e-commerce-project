@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface AddToCartButtonProps {
   product: {

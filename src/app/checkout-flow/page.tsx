@@ -8,9 +8,9 @@ import { CartSummary } from "@/components/checkout/cart-summary"
 import { ShippingForm } from "@/components/checkout/shipping-form"
 import { PaymentForm } from "@/components/checkout/payment-form"
 import { OrderConfirmation } from "@/components/checkout/order-confirmation"
-import toast from "react-hot-toast"
+import { toast } from "sonner"
 import { useCart } from "@/hooks/use-cart"
-import { locale, routes, brand, shipping as shippingConfig } from "@/config/store.config"
+import { locale, routes, brand } from "@/config/store.config"
 
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
 

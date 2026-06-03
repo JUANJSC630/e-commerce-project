@@ -9,8 +9,10 @@ interface CategoriesSectionProps {
 }
 
 export function CategoriesSection({ categories, eyebrow, heading }: CategoriesSectionProps) {
+  if (categories.length === 0) return null
+
   return (
-    <section aria-label="Colecciones" className="py-14 md:py-20 bg-brand-surface-alt">
+    <section aria-label={eyebrow} className="py-14 md:py-20 bg-brand-surface-alt">
       <div className="container mx-auto px-4">
         <div className="mb-8 md:mb-10">
           <p className="text-xs font-display font-bold uppercase tracking-[0.2em] text-brand-base mb-2">
@@ -21,7 +23,7 @@ export function CategoriesSection({ categories, eyebrow, heading }: CategoriesSe
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {categories.map((category) => (
             <Link
-              key={category.name}
+              key={category.href}
               href={category.href}
               className="group relative rounded-2xl overflow-hidden aspect-[3/4] bg-brand-surface shadow-sm hover:shadow-lg transition-shadow duration-300"
             >
@@ -29,6 +31,7 @@ export function CategoriesSection({ categories, eyebrow, heading }: CategoriesSe
                 src={category.image || "/placeholder.svg"}
                 alt=""
                 fill
+                sizes="(max-width: 768px) 50vw, 25vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-ink/65 via-brand-ink/10 to-transparent" />

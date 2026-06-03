@@ -6,16 +6,24 @@ interface BrandPromiseProps {
   subtext: string
   ctaLabel: string
   ctaHref: string
+  sectionLabel?: string
 }
 
-export function BrandPromise({ quote, subtext, ctaLabel, ctaHref }: BrandPromiseProps) {
+export function BrandPromise({
+  quote,
+  subtext,
+  ctaLabel,
+  ctaHref,
+  sectionLabel = "Nuestra promesa",
+}: BrandPromiseProps) {
   return (
-    <section aria-label="Nuestra promesa" className="py-16 md:py-28 bg-brand-surface">
+    <section aria-label={sectionLabel} className="py-16 md:py-28 bg-brand-surface">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl">
-          <blockquote className="font-display font-black text-[clamp(1.75rem,3.8vw,3.25rem)] leading-[1.1] text-brand-ink text-balance">
+          {/* <p> not <blockquote>: blockquote implies an external source; this is the brand's own voice */}
+          <p className="font-display font-black text-[clamp(1.75rem,3.8vw,3.25rem)] leading-[1.1] text-brand-ink text-balance">
             &ldquo;{quote}&rdquo;
-          </blockquote>
+          </p>
           <p className="mt-5 text-base md:text-lg text-brand-muted leading-relaxed max-w-lg">
             {subtext}
           </p>

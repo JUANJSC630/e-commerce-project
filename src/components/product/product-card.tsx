@@ -5,28 +5,14 @@ import Link from "next/link"
 import { useState } from "react"
 import { Heart, Eye, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { cn, formatPrice } from "@/lib/utils"
 import { AddToCartButton } from "@/components/cart/add-to-cart-button"
 import { useFavorites } from "@/hooks/use-favorites"
+import type { Product } from "@/lib/types"
 
 interface ProductCardProps {
-  product: {
-    id: string
-    name: string
-    price: number
-    originalPrice?: number
-    image: string
-    images?: string[]
-    rating?: number
-    reviewCount?: number
-    sizes?: string[]
-    colors?: string[]
-    isNew?: boolean
-    isOnSale?: boolean
-    discountPercentage?: number
-    category?: string
-  }
-  /** Only set true for above-the-fold cards (first 3-4 visible on load) */
+  product: Product
+  /** Set true only for above-the-fold cards (first 3–4 visible on load) */
   priority?: boolean
 }
 
@@ -36,7 +22,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-    : product.discountPercentage || 0
+    : 0
 
   return (
     <div className="group relative bg-card text-card-foreground rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border">
@@ -44,9 +30,10 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         href={`/products/${product.id}`}
         className="block relative aspect-[3/4] overflow-hidden bg-brand-surface"
         aria-label={`Ver detalles de ${product.name}`}
-        tabIndex={0}
       >
-        {!isImageLoaded && <div className="absolute inset-0 bg-brand-surface-alt animate-pulse" />}
+        {!isImageLoaded && (
+          <div className="absolute inset-0 bg-brand-surface-alt animate-pulse" aria-hidden="true" />
+        )}
         <Image
           src={product.image || "/placeholder.svg"}
           alt={product.name}
@@ -59,12 +46,14 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           onLoad={() => setIsImageLoaded(true)}
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
         />
+
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.isNew && <Badge variant="new">Nuevo</Badge>}
           {product.isOnSale && discountPercentage > 0 && (
             <Badge variant="discount">-{discountPercentage}%</Badge>
           )}
         </div>
+
         <button
           onClick={toggleFavorite}
           aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
@@ -79,10 +68,11 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           <Heart
             className={cn(
               "w-4 h-4",
-              isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground",
+              isFavorite ? "fill-brand-base text-brand-base" : "text-muted-foreground",
             )}
           />
         </button>
+
         <div
           className={cn(
             "absolute inset-0 bg-brand-ink/20 flex items-center justify-center",
@@ -96,18 +86,21 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </span>
         </div>
       </Link>
+
       <div className="p-4 space-y-3">
         {product.category && (
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
             {product.category}
           </p>
         )}
+
         <h3 className="font-display font-semibold text-foreground line-clamp-2 leading-tight h-10">
           {product.name}
         </h3>
+
         {product.rating !== undefined && product.reviewCount !== undefined && (
           <div className="flex items-center gap-2">
-            <div className="flex items-center">
+            <div className="flex items-center" aria-label={`${product.rating} de 5 estrellas`}>
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
@@ -117,22 +110,23 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
                       ? "text-brand-base fill-brand-base"
                       : "text-brand-muted",
                   )}
+                  aria-hidden="true"
                 />
               ))}
             </div>
             <span className="text-xs text-muted-foreground">({product.reviewCount})</span>
           </div>
         )}
+
         <div className="flex items-baseline gap-2">
-          <span className="font-bold text-lg text-foreground">
-            ${product.price.toLocaleString()}
-          </span>
+          <span className="font-bold text-lg text-foreground">{formatPrice(product.price)}</span>
           {product.originalPrice && (
             <span className="text-sm text-muted-foreground line-through">
-              ${product.originalPrice.toLocaleString()}
+              {formatPrice(product.originalPrice)}
             </span>
           )}
         </div>
+
         {product.sizes && product.sizes.length > 0 && (
           <div className="flex items-center gap-1">
             <span className="text-xs text-muted-foreground">Tallas:</span>
@@ -151,16 +145,18 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             </div>
           </div>
         )}
+
         {product.colors && product.colors.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Colores:</span>
             <div className="flex gap-1">
-              {product.colors.slice(0, 3).map((color, index) => (
+              {product.colors.slice(0, 3).map((color, i) => (
                 <div
-                  key={index}
+                  key={`${color}-${i}`}
                   className="w-3 h-3 rounded-full border border-border"
                   style={{ backgroundColor: color }}
                   title={color}
+                  aria-hidden="true"
                 />
               ))}
               {product.colors.length > 3 && (
@@ -169,6 +165,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             </div>
           </div>
         )}
+
         <AddToCartButton product={product} className="w-full mt-4 font-medium" />
       </div>
     </div>

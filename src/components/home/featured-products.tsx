@@ -21,15 +21,23 @@ export function FeaturedProducts({
   viewAllLabel,
   viewAllMobileLabel,
 }: FeaturedProductsProps) {
+  if (products.length === 0) return null
+
   return (
-    <section aria-label="Productos destacados" className="py-14 md:py-20 bg-brand-surface-alt">
+    <section
+      aria-labelledby="featured-products-heading"
+      className="py-14 md:py-20 bg-brand-surface-alt"
+    >
       <div className="container mx-auto px-4">
         <div className="flex items-end justify-between mb-8 md:mb-10 gap-4">
           <div>
             <p className="text-xs font-display font-bold uppercase tracking-[0.2em] text-brand-base mb-2">
               {eyebrow}
             </p>
-            <h2 className="font-display font-black text-3xl md:text-4xl text-brand-ink">
+            <h2
+              id="featured-products-heading"
+              className="font-display font-black text-3xl md:text-4xl text-brand-ink"
+            >
               {heading}
             </h2>
           </div>

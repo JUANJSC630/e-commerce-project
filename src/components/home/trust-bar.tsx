@@ -13,15 +13,12 @@ interface TrustBarProps {
 }
 
 export function TrustBar({ features }: TrustBarProps) {
-  // Triple-spread at module render time — static data, no useMemo needed
-  const items = [...features, ...features, ...features]
+  // Two copies: translateX(-50%) moves exactly one copy-width → seamless loop.
+  // Three copies would move 1.5× copy-width, causing a mid-item jump on reset.
+  const items = [...features, ...features]
 
   return (
-    <section
-      role="region"
-      aria-label="Nuestras garantías"
-      className="bg-brand-base overflow-hidden py-3"
-    >
+    <section aria-label="Nuestras garantías" className="bg-brand-base overflow-hidden py-3">
       <div className="flex animate-marquee whitespace-nowrap hover:[animation-play-state:paused]">
         {items.map((item, i) => {
           const Icon = iconMap[item.icon] ?? Package

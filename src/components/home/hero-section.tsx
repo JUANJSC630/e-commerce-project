@@ -26,10 +26,7 @@ export function HeroSection({ banners, eyebrow, viewAllHref, viewAllLabel }: Her
       aria-label="Banner principal"
       className="flex flex-col md:grid md:grid-cols-[45%_55%] md:h-[calc(100dvh-80px)] md:min-h-[560px] overflow-hidden bg-brand-surface"
     >
-      {/* ── Imagen ─────────────────────────────────────────────────────
-          order-first: aparece ARRIBA en mobile (antes del texto)
-          md:order-2:  vuelve a la segunda columna en desktop
-      ───────────────────────────────────────────────────────────────── */}
+      {/* Image — order-first places it above the text on mobile */}
       <div className="order-first md:order-2 relative h-[56dvh] md:h-auto overflow-hidden">
         {banners.map((b, i) => (
           <div
@@ -37,7 +34,7 @@ export function HeroSection({ banners, eyebrow, viewAllHref, viewAllLabel }: Her
             className={`absolute inset-0 transition-opacity duration-700 ${
               i === current ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
-            aria-hidden={i !== current}
+            aria-hidden={i !== current ? "true" : undefined}
           >
             <Image
               src={b.image}
@@ -51,10 +48,12 @@ export function HeroSection({ banners, eyebrow, viewAllHref, viewAllLabel }: Her
         ))}
       </div>
 
-      {/* ── Texto ──────────────────────────────────────────────────────
-          md:order-1: primera columna en desktop (segunda en DOM → sin h1 duplicado)
-      ───────────────────────────────────────────────────────────────── */}
-      <div className="order-last md:order-1 flex flex-col justify-center bg-brand-surface px-6 py-8 md:px-10 lg:px-16 xl:px-20">
+      {/* aria-live: announces content change to screen readers when banner switches */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="order-last md:order-1 flex flex-col justify-center bg-brand-surface px-6 py-8 md:px-10 lg:px-16 xl:px-20"
+      >
         <p className="text-xs font-display font-bold uppercase tracking-[0.2em] text-brand-base mb-5">
           {eyebrow}
         </p>

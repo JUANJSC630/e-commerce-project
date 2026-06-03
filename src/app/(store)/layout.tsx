@@ -1,0 +1,63 @@
+import type React from "react"
+import { CartProvider } from "@/components/cart/cart-provider"
+import { MiniCart } from "@/components/cart/mini-cart"
+import { CartCounter } from "@/components/cart/cart-counter"
+import { MobileNav } from "@/components/layout/mobile-nav"
+import { SearchBar } from "@/components/search/search-bar"
+import { PromoBanner } from "@/components/layout/promo-banner"
+import { Footer } from "@/components/layout/footer"
+import Link from "next/link"
+import { Heart } from "lucide-react"
+import { brand, navigation, routes } from "@/config/store.config"
+
+export default function StoreLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <CartProvider>
+      <PromoBanner />
+      <header className="py-4 border-b border-brand-muted/30 bg-brand-surface sticky top-0 z-50">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <Link href={routes.home} className="font-display font-bold text-2xl text-brand-ink">
+            {brand.logoImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={brand.logoImage} alt={brand.name} className="h-8 w-auto" />
+            ) : (
+              brand.name
+            )}
+          </Link>
+
+          <nav
+            className="hidden md:flex space-x-6 items-center"
+            aria-label="Navegación principal"
+          >
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-brand-ink hover:text-brand-base transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center space-x-4">
+            <SearchBar />
+            <Link
+              href={routes.favorites}
+              aria-label="Mis favoritos"
+              className="hidden md:flex p-2 rounded-md text-brand-ink hover:text-brand-base hover:bg-brand-surface-alt transition-colors"
+            >
+              <Heart className="h-5 w-5" aria-hidden="true" />
+            </Link>
+            <CartCounter />
+            <MobileNav />
+          </div>
+        </div>
+      </header>
+
+      <MiniCart />
+      <main className="min-h-screen">{children}</main>
+      <Footer />
+    </CartProvider>
+  )
+}

@@ -7,10 +7,6 @@ const PUBLIC_ADMIN_PATHS = ["/admin/login"]
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Forward pathname to root layout via header (used to hide store chrome)
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set("x-pathname", pathname)
-
   // Protect /admin/* routes (except /admin/login)
   if (pathname.startsWith("/admin") && !PUBLIC_ADMIN_PATHS.includes(pathname)) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
@@ -30,9 +26,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next({
-    request: { headers: requestHeaders },
-  })
+  return NextResponse.next()
 }
 
 export const config = {

@@ -1,6 +1,6 @@
 import "server-only"
 
-import { Prisma } from "@prisma/client"
+import { Prisma, type PaymentStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { shipping } from "@/config/store.config"
 import type { ShippingData } from "@/lib/validation"
@@ -164,6 +164,7 @@ export interface OrderConfirmationDTO {
   customerName: string | null
   customerEmail: string | null
   status: string
+  paymentStatus: PaymentStatus
   subtotal: number
   shippingCost: number
   total: number
@@ -185,6 +186,7 @@ export async function getOrderForConfirmation(id: string): Promise<OrderConfirma
       customerName: true,
       customerEmail: true,
       status: true,
+      paymentStatus: true,
       subtotal: true,
       shippingCost: true,
       total: true,
@@ -209,6 +211,7 @@ export async function getOrderForConfirmation(id: string): Promise<OrderConfirma
     customerName: order.customerName,
     customerEmail: order.customerEmail,
     status: order.status,
+    paymentStatus: order.paymentStatus,
     subtotal: order.subtotal,
     shippingCost: order.shippingCost,
     total: order.total,
@@ -224,4 +227,74 @@ export async function getOrderForConfirmation(id: string): Promise<OrderConfirma
       color: item.color,
     })),
   }
+}
+
+export interface OrderPaymentInfo {
+  id: string
+  orderNumber: string
+  total: number
+  customerEmail: string | null
+  paymentStatus: PaymentStatus
+}
+
+/** Minimal read used by the payment flow (amount + current settlement state). */
+export function getOrderPaymentInfo(id: string): Promise<OrderPaymentInfo | null> {
+  return prisma.order.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      orderNumber: true,
+      total: true,
+      customerEmail: true,
+      paymentStatus: true,
+    },
+  })
+}
+
+/** Stores the provider's reference (preference/session id) on the order. */
+export async function setPaymentReference(id: string, reference: string): Promise<void> {
+  await prisma.order.update({ where: { id }, data: { paymentRef: reference } })
+}
+
+/**
+ * Idempotently settle a successful payment: paymentStatus → PAID, order →
+ * CONFIRMED. The guarded `updateMany` ensures only the first call (e.g. a
+ * webhook delivered twice) takes effect. Returns whether it changed anything.
+ */
+export async function markOrderPaid(id: string): Promise<boolean> {
+  const { count } = await prisma.order.updateMany({
+    where: { id, paymentStatus: "PENDING" },
+    data: { paymentStatus: "PAID", status: "CONFIRMED" },
+  })
+  return count > 0
+}
+
+/**
+ * Idempotently settle a failed payment: paymentStatus → FAILED, order →
+ * CANCELLED, and return the reserved stock. The guarded `updateMany` runs first
+ * inside the transaction so the restock happens exactly once.
+ */
+export async function markOrderFailed(id: string): Promise<boolean> {
+  return prisma.$transaction(
+    async (tx) => {
+      const { count } = await tx.order.updateMany({
+        where: { id, paymentStatus: "PENDING" },
+        data: { paymentStatus: "FAILED", status: "CANCELLED" },
+      })
+      if (count === 0) return false
+
+      const items = await tx.orderItem.findMany({
+        where: { orderId: id },
+        select: { productId: true, quantity: true },
+      })
+      for (const item of items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        })
+      }
+      return true
+    },
+    { maxWait: 8000, timeout: 15000 },
+  )
 }

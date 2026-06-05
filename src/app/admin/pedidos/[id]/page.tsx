@@ -23,6 +23,18 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: "bg-red-100 text-red-800",
 }
 
+const PAYMENT_LABELS: Record<string, string> = {
+  PENDING: "Pago pendiente",
+  PAID: "Pagado",
+  FAILED: "Pago fallido",
+}
+
+const PAYMENT_COLORS: Record<string, string> = {
+  PENDING: "bg-yellow-100 text-yellow-800",
+  PAID: "bg-green-100 text-green-800",
+  FAILED: "bg-red-100 text-red-800",
+}
+
 export default async function PedidoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) redirect("/admin/login")
@@ -54,11 +66,18 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
         </Link>
         <div className="flex items-center justify-between mt-2">
           <h1 className="text-2xl font-bold text-slate-900">Pedido {order.orderNumber}</h1>
-          <span
-            className={`text-sm font-medium px-3 py-1 rounded-full ${STATUS_COLORS[order.status]}`}
-          >
-            {STATUS_LABELS[order.status]}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-sm font-medium px-3 py-1 rounded-full ${PAYMENT_COLORS[order.paymentStatus]}`}
+            >
+              {PAYMENT_LABELS[order.paymentStatus]}
+            </span>
+            <span
+              className={`text-sm font-medium px-3 py-1 rounded-full ${STATUS_COLORS[order.status]}`}
+            >
+              {STATUS_LABELS[order.status]}
+            </span>
+          </div>
         </div>
         <p className="text-xs text-slate-400 font-mono mt-1">{order.id}</p>
       </div>

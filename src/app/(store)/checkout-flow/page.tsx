@@ -16,7 +16,7 @@ import { validateShippingData, validatePaymentData } from "@/lib/validation"
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
 
 export default function CheckoutPage() {
-  const { items, updateItemQuantity, removeItem, clearCart } = useCart()
+  const { items, updateItemQuantity, removeItem } = useCart()
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [shippingData, setShippingData] = useState({
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true)
     try {
-      const res = await fetch("/api/orders", {
+      const orderRes = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -125,17 +125,32 @@ export default function CheckoutPage() {
         }),
       })
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
+      if (!orderRes.ok) {
+        const data = await orderRes.json().catch(() => ({}))
         toast.error(data.error ?? "No se pudo crear el pedido. Intenta de nuevo.")
         setIsSubmitting(false)
         return
       }
 
-      const { id } = (await res.json()) as { id: string }
-      clearCart()
-      toast.success("¡Pedido confirmado!")
-      router.push(`/order-success/${id}`)
+      const { id } = (await orderRes.json()) as { id: string }
+
+      // Order is created PENDING; start payment and hand off to the gateway.
+      // The cart is cleared only once payment succeeds (see the payment page).
+      const payRes = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: id }),
+      })
+
+      if (!payRes.ok) {
+        const data = await payRes.json().catch(() => ({}))
+        toast.error(data.error ?? "No se pudo iniciar el pago. Intenta de nuevo.")
+        setIsSubmitting(false)
+        return
+      }
+
+      const { redirectUrl } = (await payRes.json()) as { redirectUrl: string }
+      router.push(redirectUrl)
     } catch {
       toast.error("Error de conexión. Intenta de nuevo.")
       setIsSubmitting(false)

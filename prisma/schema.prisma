@@ -20,6 +20,12 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
 model Role {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -75,10 +81,12 @@ model Order {
   customerName    String?
   userId          String?
   user            User?       @relation(fields: [userId], references: [id])
-  status          OrderStatus @default(PENDING)
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentRef      String?
   total           Float
   subtotal        Float
-  shippingCost    Float       @default(0)
+  shippingCost    Float         @default(0)
   items           OrderItem[]
   shippingAddress Json?
   paymentMethod   String?

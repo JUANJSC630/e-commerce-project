@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { CheckCircle2, Package, MapPin } from "lucide-react"
 import { getOrderForConfirmation } from "@/lib/orders"
 import { formatPrice } from "@/lib/utils"
@@ -21,6 +21,8 @@ export default async function OrderSuccessPage({ params }: PageProps) {
   const order = await getOrderForConfirmation(id)
 
   if (!order) notFound()
+  // Only celebrate a paid order; otherwise send the customer to complete payment.
+  if (order.paymentStatus !== "PAID") redirect(`/pago/${id}`)
 
   const { shippingAddress: address } = order
 

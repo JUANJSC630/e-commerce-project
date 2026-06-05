@@ -12,7 +12,7 @@ import {
   routes,
   pageSeo,
 } from "@/config/store.config"
-import { getFeaturedProducts } from "@/lib/mock-data"
+import { getFeaturedProducts } from "@/lib/products"
 
 export const metadata: Metadata = {
   title: pageSeo.home.title,
@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
+export default async function HomePage() {
   const { hero, categories, promise, products } = homePageContent
-  const featuredProducts = getFeaturedProducts(products.limit)
+  const featuredProducts = await getFeaturedProducts(products.limit)
 
   return (
     <main>

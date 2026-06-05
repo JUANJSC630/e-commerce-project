@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { searchProducts } from "@/lib/mock-data"
+import { searchProducts } from "@/lib/products"
 import { pageSeo } from "@/config/store.config"
 import { SearchResults } from "@/components/search/search-results"
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { q } = await searchParams
   const query = q?.trim() ?? ""
-  const results = searchProducts(query)
+  const results = await searchProducts(query)
 
   return <SearchResults query={query} results={results} />
 }

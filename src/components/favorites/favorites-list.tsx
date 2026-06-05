@@ -1,17 +1,40 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useState } from "react"
 import { Heart } from "lucide-react"
 import Link from "next/link"
 import { useAllFavoriteIds } from "@/hooks/use-favorites"
-import { getProductsByIds } from "@/lib/mock-data"
 import { ProductCard } from "@/components/product/product-card"
+import { ProductGridSkeleton } from "@/components/product/product-grid-skeleton"
 import { BreadcrumbNav } from "@/components/layout/breadcrumbs"
 import { routes } from "@/config/store.config"
+import type { Product } from "@/lib/types"
 
 export function FavoritesList() {
   const ids = useAllFavoriteIds()
-  const products = useMemo(() => getProductsByIds(ids), [ids])
+  const idsKey = ids.join(",")
+  // `null` = still loading the catalog for the saved ids.
+  const [products, setProducts] = useState<Product[] | null>(null)
+
+  useEffect(() => {
+    if (ids.length === 0) {
+      setProducts([])
+      return
+    }
+
+    const controller = new AbortController()
+    setProducts(null)
+    fetch(`/api/products?ids=${encodeURIComponent(idsKey)}`, { signal: controller.signal })
+      .then((res) => (res.ok ? (res.json() as Promise<Product[]>) : Promise.reject(res)))
+      .then(setProducts)
+      .catch((error) => {
+        if (!controller.signal.aborted) setProducts([])
+        return error
+      })
+
+    return () => controller.abort()
+    // idsKey is the serialized identity of `ids`; ids.length derives from it.
+  }, [idsKey, ids.length])
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -24,7 +47,7 @@ export function FavoritesList() {
           <Heart className="h-7 w-7 text-brand-base fill-brand-base" aria-hidden="true" />
           Mis Favoritos
         </h1>
-        {products.length > 0 && (
+        {products && products.length > 0 && (
           <p className="text-brand-muted mt-1" aria-live="polite">
             {products.length} prenda{products.length !== 1 && "s"} guardada
             {products.length !== 1 && "s"}
@@ -32,7 +55,9 @@ export function FavoritesList() {
         )}
       </header>
 
-      {products.length > 0 ? (
+      {products === null ? (
+        <ProductGridSkeleton count={ids.length || 4} />
+      ) : products.length > 0 ? (
         <section aria-label="Productos favoritos">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {products.map((product, index) => (

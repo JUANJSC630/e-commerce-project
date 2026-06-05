@@ -5,8 +5,11 @@ import Link from "next/link"
 import { useState } from "react"
 import { Heart, Eye, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { cn, formatPrice } from "@/lib/utils"
 import { AddToCartButton } from "@/components/cart/add-to-cart-button"
+import { StockBadge } from "@/components/product/stock-badge"
+import { isOutOfStock } from "@/lib/inventory"
 import { useFavorites } from "@/hooks/use-favorites"
 import type { Product } from "@/lib/types"
 
@@ -23,6 +26,8 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
+
+  const outOfStock = isOutOfStock(product.stock)
 
   return (
     <div className="group relative bg-card text-card-foreground rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border">
@@ -52,6 +57,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {product.isOnSale && discountPercentage > 0 && (
             <Badge variant="discount">-{discountPercentage}%</Badge>
           )}
+          <StockBadge stock={product.stock} />
         </div>
 
         <button
@@ -166,7 +172,13 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </div>
         )}
 
-        <AddToCartButton product={product} className="w-full mt-4 font-medium" />
+        {outOfStock ? (
+          <Button disabled className="w-full mt-4 font-medium">
+            Agotado
+          </Button>
+        ) : (
+          <AddToCartButton product={product} className="w-full mt-4 font-medium" />
+        )}
       </div>
     </div>
   )

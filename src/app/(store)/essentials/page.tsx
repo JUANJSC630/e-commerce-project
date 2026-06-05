@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { ProductCard } from "@/components/product/product-card"
-import { getEssentialProducts } from "@/lib/mock-data"
+import { getEssentialProducts } from "@/lib/products"
 import { essentialsConfig, pageSeo } from "@/config/store.config"
 
 export const metadata: Metadata = {
@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default function EssentialsPage() {
-  const essentialProducts = getEssentialProducts()
+export default async function EssentialsPage() {
+  const essentialProducts = await getEssentialProducts()
 
   return (
     <div className="container mx-auto px-4 py-8">

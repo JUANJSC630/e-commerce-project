@@ -15,8 +15,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { getRelatedProducts } from "@/lib/mock-data"
 import { ProductCard } from "@/components/product/product-card"
+import { StockBadge } from "@/components/product/stock-badge"
+import { isOutOfStock } from "@/lib/inventory"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
 import { locale, shipping, routes, categoryLabels } from "@/config/store.config"
@@ -24,11 +25,12 @@ import type { Product } from "@/lib/types"
 
 interface ProductDetailProps {
   product: Product
+  relatedProducts: Product[]
 }
 
-export function ProductDetail({ product }: ProductDetailProps) {
-  const relatedProducts = getRelatedProducts(product)
+export function ProductDetail({ product, relatedProducts }: ProductDetailProps) {
   const { addItem, openCart } = useCart()
+  const outOfStock = isOutOfStock(product.stock)
   const { isFavorite, toggleFavorite } = useFavorites(product.id)
 
   const [selectedSize, setSelectedSize] = useState<string | undefined>(product.sizes?.[0])
@@ -40,6 +42,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
     : 0
 
   const handleAddToCart = () => {
+    if (outOfStock) return
     addItem(product, quantity, selectedSize, selectedColor)
     openCart()
   }
@@ -166,6 +169,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
               )}
             </div>
 
+            <StockBadge stock={product.stock} />
+
             {product.description && (
               <p className="text-muted-foreground leading-relaxed">{product.description}</p>
             )}
@@ -248,9 +253,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
             {/* CTAs */}
             <div className="flex gap-3 pt-1">
-              <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+              <Button size="lg" className="flex-1" onClick={handleAddToCart} disabled={outOfStock}>
                 <ShoppingCart className="w-4 h-4 mr-2" aria-hidden="true" />
-                Agregar al carrito
+                {outOfStock ? "Agotado" : "Agregar al carrito"}
               </Button>
               <button
                 onClick={toggleFavorite}

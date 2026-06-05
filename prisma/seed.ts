@@ -13,6 +13,8 @@ import { PrismaPg } from "@prisma/adapter-pg"
 import pg from "pg"
 import bcrypt from "bcryptjs"
 
+import { productsSeed } from "./products-data"
+
 const { Pool } = pg
 
 const adapter = new PrismaPg(
@@ -121,6 +123,18 @@ async function main() {
   })
 
   console.log("  ✓ admin@dulceinfancia.com  (password: Admin123!)")
+
+  console.log("Seeding products…")
+
+  for (const { id, ...data } of productsSeed) {
+    await prisma.product.upsert({
+      where: { id },
+      update: data,
+      create: { id, ...data },
+    })
+  }
+  console.log(`  ✓ ${productsSeed.length} products`)
+
   console.log("\nSeed complete.")
 }
 

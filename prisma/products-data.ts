@@ -1,7 +1,30 @@
-import type { Product } from "./types"
+/**
+ * prisma/products-data.ts
+ * Catalog seed data. Mirrors the former src/lib/mock-data.ts but adds the
+ * persistence-only fields (stock, isFeatured). Ids are explicit and stable so
+ * existing favorites (stored in the browser) and shared links keep working.
+ */
 
-export const allMockProducts: Product[] = [
-  // Bebés
+export interface ProductSeed {
+  id: string
+  name: string
+  price: number
+  originalPrice?: number
+  image: string
+  category: string
+  sizes: string[]
+  colors: string[]
+  description?: string
+  isOnSale?: boolean
+  isNew?: boolean
+  isFeatured?: boolean
+  stock: number
+  rating?: number
+  reviewCount?: number
+}
+
+export const productsSeed: ProductSeed[] = [
+  // ─── Bebés ──────────────────────────────────────────────────────────────────
   {
     id: "baby-001",
     name: "Body Algodón Orgánico - Nubes",
@@ -12,6 +35,8 @@ export const allMockProducts: Product[] = [
     colors: ["#F2F2F2", "#C3BDBF"],
     rating: 4.9,
     reviewCount: 112,
+    isFeatured: true,
+    stock: 40,
     description:
       "Suave body de algodón orgánico con un lindo estampado de nubes. Perfecto para el uso diario.",
   },
@@ -27,6 +52,8 @@ export const allMockProducts: Product[] = [
     isOnSale: true,
     rating: 4.7,
     reviewCount: 88,
+    isFeatured: true,
+    stock: 4,
     description: "Adorable ranita tejida, ideal para ocasiones especiales o un día acogedor.",
   },
   {
@@ -39,6 +66,8 @@ export const allMockProducts: Product[] = [
     colors: ["#A6A19F"],
     rating: 4.8,
     reviewCount: 95,
+    isFeatured: true,
+    stock: 25,
     description: "Mantén a tu pequeño abrigado con este lindo set de gorro y botitas de oso.",
   },
   {
@@ -53,6 +82,8 @@ export const allMockProducts: Product[] = [
     isOnSale: true,
     rating: 4.5,
     reviewCount: 23,
+    isFeatured: true,
+    stock: 12,
   },
   {
     id: "baby-005",
@@ -64,9 +95,11 @@ export const allMockProducts: Product[] = [
     colors: ["#FFFFFF", "#E0E0E0", "#F8B195"],
     rating: 4.9,
     reviewCount: 102,
+    isFeatured: true,
+    stock: 60,
   },
 
-  // Niñas
+  // ─── Niñas ──────────────────────────────────────────────────────────────────
   {
     id: "girls-001",
     name: "Vestido Verano Estampado Floral",
@@ -77,6 +110,8 @@ export const allMockProducts: Product[] = [
     colors: ["#F2CF1D", "#FBF2ED", "#CDD5C6"],
     rating: 4.6,
     reviewCount: 75,
+    isFeatured: true,
+    stock: 18,
     description: "Vestido de verano ligero y fresco con un hermoso estampado floral.",
   },
   {
@@ -89,6 +124,8 @@ export const allMockProducts: Product[] = [
     colors: ["#F67280"],
     rating: 4.9,
     reviewCount: 102,
+    isFeatured: true,
+    stock: 3,
     description:
       "Una falda de tul divertida y brillante, perfecta para fiestas o jugar a disfrazarse.",
   },
@@ -104,6 +141,8 @@ export const allMockProducts: Product[] = [
     isOnSale: true,
     rating: 4.5,
     reviewCount: 60,
+    isFeatured: true,
+    stock: 22,
     description: "Moderna chaqueta de jean con lindos parches bordados.",
   },
   {
@@ -118,9 +157,10 @@ export const allMockProducts: Product[] = [
     isOnSale: true,
     rating: 4.7,
     reviewCount: 67,
+    stock: 15,
   },
 
-  // Niños
+  // ─── Niños ──────────────────────────────────────────────────────────────────
   {
     id: "boys-001",
     name: "Camiseta Gráfica Dinosaurio",
@@ -131,6 +171,7 @@ export const allMockProducts: Product[] = [
     colors: ["#CDD5C6", "#A6A19F"],
     rating: 4.7,
     reviewCount: 90,
+    stock: 30,
     description: "Genial camiseta con un divertido gráfico de dinosaurio, hecha de suave algodón.",
   },
   {
@@ -143,6 +184,7 @@ export const allMockProducts: Product[] = [
     colors: ["#D7D0C2"],
     rating: 4.5,
     reviewCount: 80,
+    stock: 0,
     description: "Shorts cargo cómodos y duraderos, perfectos para aventuras.",
   },
   {
@@ -155,6 +197,7 @@ export const allMockProducts: Product[] = [
     colors: ["#3E3A3B", "#F2F2F2"],
     rating: 4.6,
     reviewCount: 70,
+    stock: 16,
     description: "Acogedora sudadera de rayas con capucha para los días más frescos.",
   },
   {
@@ -168,9 +211,10 @@ export const allMockProducts: Product[] = [
     isNew: true,
     rating: 4.8,
     reviewCount: 45,
+    stock: 9,
   },
 
-  // Esenciales
+  // ─── Esenciales ───────────────────────────────────────────────────────────────
   {
     id: "essentials-001",
     name: "Pack 3 Camisetas Manga Larga Básicas Unisex",
@@ -181,6 +225,7 @@ export const allMockProducts: Product[] = [
     colors: ["#F2F2F2", "#C3BDBF", "#A6A19F"],
     rating: 4.9,
     reviewCount: 150,
+    stock: 50,
     description:
       "Pack de tres camisetas esenciales de manga larga en colores neutros. Suaves y versátiles.",
   },
@@ -194,6 +239,7 @@ export const allMockProducts: Product[] = [
     colors: ["#3E3A3B"],
     rating: 4.7,
     reviewCount: 95,
+    stock: 5,
     description: "Leggings de algodón cómodos y elásticos, un básico de armario.",
   },
   {
@@ -207,41 +253,8 @@ export const allMockProducts: Product[] = [
     isNew: true,
     rating: 4.8,
     reviewCount: 120,
+    stock: 28,
     description:
       "Pijamas enterizos esenciales para recién nacidos y bebés. Cierres a presión fáciles.",
   },
 ]
-
-export const getProductsByCategory = (categoryName: string): Product[] =>
-  allMockProducts.filter((p) => p.category === categoryName)
-
-export const getSaleProducts = (): Product[] => allMockProducts.filter((p) => p.isOnSale)
-
-export const getEssentialProducts = (): Product[] =>
-  allMockProducts.filter(
-    (p) => p.category === "Essentials" || p.name.toLowerCase().includes("básic"),
-  )
-
-export const getProductById = (id: string): Product | undefined =>
-  allMockProducts.find((p) => p.id === id)
-
-export const getRelatedProducts = (product: Product, limit = 4): Product[] =>
-  allMockProducts
-    .filter((p) => p.id !== product.id && p.category === product.category)
-    .slice(0, limit)
-
-export const getFeaturedProducts = (limit = 8): Product[] => allMockProducts.slice(0, limit)
-
-export const searchProducts = (query: string): Product[] => {
-  const q = query.toLowerCase().trim()
-  if (!q) return []
-  return allMockProducts.filter(
-    (p) =>
-      p.name.toLowerCase().includes(q) ||
-      p.category?.toLowerCase().includes(q) ||
-      p.description?.toLowerCase().includes(q),
-  )
-}
-
-export const getProductsByIds = (ids: string[]): Product[] =>
-  allMockProducts.filter((p) => ids.includes(p.id))

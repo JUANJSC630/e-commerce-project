@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { SalesPageComponent } from "@/components/category/sales-page"
 import { categories } from "@/config/store.config"
-import { getSaleProducts } from "@/lib/mock-data"
+import { getSaleProducts } from "@/lib/products"
 
 const config = categories.find((c) => c.slug === "sales")!
 
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default function SalesPage() {
-  const products = getSaleProducts()
+export default async function SalesPage() {
+  const products = await getSaleProducts()
   return (
     <SalesPageComponent
       products={products}

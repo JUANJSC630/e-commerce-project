@@ -13,13 +13,13 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ## Decisiones Arquitectónicas — TOMADAS ✅
 
-| Decisión          | Elegida                                  | Razón                                                                 |
-| ----------------- | ---------------------------------------- | --------------------------------------------------------------------- |
-| Stack backend     | **Custom: Next.js + Prisma + PostgreSQL** | Máximo control, todo en un solo proyecto, sin dependencias externas    |
-| Base de datos     | **Prisma Postgres** (pooled)             | Prisma v7 con driver adapters, `PrismaPg` + `pg.Pool`, SSL verify-full |
-| Autenticación     | **NextAuth.js v4** (JWT + Credentials)   | Flexible, integrado con Prisma, roles y permisos custom               |
-| Imágenes          | **Por definir** (Cloudinary o similar)   | Actualmente placeholder; se decide al conectar productos reales       |
-| Panel admin       | **Custom en `/admin`** (Next.js)         | Dashboard completo propio, no Sanity Studio                           |
+| Decisión      | Elegida                                   | Razón                                                                  |
+| ------------- | ----------------------------------------- | ---------------------------------------------------------------------- |
+| Stack backend | **Custom: Next.js + Prisma + PostgreSQL** | Máximo control, todo en un solo proyecto, sin dependencias externas    |
+| Base de datos | **Prisma Postgres** (pooled)              | Prisma v7 con driver adapters, `PrismaPg` + `pg.Pool`, SSL verify-full |
+| Autenticación | **NextAuth.js v4** (JWT + Credentials)    | Flexible, integrado con Prisma, roles y permisos custom                |
+| Imágenes      | **Por definir** (Cloudinary o similar)    | Actualmente placeholder; se decide al conectar productos reales        |
+| Panel admin   | **Custom en `/admin`** (Next.js)          | Dashboard completo propio, no Sanity Studio                            |
 
 ---
 
@@ -27,53 +27,53 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ### Storefront → Backend (alta prioridad)
 
-| Problema                                    | Detalle                                                                         |
-| ------------------------------------------- | ------------------------------------------------------------------------------- |
-| Productos desde mock-data                   | El storefront lee de `mock-data.ts` en vez de la API/Prisma                     |
-| Checkout no guarda pedido                   | `handleOrderConfirm()` solo muestra toast + redirige, sin POST al backend       |
-| Imágenes placeholder                        | Todos los productos usan imágenes locales o `/placeholder.svg`                  |
-| Sin stock real en storefront                | No muestra "Sin stock" ni "Últimas X unidades" desde la base de datos           |
+| Problema                         | Detalle                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products` |
+| Checkout no guarda pedido        | `handleOrderConfirm()` solo muestra toast + redirige, sin POST al backend      |
+| Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                 |
+| ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB    |
 
 ### Código con bugs menores
 
-| Archivo                       | Problema                                                                     |
-| ----------------------------- | ---------------------------------------------------------------------------- |
-| `src/app/products/page.tsx`   | `brand-coral` token no existe en el sistema de diseño (falla silencioso)     |
-| `src/app/products/[id]/page.tsx` | `categoryLabel` mapa inline duplica lo que ya está en `store.config.ts`   |
+| Archivo                          | Problema                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| `src/app/products/page.tsx`      | `brand-coral` token no existe en el sistema de diseño (falla silencioso) |
+| `src/app/products/[id]/page.tsx` | `categoryLabel` mapa inline duplica lo que ya está en `store.config.ts`  |
 
 ---
 
 ## Módulos Existentes
 
-| Módulo                 | Ruta               | Estado          | Notas                                                            |
-| ---------------------- | ------------------ | --------------- | ---------------------------------------------------------------- |
-| Home                   | `/`                | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise               |
-| Categoría Bebés        | `/category/babies` | ✅ Funcional    | 5 productos mock                                                 |
-| Categoría Niñas        | `/category/girls`  | ✅ Funcional    | 4 productos mock                                                 |
-| Categoría Niños        | `/category/boys`   | ✅ Funcional    | 4 productos mock                                                 |
-| Ofertas                | `/category/sales`  | ✅ Funcional    | Filtra `isOnSale: true`                                          |
-| Esenciales             | `/essentials`      | ✅ Funcional    | 3 productos mock                                                 |
-| Todos los productos    | `/products`        | ⚠️ Bug menor    | `brand-coral` token no existe                                    |
-| Detalle de producto    | `/products/[id]`   | ⚠️ Bug menor    | categoryLabel duplicado                                          |
-| Carrito                | `/carrito`         | ✅ Funcional    | AlertDialog, edición de cantidad                                 |
-| Checkout               | `/checkout-flow`   | ⚠️ Incompleto   | Valida y confirma pero **no guarda el pedido** en backend        |
-| 404 (store)            | —                  | ✅ Funcional    | Branding + CTAs                                                  |
-| Error (store)          | —                  | ✅ Funcional    | Botón reset + branding                                           |
-| Cart Context           | —                  | ✅ Sólido       | localStorage, extensible                                         |
-| useFavorites           | —                  | ✅ Funcional    | localStorage, persiste entre navegaciones                        |
-| Sistema de tema        | —                  | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                              |
-| store.config.ts        | —                  | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                    |
-| validation.ts          | —                  | ✅ Centralizado | Luhn, shipping, payment                                          |
-| mock-data.ts           | —                  | ✅ Temporal     | 17 productos — se reemplaza al conectar storefront con Prisma    |
-| **Admin Dashboard**    | `/admin`           | ✅ Completo     | Stats, gráficos, accesos rápidos                                 |
-| **Admin Login**        | `/admin/login`     | ✅ Funcional    | NextAuth JWT + Credentials                                       |
-| **Admin Productos**    | `/admin/productos` | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                          |
-| **Admin Pedidos**      | `/admin/pedidos`   | ✅ CRUD         | Lista, detalle, cambio de estado                                 |
-| **Admin Usuarios**     | `/admin/usuarios`  | ✅ CRUD         | Gestión con asignación de rol                                    |
-| **Admin Roles**        | `/admin/roles`     | ✅ CRUD         | Permisos granulares por módulo                                   |
-| **Admin Settings**     | `/admin/settings`  | ✅ CRUD         | 9 secciones editables (brand, theme, shipping, etc.)             |
-| **Admin 404**          | `/admin/*`         | ✅ Profesional  | Página personalizada con branding                                |
-| **Admin Error**        | `/admin/*`         | ✅ Profesional  | Error boundary con retry + navegación                            |
+| Módulo              | Ruta               | Estado          | Notas                                                         |
+| ------------------- | ------------------ | --------------- | ------------------------------------------------------------- |
+| Home                | `/`                | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise            |
+| Categoría Bebés     | `/category/babies` | ✅ Funcional    | 5 productos mock                                              |
+| Categoría Niñas     | `/category/girls`  | ✅ Funcional    | 4 productos mock                                              |
+| Categoría Niños     | `/category/boys`   | ✅ Funcional    | 4 productos mock                                              |
+| Ofertas             | `/category/sales`  | ✅ Funcional    | Filtra `isOnSale: true`                                       |
+| Esenciales          | `/essentials`      | ✅ Funcional    | 3 productos mock                                              |
+| Todos los productos | `/products`        | ⚠️ Bug menor    | `brand-coral` token no existe                                 |
+| Detalle de producto | `/products/[id]`   | ⚠️ Bug menor    | categoryLabel duplicado                                       |
+| Carrito             | `/carrito`         | ✅ Funcional    | AlertDialog, edición de cantidad                              |
+| Checkout            | `/checkout-flow`   | ⚠️ Incompleto   | Valida y confirma pero **no guarda el pedido** en backend     |
+| 404 (store)         | —                  | ✅ Funcional    | Branding + CTAs                                               |
+| Error (store)       | —                  | ✅ Funcional    | Botón reset + branding                                        |
+| Cart Context        | —                  | ✅ Sólido       | localStorage, extensible                                      |
+| useFavorites        | —                  | ✅ Funcional    | localStorage, persiste entre navegaciones                     |
+| Sistema de tema     | —                  | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                           |
+| store.config.ts     | —                  | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                 |
+| validation.ts       | —                  | ✅ Centralizado | Luhn, shipping, payment                                       |
+| mock-data.ts        | —                  | ✅ Temporal     | 17 productos — se reemplaza al conectar storefront con Prisma |
+| **Admin Dashboard** | `/admin`           | ✅ Completo     | Stats, gráficos, accesos rápidos                              |
+| **Admin Login**     | `/admin/login`     | ✅ Funcional    | NextAuth JWT + Credentials                                    |
+| **Admin Productos** | `/admin/productos` | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                       |
+| **Admin Pedidos**   | `/admin/pedidos`   | ✅ CRUD         | Lista, detalle, cambio de estado                              |
+| **Admin Usuarios**  | `/admin/usuarios`  | ✅ CRUD         | Gestión con asignación de rol                                 |
+| **Admin Roles**     | `/admin/roles`     | ✅ CRUD         | Permisos granulares por módulo                                |
+| **Admin Settings**  | `/admin/settings`  | ✅ CRUD         | 9 secciones editables (brand, theme, shipping, etc.)          |
+| **Admin 404**       | `/admin/*`         | ✅ Profesional  | Página personalizada con branding                             |
+| **Admin Error**     | `/admin/*`         | ✅ Profesional  | Error boundary con retry + navegación                         |
 
 ---
 
@@ -194,15 +194,19 @@ Ver historial al final del documento.
 
 > **Objetivo**: El storefront deja de leer mock-data.ts y consume productos/pedidos desde Prisma. El checkout guarda pedidos reales.
 
-#### Productos desde Prisma
+#### Productos desde Prisma — ✅ Completado
 
 ```
-[ ] Crear API routes: GET /api/products, GET /api/products/[id]
-[ ] Filtros por categoría, búsqueda, precio — query params
-[ ] Actualizar páginas de categoría para fetch desde API (o Server Component directo con Prisma)
-[ ] Actualizar /products y /products/[id] para leer de la base de datos
-[ ] getFeaturedProducts() → Prisma query con isFeatured: true
-[ ] Eliminar src/lib/mock-data.ts una vez migrado completamente
+[x] Capa de datos server-only src/lib/products.ts (repositorio, mapper Prisma→Product)
+[x] Crear API routes: GET /api/products, GET /api/products/[id]
+[x] Filtros por categoría, búsqueda, ids — query params (dispatch en /api/products)
+[x] Páginas de categoría → Server Components async con Prisma directo
+[x] /products y /products/[id] leen de la base de datos
+[x] getFeaturedProducts() → Prisma query con isFeatured: true
+[x] favoritos (client) → fetch /api/products?ids= con skeleton de carga
+[x] sitemap.ts → getAllProductIds() desde Prisma
+[x] Seed de 16 productos (prisma/products-data.ts, ids estables, idempotente)
+[x] Eliminado src/lib/mock-data.ts
 ```
 
 #### Pedidos reales
@@ -217,12 +221,14 @@ Ver historial al final del documento.
 [ ] GET /api/orders/[id] — retorna pedido para página de confirmación
 ```
 
-#### Stock en storefront
+#### Stock en storefront — ✅ Completado
 
 ```
-[ ] ProductCard → mostrar "Sin stock" si stock = 0
-[ ] ProductCard → badge "Últimas X unidades" si stock <= umbral
-[ ] Verificar stock antes de ir al checkout
+[x] Helper src/lib/inventory.ts (isOutOfStock / isLowStock) + config inventory.lowStockThreshold
+[x] StockBadge reutilizable: "Agotado" / "Últimas X unidades"
+[x] ProductCard → badge de stock + CTA "Agotado" deshabilitado
+[x] ProductDetail → badge de stock + bloqueo de "Agregar al carrito"
+[ ] Verificar stock antes de ir al checkout (se cierra con POST /api/orders — Frente Pedidos)
 ```
 
 #### Imágenes reales

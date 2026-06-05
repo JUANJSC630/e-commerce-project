@@ -12,6 +12,8 @@ export interface Product {
   description?: string
   isOnSale?: boolean
   isNew?: boolean
+  /** Units available. `undefined` means stock is not tracked for this product. */
+  stock?: number
 }
 
 export interface CartItem extends Product {

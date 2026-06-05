@@ -143,6 +143,13 @@ export const shipping = {
   estimatedDays: "3-5 días hábiles",
 }
 
+// ─── Inventory ────────────────────────────────────────────────────────────────
+
+export const inventory = {
+  /** At or below this stock level the storefront shows an "Últimas X unidades" badge */
+  lowStockThreshold: 5,
+}
+
 // ─── Payment Methods ──────────────────────────────────────────────────────────
 
 /**

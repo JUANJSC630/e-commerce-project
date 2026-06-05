@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next"
-import { allMockProducts } from "@/lib/mock-data"
+import { getAllProductIds } from "@/lib/products"
 import { routes } from "@/config/store.config"
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dulceinfancia.com"
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const productEntries: MetadataRoute.Sitemap = allMockProducts.map((p) => ({
-    url: `${BASE_URL}${routes.products}/${p.id}`,
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const productIds = await getAllProductIds()
+  const productEntries: MetadataRoute.Sitemap = productIds.map((id) => ({
+    url: `${BASE_URL}${routes.products}/${id}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.8,

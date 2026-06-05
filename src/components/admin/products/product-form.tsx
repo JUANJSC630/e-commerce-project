@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import type { Product } from "@prisma/client"
 import { ImageUploadField } from "@/components/admin/products/image-upload-field"
+import { productCategories, categoryLabels } from "@/config/store.config"
 
 interface ProductFormProps {
   product?: Product
 }
-
-const CATEGORIES = ["niñas", "niños", "bebés", "ofertas", "essentials"]
 
 export function ProductForm({ product }: ProductFormProps) {
   const router = useRouter()
@@ -21,7 +20,7 @@ export function ProductForm({ product }: ProductFormProps) {
     price: product?.price?.toString() ?? "",
     originalPrice: product?.originalPrice?.toString() ?? "",
     image: product?.image ?? "/placeholder.svg",
-    category: product?.category ?? "niñas",
+    category: product?.category ?? productCategories[0],
     description: product?.description ?? "",
     stock: product?.stock?.toString() ?? "0",
     sizes: product?.sizes?.join(", ") ?? "",
@@ -134,9 +133,9 @@ export function ProductForm({ product }: ProductFormProps) {
               onChange={(e) => set("category", e.target.value)}
               className={inputClass}
             >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c} className="capitalize">
-                  {c}
+              {productCategories.map((key) => (
+                <option key={key} value={key}>
+                  {categoryLabels[key]}
                 </option>
               ))}
             </select>

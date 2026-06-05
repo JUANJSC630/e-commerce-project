@@ -346,6 +346,14 @@ export const categoryLabels: Record<string, string> = {
   Sales: "Ofertas",
 }
 
+/**
+ * Categories a product can be assigned to in the admin. These keys MUST match
+ * the `product.category` values the storefront filters by (see category pages
+ * and `src/lib/products.ts`). "Sales" is intentionally excluded — it's driven
+ * by the `isOnSale` flag, not a real category.
+ */
+export const productCategories = ["Babies", "Girls", "Boys", "Essentials"] as const
+
 // ─── Social Links (optional) ──────────────────────────────────────────────────
 
 export const social = {

@@ -28,7 +28,7 @@ interface OrderConfirmationProps {
       price: number
     }[]
   }
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
   onBack: () => void
 }
 
@@ -93,8 +93,11 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
     }
 
     setIsProcessing(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    onConfirm()
+    try {
+      await onConfirm()
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const subtotal = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)

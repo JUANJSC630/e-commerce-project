@@ -70,6 +70,7 @@ model Product {
 
 model Order {
   id              String      @id @default(cuid())
+  orderNumber     String      @unique
   customerEmail   String?
   customerName    String?
   userId          String?
@@ -84,6 +85,9 @@ model Order {
   notes           String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+
+  @@index([createdAt])
+  @@index([status])
 }
 
 model OrderItem {

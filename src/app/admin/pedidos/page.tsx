@@ -90,6 +90,7 @@ export default async function AdminPedidosPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="text-left px-4 py-3 font-medium text-slate-500">Pedido</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">Cliente</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">Items</th>
                 <th className="text-right px-4 py-3 font-medium text-slate-500">Total</th>
@@ -103,7 +104,7 @@ export default async function AdminPedidosPage({
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 text-slate-400">
+                  <td colSpan={canUpdate ? 7 : 6} className="text-center py-10 text-slate-400">
                     No hay pedidos
                   </td>
                 </tr>
@@ -113,6 +114,9 @@ export default async function AdminPedidosPage({
                     key={order.id}
                     className={`hover:bg-slate-50 transition-colors ${i !== orders.length - 1 ? "border-b border-slate-100" : ""}`}
                   >
+                    <td className="px-4 py-3 font-mono text-xs text-slate-600">
+                      {order.orderNumber}
+                    </td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-slate-900">
                         {order.customerName ?? "Sin nombre"}

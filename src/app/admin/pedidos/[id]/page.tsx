@@ -53,7 +53,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
           ← Volver a pedidos
         </Link>
         <div className="flex items-center justify-between mt-2">
-          <h1 className="text-2xl font-bold text-slate-900">Pedido</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Pedido {order.orderNumber}</h1>
           <span
             className={`text-sm font-medium px-3 py-1 rounded-full ${STATUS_COLORS[order.status]}`}
           >

@@ -91,19 +91,12 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleOrderConfirm = () => {
+  const handleOrderConfirm = async () => {
     if (isSubmitting) return
+
     const shippingValidation = validateShippingData(shippingData)
     const paymentValidation = validatePaymentData(paymentData)
-
-    if (shippingValidation.isValid && paymentValidation.isValid) {
-      setIsSubmitting(true)
-      toast.success("¡Pedido confirmado! Recibirás un email con los detalles.")
-      setTimeout(() => {
-        clearCart()
-        router.push(routes.home)
-      }, 2000)
-    } else {
+    if (!shippingValidation.isValid || !paymentValidation.isValid) {
       toast.error("Por favor revisa los datos de envío y pago antes de confirmar.")
       if (!shippingValidation.isValid) {
         setCurrentStep(2)
@@ -112,6 +105,40 @@ export default function CheckoutPage() {
         setCurrentStep(3)
         setPaymentErrors(paymentValidation.errors)
       }
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+            size: item.selectedSize,
+            color: item.selectedColor,
+          })),
+          customer: shippingData,
+          paymentMethod: paymentData.method,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        toast.error(data.error ?? "No se pudo crear el pedido. Intenta de nuevo.")
+        setIsSubmitting(false)
+        return
+      }
+
+      const { id } = (await res.json()) as { id: string }
+      clearCart()
+      toast.success("¡Pedido confirmado!")
+      router.push(`/order-success/${id}`)
+    } catch {
+      toast.error("Error de conexión. Intenta de nuevo.")
+      setIsSubmitting(false)
     }
   }
 

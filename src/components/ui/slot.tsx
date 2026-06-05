@@ -1,35 +1,31 @@
 "use client"
 
 import * as React from "react"
+import { cn } from "@/lib/utils"
 
-type SlotProps = {
+type SlotProps = React.HTMLAttributes<HTMLElement> & {
   children?: React.ReactNode
-  asChild?: boolean
-} & React.HTMLAttributes<HTMLElement>
+}
 
 /**
- * Este componente permite que los elementos pasen sus props a sus hijos
+ * Merges its props onto its single child element (Radix-style `asChild`).
+ * Components render `<Slot>` instead of their default tag when `asChild` is set,
+ * so the child becomes the rendered element while still receiving the
+ * component's classes, handlers and ref. `className` is composed (slot + child);
+ * other child props win on conflict.
  */
-const Slot = React.forwardRef<HTMLSpanElement, SlotProps>(
-  ({ children, asChild = false, ...props }, ref) => {
-    // Si no hay asChild o no hay children válidos, regresamos un span con los props
-    if (!asChild || !React.isValidElement(children)) {
-      return <span {...props} ref={ref} />
-    }
+const Slot = React.forwardRef<HTMLElement, SlotProps>(({ children, className, ...props }, ref) => {
+  if (!React.isValidElement(children)) return null
 
-    // Renderizamos directamente el elemento hijo con las propiedades combinadas
-    // Ajustamos el tipo de `childProps` para incluir `ref`
-    const childProps: React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLSpanElement> } = {
-      ...props,
-    }
+  const child = children as React.ReactElement<{ className?: string }>
 
-    if (ref) {
-      childProps.ref = ref
-    }
-
-    return React.isValidElement(children) ? React.cloneElement(children, childProps) : null
-  },
-)
+  return React.cloneElement(child, {
+    ...props,
+    ...child.props,
+    className: cn(className, child.props.className),
+    ref,
+  } as React.Attributes)
+})
 
 Slot.displayName = "Slot"
 

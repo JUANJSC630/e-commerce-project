@@ -1,13 +1,13 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-03 | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-05 | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
 
 ## Estado General
 
-El **frontend y el panel de administración están construidos**. Flujo completo: home → categoría → detalle → carrito → checkout + dashboard admin multi-rol con CRUD de productos, pedidos, usuarios, roles y configuración. La tienda aún corre sobre datos mock en el frontend, pero el backend (Prisma + PostgreSQL) ya tiene los modelos reales. El siguiente paso es conectar el storefront al backend real.
+El **frontend y el panel de administración están construidos**. Flujo completo: home → categoría → detalle → carrito → checkout + dashboard admin multi-rol con CRUD de productos, pedidos, usuarios, roles y configuración. **El storefront ya lee productos reales desde Prisma** (mock-data.ts eliminado) y el admin sube imágenes con UploadThing. Lo que falta para cerrar el flujo de compra: que el checkout **guarde pedidos reales** (Frente Pedidos) y los pagos.
 
 ---
 
@@ -36,44 +36,42 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ### Código con bugs menores
 
-| Archivo                          | Problema                                                                 |
-| -------------------------------- | ------------------------------------------------------------------------ |
-| `src/app/products/page.tsx`      | `brand-coral` token no existe en el sistema de diseño (falla silencioso) |
-| `src/app/products/[id]/page.tsx` | `categoryLabel` mapa inline duplica lo que ya está en `store.config.ts`  |
+✅ Sin bugs menores pendientes. (`brand-coral` ya no existe en el código; todas las
+páginas leen `categoryLabels` desde `store.config.ts`.)
 
 ---
 
 ## Módulos Existentes
 
-| Módulo              | Ruta               | Estado          | Notas                                                         |
-| ------------------- | ------------------ | --------------- | ------------------------------------------------------------- |
-| Home                | `/`                | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise            |
-| Categoría Bebés     | `/category/babies` | ✅ Funcional    | 5 productos mock                                              |
-| Categoría Niñas     | `/category/girls`  | ✅ Funcional    | 4 productos mock                                              |
-| Categoría Niños     | `/category/boys`   | ✅ Funcional    | 4 productos mock                                              |
-| Ofertas             | `/category/sales`  | ✅ Funcional    | Filtra `isOnSale: true`                                       |
-| Esenciales          | `/essentials`      | ✅ Funcional    | 3 productos mock                                              |
-| Todos los productos | `/products`        | ⚠️ Bug menor    | `brand-coral` token no existe                                 |
-| Detalle de producto | `/products/[id]`   | ⚠️ Bug menor    | categoryLabel duplicado                                       |
-| Carrito             | `/carrito`         | ✅ Funcional    | AlertDialog, edición de cantidad                              |
-| Checkout            | `/checkout-flow`   | ⚠️ Incompleto   | Valida y confirma pero **no guarda el pedido** en backend     |
-| 404 (store)         | —                  | ✅ Funcional    | Branding + CTAs                                               |
-| Error (store)       | —                  | ✅ Funcional    | Botón reset + branding                                        |
-| Cart Context        | —                  | ✅ Sólido       | localStorage, extensible                                      |
-| useFavorites        | —                  | ✅ Funcional    | localStorage, persiste entre navegaciones                     |
-| Sistema de tema     | —                  | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                           |
-| store.config.ts     | —                  | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                 |
-| validation.ts       | —                  | ✅ Centralizado | Luhn, shipping, payment                                       |
-| mock-data.ts        | —                  | ✅ Temporal     | 17 productos — se reemplaza al conectar storefront con Prisma |
-| **Admin Dashboard** | `/admin`           | ✅ Completo     | Stats, gráficos, accesos rápidos                              |
-| **Admin Login**     | `/admin/login`     | ✅ Funcional    | NextAuth JWT + Credentials                                    |
-| **Admin Productos** | `/admin/productos` | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                       |
-| **Admin Pedidos**   | `/admin/pedidos`   | ✅ CRUD         | Lista, detalle, cambio de estado                              |
-| **Admin Usuarios**  | `/admin/usuarios`  | ✅ CRUD         | Gestión con asignación de rol                                 |
-| **Admin Roles**     | `/admin/roles`     | ✅ CRUD         | Permisos granulares por módulo                                |
-| **Admin Settings**  | `/admin/settings`  | ✅ CRUD         | 9 secciones editables (brand, theme, shipping, etc.)          |
-| **Admin 404**       | `/admin/*`         | ✅ Profesional  | Página personalizada con branding                             |
-| **Admin Error**     | `/admin/*`         | ✅ Profesional  | Error boundary con retry + navegación                         |
+| Módulo              | Ruta               | Estado          | Notas                                                           |
+| ------------------- | ------------------ | --------------- | --------------------------------------------------------------- |
+| Home                | `/`                | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise              |
+| Categoría Bebés     | `/category/babies` | ✅ Funcional    | 5 productos                                                     |
+| Categoría Niñas     | `/category/girls`  | ✅ Funcional    | 4 productos                                                     |
+| Categoría Niños     | `/category/boys`   | ✅ Funcional    | 4 productos                                                     |
+| Ofertas             | `/category/sales`  | ✅ Funcional    | Filtra `isOnSale: true`                                         |
+| Esenciales          | `/essentials`      | ✅ Funcional    | 3 productos                                                     |
+| Todos los productos | `/products`        | ✅ Funcional    | Server Component async desde Prisma                             |
+| Detalle de producto | `/products/[id]`   | ✅ Funcional    | Prisma + relacionados por props + badge de stock                |
+| Carrito             | `/carrito`         | ✅ Funcional    | AlertDialog, edición de cantidad                                |
+| Checkout            | `/checkout-flow`   | ⚠️ Incompleto   | Valida y confirma pero **no guarda el pedido** en backend       |
+| 404 (store)         | —                  | ✅ Funcional    | Branding + CTAs                                                 |
+| Error (store)       | —                  | ✅ Funcional    | Botón reset + branding                                          |
+| Cart Context        | —                  | ✅ Sólido       | localStorage, extensible                                        |
+| useFavorites        | —                  | ✅ Funcional    | localStorage, persiste entre navegaciones                       |
+| Sistema de tema     | —                  | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                             |
+| store.config.ts     | —                  | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                   |
+| validation.ts       | —                  | ✅ Centralizado | Luhn, shipping, payment                                         |
+| products.ts (lib)   | —                  | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts) |
+| **Admin Dashboard** | `/admin`           | ✅ Completo     | Stats, gráficos, accesos rápidos                                |
+| **Admin Login**     | `/admin/login`     | ✅ Funcional    | NextAuth JWT + Credentials                                      |
+| **Admin Productos** | `/admin/productos` | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                         |
+| **Admin Pedidos**   | `/admin/pedidos`   | ✅ CRUD         | Lista, detalle, cambio de estado                                |
+| **Admin Usuarios**  | `/admin/usuarios`  | ✅ CRUD         | Gestión con asignación de rol                                   |
+| **Admin Roles**     | `/admin/roles`     | ✅ CRUD         | Permisos granulares por módulo                                  |
+| **Admin Settings**  | `/admin/settings`  | ✅ CRUD         | 9 secciones editables (brand, theme, shipping, etc.)            |
+| **Admin 404**       | `/admin/*`         | ✅ Profesional  | Página personalizada con branding                               |
+| **Admin Error**     | `/admin/*`         | ✅ Profesional  | Error boundary con retry + navegación                           |
 
 ---
 
@@ -239,8 +237,17 @@ Ver historial al final del documento.
 [x] ImageUploadField (dropzone + preview + quitar) en el form de producto
 [x] next.config.ts → remotePatterns para *.ufs.sh y utfs.io
 [x] NextSSRPlugin en layout admin (config hidratada en SSR, sin flash)
+[x] Estilos vía Tailwind v4 (@import "uploadthing/tw/v4" + @source), no el CSS global
+    (el stylesheet pre-construido rompía .hidden y ocultaba el sidebar)
 [ ] Migrar productos de placeholder a imágenes reales (contenido, vía /admin/productos)
 [ ] (Opcional) Borrar archivo del CDN al reemplazar imagen o eliminar producto (UTApi)
+```
+
+#### Fixes de admin (durante Bloque 9)
+
+```
+[x] Categorías del form alineadas con las keys del storefront (productCategories en
+    store.config.ts) — antes guardaba "niñas"/"ofertas" y el producto quedaba invisible
 ```
 
 ---
@@ -472,14 +479,16 @@ src/
 │   │   └── settings/                 ← Editor de 9 secciones de config
 │   ├── api/
 │   │   ├── auth/[...nextauth]/       ← NextAuth (JWT + Credentials)
+│   │   ├── products/                 ← Catálogo público (GET lista + [id])
+│   │   ├── uploadthing/              ← File router de imágenes (auth por permisos)
 │   │   └── admin/                    ← APIs protegidas (settings, orders, products, users, roles)
 │   ├── not-found.tsx                 ← 404 global con branding
 │   ├── error.tsx                     ← Error global
 │   ├── carrito/page.tsx              ← Carrito con AlertDialog
 │   ├── checkout-flow/page.tsx        ← 4 pasos — pendiente: POST /api/orders
 │   ├── products/
-│   │   ├── page.tsx                  ← Catálogo (aún lee mock-data)
-│   │   └── [id]/page.tsx             ← Detalle producto
+│   │   ├── page.tsx                  ← Catálogo (async, Prisma vía lib/products)
+│   │   └── [id]/page.tsx             ← Detalle producto (Prisma + relacionados)
 │   └── category/
 │       ├── babies/, girls/, boys/, sales/
 ├── components/
@@ -510,8 +519,10 @@ src/
 │   ├── auth.ts                      ← authOptions de NextAuth
 │   ├── settings.ts                  ← Loader: DB overrides sobre file defaults
 │   ├── settings-keys.ts            ← Constantes de keys de settings
-│   ├── mock-data.ts                 ← TEMPORAL — se reemplaza en Bloque 9
-│   ├── types.ts                     ← Product, CartItem
+│   ├── products.ts                 ← Repositorio server-only Prisma→Product
+│   ├── inventory.ts                ← isOutOfStock / isLowStock (stock badges)
+│   ├── uploadthing.ts              ← Componentes UploadThing tipados
+│   ├── types.ts                     ← Product (incluye stock), CartItem
 │   ├── validation.ts               ← Luhn + shipping + payment ✅
 │   └── utils.ts                     ← cn(), formatPrice() ✅
 ├── prisma/

@@ -7,7 +7,7 @@
 
 ## Estado General
 
-El **frontend y el panel de administración están construidos**. Flujo completo: home → categoría → detalle → carrito → checkout + dashboard admin multi-rol con CRUD de productos, pedidos, usuarios, roles y configuración. **El storefront ya lee productos reales desde Prisma** (mock-data.ts eliminado) y el admin sube imágenes con UploadThing. Lo que falta para cerrar el flujo de compra: que el checkout **guarde pedidos reales** (Frente Pedidos) y los pagos.
+El **frontend y el panel de administración están construidos**. Flujo completo: home → categoría → detalle → carrito → checkout + dashboard admin multi-rol con CRUD de productos, pedidos, usuarios, roles y configuración. **El storefront lee productos reales desde Prisma**, el admin sube imágenes con UploadThing y el **checkout guarda pedidos reales** (transaccional, con descuento de stock y número `DI-2026-001`). Lo que falta para cerrar el flujo: **pagos reales** (MercadoPago) y emails transaccionales.
 
 ---
 
@@ -30,7 +30,7 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 | Problema                         | Detalle                                                                        |
 | -------------------------------- | ------------------------------------------------------------------------------ |
 | ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products` |
-| Checkout no guarda pedido        | `handleOrderConfirm()` solo muestra toast + redirige, sin POST al backend      |
+| ~~Checkout no guarda pedido~~ ✅ | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`             |
 | Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                 |
 | ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB    |
 
@@ -54,7 +54,7 @@ páginas leen `categoryLabels` desde `store.config.ts`.)
 | Todos los productos | `/products`        | ✅ Funcional    | Server Component async desde Prisma                             |
 | Detalle de producto | `/products/[id]`   | ✅ Funcional    | Prisma + relacionados por props + badge de stock                |
 | Carrito             | `/carrito`         | ✅ Funcional    | AlertDialog, edición de cantidad                                |
-| Checkout            | `/checkout-flow`   | ⚠️ Incompleto   | Valida y confirma pero **no guarda el pedido** en backend       |
+| Checkout            | `/checkout-flow`   | ✅ Funcional    | Guarda el pedido vía `POST /api/orders` → `/order-success/[id]` |
 | 404 (store)         | —                  | ✅ Funcional    | Branding + CTAs                                                 |
 | Error (store)       | —                  | ✅ Funcional    | Botón reset + branding                                          |
 | Cart Context        | —                  | ✅ Sólido       | localStorage, extensible                                        |
@@ -207,16 +207,22 @@ Ver historial al final del documento.
 [x] Eliminado src/lib/mock-data.ts
 ```
 
-#### Pedidos reales
+#### Pedidos reales — ✅ Completado
 
 ```
-[ ] POST /api/orders — crear pedido con validación de stock
-    - Descuenta stock en Product
-    - Genera número de orden (DI-2026-001)
-    - Retorna { orderId, orderNumber }
-[ ] checkout-flow/page.tsx → handleOrderConfirm llama POST /api/orders
-[ ] Nueva página /order-success/[id] → muestra resumen del pedido guardado
-[ ] GET /api/orders/[id] — retorna pedido para página de confirmación
+[x] Schema: Order.orderNumber (unique) + índices createdAt/status (migración aplicada)
+[x] src/lib/orders.ts → createOrder() transaccional:
+    - Recalcula precios/subtotal/envío/total desde la DB (no confía en el cliente)
+    - Descuenta stock con updateMany guard (sin oversell ni bajo concurrencia)
+    - Genera DI-2026-001 (reinicio anual) con retry ante colisión única
+    - maxWait/timeout ampliados para cold-start del pool de Prisma Postgres
+[x] POST /api/orders — re-valida envío en server, OrderError → status HTTP
+[x] GET /api/orders/[id]
+[x] checkout-flow → handleOrderConfirm async, POST y redirige a /order-success/[id]
+[x] OrderConfirmation → espera el request real (eliminado el delay falso de 2s)
+[x] /order-success/[id] → Server Component que lee Prisma directo (sin hop HTTP)
+[x] Admin: muestra orderNumber en listado y detalle de pedidos
+[x] Verificado E2E (totales, descuento de stock, guards out-of-stock/inexistente, numeración)
 ```
 
 #### Stock en storefront — ✅ Completado
@@ -226,7 +232,7 @@ Ver historial al final del documento.
 [x] StockBadge reutilizable: "Agotado" / "Últimas X unidades"
 [x] ProductCard → badge de stock + CTA "Agotado" deshabilitado
 [x] ProductDetail → badge de stock + bloqueo de "Agregar al carrito"
-[ ] Verificar stock antes de ir al checkout (se cierra con POST /api/orders — Frente Pedidos)
+[x] Verificación de stock al confirmar el pedido (POST /api/orders, transaccional)
 ```
 
 #### Imágenes reales — ✅ Integración lista (falta cargar contenido)
@@ -480,12 +486,14 @@ src/
 │   ├── api/
 │   │   ├── auth/[...nextauth]/       ← NextAuth (JWT + Credentials)
 │   │   ├── products/                 ← Catálogo público (GET lista + [id])
+│   │   ├── orders/                    ← Crear pedido (POST) + confirmación (GET [id])
 │   │   ├── uploadthing/              ← File router de imágenes (auth por permisos)
 │   │   └── admin/                    ← APIs protegidas (settings, orders, products, users, roles)
 │   ├── not-found.tsx                 ← 404 global con branding
 │   ├── error.tsx                     ← Error global
 │   ├── carrito/page.tsx              ← Carrito con AlertDialog
-│   ├── checkout-flow/page.tsx        ← 4 pasos — pendiente: POST /api/orders
+│   ├── checkout-flow/page.tsx        ← 4 pasos → POST /api/orders → order-success
+│   ├── order-success/[id]/page.tsx   ← Confirmación (Server Component, Prisma directo)
 │   ├── products/
 │   │   ├── page.tsx                  ← Catálogo (async, Prisma vía lib/products)
 │   │   └── [id]/page.tsx             ← Detalle producto (Prisma + relacionados)
@@ -520,6 +528,7 @@ src/
 │   ├── settings.ts                  ← Loader: DB overrides sobre file defaults
 │   ├── settings-keys.ts            ← Constantes de keys de settings
 │   ├── products.ts                 ← Repositorio server-only Prisma→Product
+│   ├── orders.ts                   ← createOrder() transaccional + getOrderForConfirmation
 │   ├── inventory.ts                ← isOutOfStock / isLowStock (stock badges)
 │   ├── uploadthing.ts              ← Componentes UploadThing tipados
 │   ├── types.ts                     ← Product (incluye stock), CartItem

@@ -29,7 +29,7 @@ export function MiniCart() {
   return (
     <Sheet className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/50" onClick={closeCart}></div>
-      <SheetContent className="w-[350px] sm:w-[400px] bg-background text-foreground flex flex-col absolute right-0 top-0 h-full shadow-xl">
+      <SheetContent className="w-[350px] sm:w-[400px] bg-background text-foreground flex flex-col absolute right-0 top-0 h-full shadow-xl overflow-hidden">
         <div className="flex justify-end pt-4 pr-4">
           <button
             onClick={closeCart}
@@ -63,7 +63,7 @@ export function MiniCart() {
         <Separator className="bg-brand-muted/50" />
         {itemCount > 0 ? (
           <>
-            <ScrollArea className="flex-1 px-6 py-2">
+            <ScrollArea className="flex-1 min-h-0 px-6 py-2">
               <div className="divide-y divide-brand-muted/30">
                 {items.map((item) => (
                   <CartItem

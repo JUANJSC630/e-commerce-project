@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import type { Product } from "@prisma/client"
+import { ImageUploadField } from "@/components/admin/products/image-upload-field"
 
 interface ProductFormProps {
   product?: Product
@@ -151,13 +152,8 @@ export function ProductForm({ product }: ProductFormProps) {
           </Field>
         </div>
 
-        <Field label="URL de imagen">
-          <input
-            type="text"
-            value={form.image}
-            onChange={(e) => set("image", e.target.value)}
-            className={inputClass}
-          />
+        <Field label="Imagen del producto">
+          <ImageUploadField value={form.image} onChange={(url) => set("image", url)} />
         </Field>
 
         <Field label="Descripción">

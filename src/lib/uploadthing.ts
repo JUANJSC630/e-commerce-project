@@ -1,0 +1,6 @@
+import { generateUploadButton, generateUploadDropzone } from "@uploadthing/react"
+import type { UploadRouter } from "@/app/api/uploadthing/core"
+
+/** Typed UploadThing components bound to our file router. */
+export const UploadButton = generateUploadButton<UploadRouter>()
+export const UploadDropzone = generateUploadDropzone<UploadRouter>()

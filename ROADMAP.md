@@ -13,13 +13,13 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ## Decisiones Arquitectónicas — TOMADAS ✅
 
-| Decisión      | Elegida                                   | Razón                                                                  |
-| ------------- | ----------------------------------------- | ---------------------------------------------------------------------- |
-| Stack backend | **Custom: Next.js + Prisma + PostgreSQL** | Máximo control, todo en un solo proyecto, sin dependencias externas    |
-| Base de datos | **Prisma Postgres** (pooled)              | Prisma v7 con driver adapters, `PrismaPg` + `pg.Pool`, SSL verify-full |
-| Autenticación | **NextAuth.js v4** (JWT + Credentials)    | Flexible, integrado con Prisma, roles y permisos custom                |
-| Imágenes      | **Por definir** (Cloudinary o similar)    | Actualmente placeholder; se decide al conectar productos reales        |
-| Panel admin   | **Custom en `/admin`** (Next.js)          | Dashboard completo propio, no Sanity Studio                            |
+| Decisión      | Elegida                                   | Razón                                                                   |
+| ------------- | ----------------------------------------- | ----------------------------------------------------------------------- |
+| Stack backend | **Custom: Next.js + Prisma + PostgreSQL** | Máximo control, todo en un solo proyecto, sin dependencias externas     |
+| Base de datos | **Prisma Postgres** (pooled)              | Prisma v7 con driver adapters, `PrismaPg` + `pg.Pool`, SSL verify-full  |
+| Autenticación | **NextAuth.js v4** (JWT + Credentials)    | Flexible, integrado con Prisma, roles y permisos custom                 |
+| Imágenes      | **UploadThing** (v7, `UPLOADTHING_TOKEN`) | Upload directo desde el admin, CDN propio, router con auth por permisos |
+| Panel admin   | **Custom en `/admin`** (Next.js)          | Dashboard completo propio, no Sanity Studio                             |
 
 ---
 
@@ -231,13 +231,16 @@ Ver historial al final del documento.
 [ ] Verificar stock antes de ir al checkout (se cierra con POST /api/orders — Frente Pedidos)
 ```
 
-#### Imágenes reales
+#### Imágenes reales — ✅ Integración lista (falta cargar contenido)
 
 ```
-[ ] Decidir proveedor: Cloudinary, UploadThing, o Supabase Storage
-[ ] Upload desde /admin/productos (crear/editar producto)
-[ ] Configurar next.config.ts con dominio del CDN elegido
-[ ] Migrar productos de placeholder a imágenes reales
+[x] Proveedor: UploadThing (v7, UPLOADTHING_TOKEN)
+[x] File router seguro: /api/uploadthing — solo admins con permiso de productos
+[x] ImageUploadField (dropzone + preview + quitar) en el form de producto
+[x] next.config.ts → remotePatterns para *.ufs.sh y utfs.io
+[x] NextSSRPlugin en layout admin (config hidratada en SSR, sin flash)
+[ ] Migrar productos de placeholder a imágenes reales (contenido, vía /admin/productos)
+[ ] (Opcional) Borrar archivo del CDN al reemplazar imagen o eliminar producto (UTApi)
 ```
 
 ---

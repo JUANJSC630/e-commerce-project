@@ -4,7 +4,6 @@ import { extractRouterConfig } from "uploadthing/server"
 import { AdminSidebar } from "@/components/admin/sidebar"
 import { AdminSessionProvider } from "@/components/admin/session-provider"
 import { uploadRouter } from "@/app/api/uploadthing/core"
-import "@uploadthing/react/styles.css"
 
 export const metadata: Metadata = {
   title: "Admin — Dulce Infancia",

@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* UploadThing: register the `ut-*` Tailwind variants and let Tailwind scan the
+   component's classes. This integrates into our single Tailwind build (correct
+   layer order) instead of importing the prebuilt stylesheet, which ships a full
+   Tailwind copy and would clobber our utilities (e.g. `.hidden`). */
+@import "uploadthing/tw/v4";
+@source "../../node_modules/@uploadthing/react/dist";
+
 body {
   font-family: var(--font-display), var(--font-body), Arial, sans-serif;
 }

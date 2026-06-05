@@ -108,7 +108,7 @@ export function MiniCart() {
               ¡Añade algunos productos adorables para empezar!
             </p>
             <SheetClose asChild>
-              <Button variant="default" onClick={closeCart}>
+              <Button asChild variant="default" onClick={closeCart}>
                 <Link href={routes.home}>Seguir Comprando</Link>
               </Button>
             </SheetClose>

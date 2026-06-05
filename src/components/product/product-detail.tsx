@@ -20,7 +20,7 @@ import { StockBadge } from "@/components/product/stock-badge"
 import { isOutOfStock } from "@/lib/inventory"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
-import { locale, shipping, routes, categoryLabels } from "@/config/store.config"
+import { locale, shipping, routes, categoryLabels, categoryHrefFor } from "@/config/store.config"
 import type { Product } from "@/lib/types"
 
 interface ProductDetailProps {
@@ -47,9 +47,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
     openCart()
   }
 
-  const categoryHref = product.category
-    ? `${routes.categoryBase}/${product.category.toLowerCase()}`
-    : routes.products
+  const categoryHref = product.category ? categoryHrefFor(product.category) : routes.products
 
   return (
     <div className="min-h-screen bg-background">

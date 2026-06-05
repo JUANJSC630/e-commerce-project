@@ -1,43 +1,31 @@
 "use client"
 
-import { useState } from "react"
 import { ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
+import { useCart } from "@/hooks/use-cart"
+import type { Product } from "@/lib/types"
 
 interface AddToCartButtonProps {
-  product: {
-    id: string
-    name: string
-    price: number
-    image: string
-  }
+  product: Product
   className?: string
 }
 
+/**
+ * Quick-add used on product cards. Adds a single unit with the product's first
+ * available size/color as defaults. The cart provider handles the toast and
+ * opening the mini-cart, so this stays a thin trigger.
+ */
 export function AddToCartButton({ product, className }: AddToCartButtonProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const { addItem } = useCart()
 
-  const handleAddToCart = async () => {
-    setIsLoading(true)
-    // Simulate adding to cart
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
-    toast.success(`${product.name} agregado al carrito`)
+  const handleAddToCart = () => {
+    addItem(product, 1, product.sizes?.[0], product.colors?.[0])
   }
 
   return (
-    <>
-      <Button className={className} onClick={handleAddToCart} disabled={isLoading}>
-        {isLoading ? (
-          "Agregando..."
-        ) : (
-          <>
-            Agregar al carrito
-            <ShoppingCart className="w-4 h-4 ml-2" />
-          </>
-        )}
-      </Button>
-    </>
+    <Button className={className} onClick={handleAddToCart}>
+      Agregar al carrito
+      <ShoppingCart className="w-4 h-4 ml-2" />
+    </Button>
   )
 }

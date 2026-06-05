@@ -34,7 +34,7 @@ export function CartItem({ item, isMiniCart = false }: CartItemProps) {
       </div>
       <div className="flex-1 flex flex-col justify-between">
         <div>
-          <Link href={`/producto/${item.id}`} passHref>
+          <Link href={`/products/${item.id}`}>
             <h3
               className={`font-semibold ${isMiniCart ? "text-sm" : "text-base"} text-brand-ink hover:text-brand-base line-clamp-2`}
             >

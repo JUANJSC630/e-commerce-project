@@ -354,6 +354,17 @@ export const categoryLabels: Record<string, string> = {
  */
 export const productCategories = ["Babies", "Girls", "Boys", "Essentials"] as const
 
+/**
+ * Resolves a product's category key to its storefront listing URL. "Essentials"
+ * lives at its own route, the rest under /category/<slug>; unknown keys fall
+ * back to the full catalog. Avoids broken links like /category/essentials.
+ */
+export function categoryHrefFor(categoryKey: string): string {
+  if (categoryKey === "Essentials") return routes.essentials
+  const category = categories.find((c) => c.key === categoryKey)
+  return category ? `${routes.categoryBase}/${category.slug}` : routes.products
+}
+
 // ─── Social Links (optional) ──────────────────────────────────────────────────
 
 export const social = {

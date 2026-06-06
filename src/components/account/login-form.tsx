@@ -29,6 +29,7 @@ export function LoginForm() {
       setLoading(false)
       return
     }
+    window.dispatchEvent(new Event("auth-changed")) // sync favorites to the account
     router.push(callbackUrl)
     router.refresh()
   }

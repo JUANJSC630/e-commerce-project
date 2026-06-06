@@ -14,7 +14,8 @@
     "type-check": "tsc --noEmit",
     "validate": "yarn type-check && yarn lint && yarn format:check",
     "verify:address": "node scripts/verify-combobox.mjs",
-    "verify:account": "node scripts/verify-account.mjs"
+    "verify:account": "node scripts/verify-account.mjs",
+    "verify:favorites": "node scripts/verify-favorites.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

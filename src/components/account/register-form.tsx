@@ -49,6 +49,7 @@ export function RegisterForm() {
 
     // Account created — sign the customer in and send them to their panel.
     await signIn("credentials", { email: form.email, password: form.password, redirect: false })
+    window.dispatchEvent(new Event("auth-changed")) // merge guest favorites into the account
     router.push("/cuenta")
     router.refresh()
   }

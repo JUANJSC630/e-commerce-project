@@ -12,6 +12,7 @@ export const SETTINGS_KEYS = {
   contact: "contact",
   theme: "theme",
   typography: "typography",
+  homeContent: "home_content",
 } as const
 
 export type SettingsKey = (typeof SETTINGS_KEYS)[keyof typeof SETTINGS_KEYS]

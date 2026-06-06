@@ -381,3 +381,25 @@ export const homePageContent = {
     limit: 8,
   },
 }
+
+// ─── Home Content (aggregate, admin-managed) ────────────────────────────────────
+
+/**
+ * Everything the homepage renders, grouped so it can be edited from /admin as a
+ * single `home_content` setting. Defaults below feed `loadAllSettings`; DB
+ * overrides replace this whole object. The home page reads it via settings, not
+ * these exports directly.
+ */
+export interface HomeContent {
+  heroBanners: HeroBanner[]
+  featuredCategories: FeaturedCategory[]
+  homeFeatures: FeatureItem[]
+  copy: typeof homePageContent
+}
+
+export const homeContent: HomeContent = {
+  heroBanners,
+  featuredCategories,
+  homeFeatures,
+  copy: homePageContent,
+}

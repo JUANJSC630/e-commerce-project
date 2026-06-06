@@ -4,14 +4,9 @@ import { TrustBar } from "@/components/home/trust-bar"
 import { CategoriesSection } from "@/components/home/categories-section"
 import { BrandPromise } from "@/components/home/brand-promise"
 import { FeaturedProducts } from "@/components/home/featured-products"
-import {
-  heroBanners,
-  featuredCategories,
-  homeFeatures,
-  homePageContent,
-  routes,
-} from "@/config/store.config"
+import { routes } from "@/config/store.config"
 import { getFeaturedProducts } from "@/lib/products"
+import { loadAllSettings } from "@/lib/settings"
 import { pageMetadata } from "@/lib/seo"
 
 export function generateMetadata(): Promise<Metadata> {
@@ -19,7 +14,9 @@ export function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const { hero, categories, promise, products } = homePageContent
+  const { homeContent } = await loadAllSettings()
+  const { heroBanners, featuredCategories, homeFeatures, copy } = homeContent
+  const { hero, categories, promise, products } = copy
   const featuredProducts = await getFeaturedProducts(products.limit)
 
   return (

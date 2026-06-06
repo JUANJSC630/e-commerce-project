@@ -413,12 +413,12 @@ arregla esto y es el cimiento de todo lo demás.
 
 ---
 
-### ⏳ Bloque 9.8 — Config dinámica (aplicar Settings al storefront)
+### ✅ Bloque 9.8 — Config dinámica (aplicar Settings al storefront)
 
 > **Objetivo**: que TODO lo editable desde el admin se aplique de verdad al
 > storefront, y eliminar el contenido hardcoded restante.
-> **Estado**: Tabla A cableada al storefront (✅), salvo `theme`/`typography`
-> (→ 9.7). Falta grupo B (contenido del home).
+> **Estado**: ✅ COMPLETO salvo `theme`/`typography` (→ Bloque 9.7). Tablas A y B
+> cableadas; el contenido del home es administrable y todo se refleja en vivo.
 
 #### Audit de hardcoded
 
@@ -441,10 +441,13 @@ Infra: `loadAllSettings` cacheado (`unstable_cache`, tag `settings`);
 SEO: `lib/seo.ts` (`pageMetadata`/`privatePageMetadata`/`customMetadata`/`rootMetadata`)
 resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
-**B. Totalmente hardcoded, sin admin** (no hay forma de editarlos):
+**B. Contenido del home — ahora administrable** ✅:
 
-- `heroBanners` (slides del home), `featuredCategories` (tarjetas del home),
-  `homeFeatures` (trust bar), `homePageContent` (todo el copy del home), `pageSeo`.
+- `heroBanners`, `featuredCategories`, `homeFeatures` y todo el copy (`homePageContent`)
+  se agrupan en el setting `home_content` y se editan en /admin → Configuración →
+  "Contenido del inicio" (banners/categorías/tira con add-remove + preview de imagen).
+- El home (`(store)/page.tsx`) lee `loadAllSettings().homeContent`; `pageSeo` ya es
+  función de brand (resuelto en A).
 
 **C. Limpiado** ✅: `categoryLabels`, `productCategories`, `categoryHrefFor`,
 `essentialsConfig` (config muerto tras categorías dinámicas) — eliminados.
@@ -496,22 +499,22 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 ```
 
 > **Fase 3 cerrada**: brand/locale/shipping/payment/promo/social/contact + todos los
-> `<title>`/SEO se sirven desde settings. Solo resta `theme`/`typography` (9.7) y el
-> grupo B (contenido del home).
+> `<title>`/SEO se sirven desde settings.
 
-**Fase 4 — Contenido del home administrable (grupo B):**
+**Fase 4 — Contenido del home administrable (grupo B):** ✅
 
 ```
-[ ] Modelos/Settings para heroBanners, featuredCategories, homeFeatures,
-    homePageContent, pageSeo (decidir: Setting JSON vs. modelos propios + orden)
-[ ] Editor en /admin (permiso settings) con upload de imágenes (UploadThing)
-[ ] hero-section/categories-section/trust-bar leen de DB vía props
-[ ] (theme/typography se cubren en Bloque 9.7, no aquí)
+[x] Setting único `home_content` (heroBanners + featuredCategories + homeFeatures + copy)
+    agregado en store.config como default; loadAllSettings lo expone (StoreSettings.homeContent)
+[x] Editor en /admin (permiso settings): "Contenido del inicio" con array-editors
+    (add/remove + preview de imagen) — primitivos extraídos a primitives.tsx
+[x] (store)/page.tsx lee loadAllSettings().homeContent y pasa props a las secciones
+[ ] Mejora futura: reemplazar campos de URL de imagen por uploader UploadThing
+[x] (theme/typography se cubren en Bloque 9.7, no aquí)
 ```
 
-> **Riesgo/orden recomendado**: empezar por Fase 1 (barato, sin regresiones), luego
-> migrar grupo brand+locale como piloto (toca header/footer/SEO/precios) para validar
-> el patrón SettingsProvider antes de seguir con el resto.
+> **Bloque 9.8 COMPLETO** salvo `theme`/`typography` (Bloque 9.7). Todo lo editable
+> desde /admin se aplica al storefront en vivo (revalidateTag al guardar).
 
 ---
 

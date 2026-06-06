@@ -126,9 +126,9 @@ prisma/            ← schema + migrations + seed (datos: products/categories)
 > **Patrón de Settings**: `loadAllSettings()` (cacheado, tag `settings`) hace el
 > merge DB→defaults. Server Components lo llaman directo; Client Components leen
 > `useSettings()`/`useFormatPrice()` desde el `SettingsProvider` montado en
-> `(store)/layout.tsx`. `saveSetting()` hace `revalidateTag("settings")`.
-> Pendiente de aplicar: títulos `<title>`/metadata y `theme`/`typography` (Bloque
-> 9.7). Ver audit en ROADMAP (Bloque 9.8).
+> `(store)/layout.tsx`. `saveSetting()` hace `revalidateTag("settings")`. Los títulos
+> `<title>`/SEO se resuelven con el brand vivo vía `lib/seo.ts`, y el contenido del
+> home (`home_content`) es editable. Solo resta `theme`/`typography` (Bloque 9.7).
 
 ### Verificación antes de cada commit
 

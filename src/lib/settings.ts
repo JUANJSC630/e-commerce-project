@@ -11,6 +11,7 @@ import {
   contact as defaultContact,
 } from "@/config/store.config"
 import { brandColors as defaultTheme, typography as defaultTypography } from "@/config/theme.config"
+import { homeContent as defaultHomeContent, type HomeContent } from "@/config/store.config"
 
 /** Cache tag for all settings reads. Revalidated whenever a setting is saved. */
 export const SETTINGS_TAG = "settings"
@@ -25,6 +26,7 @@ export interface StoreSettings {
   contact: typeof defaultContact
   theme: typeof defaultTheme
   typography: typeof defaultTypography
+  homeContent: HomeContent
 }
 
 /**
@@ -49,6 +51,7 @@ export const loadAllSettings = unstable_cache(
       contact: merge(defaultContact, dbMap.get(SETTINGS_KEYS.contact)),
       theme: merge(defaultTheme, dbMap.get(SETTINGS_KEYS.theme)),
       typography: merge(defaultTypography, dbMap.get(SETTINGS_KEYS.typography)),
+      homeContent: merge(defaultHomeContent, dbMap.get(SETTINGS_KEYS.homeContent)),
     }
   },
   ["all-settings"],

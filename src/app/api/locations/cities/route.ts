@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { searchCities } from "@/lib/locations"
 
-const CACHE = "public, max-age=86400, stale-while-revalidate=604800"
+const CACHE = "public, max-age=3600, stale-while-revalidate=86400"
 const MAX_LIMIT = 50
 
 export function GET(request: Request) {

@@ -54,6 +54,9 @@ try {
   await page.getByRole("option", { name: "Cali", exact: true }).waitFor()
   const optionCount = await page.getByRole("option").count()
   check(`Ciudad: lista poblada (${optionCount} opciones)`, optionCount > 20)
+  // Zarzal is alphabetically last — must be present WITHOUT searching (no 20 cap).
+  const zarzalUnsearched = await page.getByRole("option", { name: "Zarzal", exact: true }).count()
+  check("Ciudad: Zarzal visible sin buscar (lista completa)", zarzalUnsearched === 1)
   await page.getByPlaceholder("Buscar ciudad…").fill("tul")
   const hasTulua = await page.getByRole("option", { name: "Tuluá", exact: true }).count()
   check("Ciudad: búsqueda 'tul' encuentra Tuluá (lista completa)", hasTulua === 1)

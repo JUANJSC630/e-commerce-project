@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getStates } from "@/lib/locations"
 
-const CACHE = "public, max-age=86400, stale-while-revalidate=604800"
+const CACHE = "public, max-age=3600, stale-while-revalidate=86400"
 
 export function GET(request: Request) {
   const country = new URL(request.url).searchParams.get("country")

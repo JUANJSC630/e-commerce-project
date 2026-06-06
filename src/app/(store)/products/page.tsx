@@ -1,16 +1,10 @@
 import type { Metadata } from "next"
 import { ProductCard } from "@/components/product/product-card"
 import { getAllProducts } from "@/lib/products"
-import { pageSeo } from "@/config/store.config"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: pageSeo.products.title,
-  description: pageSeo.products.description,
-  openGraph: {
-    title: pageSeo.products.title,
-    description: pageSeo.products.description,
-    type: "website",
-  },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("products")
 }
 
 export default async function AllProductsPage() {

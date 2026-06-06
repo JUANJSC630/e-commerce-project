@@ -4,7 +4,7 @@ import "../styles/globals.css"
 import { Nunito, Atkinson_Hyperlegible } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import { RadixThemeProvider } from "@/components/theme-provider"
-import { seo } from "@/config/store.config"
+import { rootMetadata } from "@/lib/seo"
 
 const displayFont = Nunito({
   subsets: ["latin"],
@@ -20,10 +20,8 @@ const bodyFont = Atkinson_Hyperlegible({
   display: "swap",
 })
 
-export const metadata: Metadata = {
-  title: seo.title,
-  description: seo.description,
-  generator: seo.generator,
+export function generateMetadata(): Promise<Metadata> {
+  return rootMetadata()
 }
 
 export default function RootLayout({

@@ -1,11 +1,10 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import { RegisterForm } from "@/components/account/register-form"
-import { brand } from "@/config/store.config"
+import { privatePageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: `Crear cuenta — ${brand.name}`,
-  robots: { index: false, follow: false },
+export function generateMetadata(): Promise<Metadata> {
+  return privatePageMetadata("Crear cuenta")
 }
 
 export default function RegisterPage() {

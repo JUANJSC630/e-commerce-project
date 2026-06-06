@@ -5,7 +5,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { getCustomerOrder } from "@/lib/orders"
 import { loadAllSettings } from "@/lib/settings"
-import { brand, routes } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { privatePageMetadata } from "@/lib/seo"
 import { OrderStatusBadge } from "@/components/order/order-status-badge"
 import { OrderSummary } from "@/components/order/order-summary"
 
@@ -13,9 +14,8 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export const metadata: Metadata = {
-  title: `Detalle del pedido — ${brand.name}`,
-  robots: { index: false, follow: false },
+export function generateMetadata(): Promise<Metadata> {
+  return privatePageMetadata("Detalle del pedido")
 }
 
 export default async function CustomerOrderDetailPage({ params }: PageProps) {

@@ -4,13 +4,13 @@ import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { Package, ChevronRight } from "lucide-react"
 import { authOptions } from "@/lib/auth-options"
-import { brand, routes } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { privatePageMetadata } from "@/lib/seo"
 import { LogoutButton } from "@/components/account/logout-button"
 import { ChangePasswordForm } from "@/components/account/change-password-form"
 
-export const metadata: Metadata = {
-  title: `Mi cuenta — ${brand.name}`,
-  robots: { index: false, follow: false },
+export function generateMetadata(): Promise<Metadata> {
+  return privatePageMetadata("Mi cuenta")
 }
 
 export default async function AccountPage() {

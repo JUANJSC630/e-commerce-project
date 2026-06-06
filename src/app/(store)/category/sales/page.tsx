@@ -2,17 +2,17 @@ import type { Metadata } from "next"
 import { SalesPageComponent } from "@/components/category/sales-page"
 import { categories } from "@/config/store.config"
 import { getSaleProducts } from "@/lib/products"
+import { loadAllSettings } from "@/lib/settings"
+import { customMetadata } from "@/lib/seo"
 
 const config = categories.find((c) => c.slug === "sales")!
 
-export const metadata: Metadata = {
-  title: config.metaTitle,
-  description: config.metaDescription,
-  openGraph: {
-    title: config.metaTitle,
-    description: config.metaDescription,
-    type: "website",
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const { brand } = await loadAllSettings()
+  return customMetadata(
+    "Ofertas de Ropa Infantil",
+    `Aprovecha los mejores descuentos en ropa para bebés, niñas y niños en ${brand.name}. Calidad a precios increíbles.`,
+  )
 }
 
 export default async function SalesPage() {

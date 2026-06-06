@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { XCircle } from "lucide-react"
-import { brand, routes } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { privatePageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: `Pago no completado — ${brand.name}`,
-  robots: { index: false, follow: false },
+export function generateMetadata(): Promise<Metadata> {
+  return privatePageMetadata("Pago no completado")
 }
 
 export default function PaymentFailedPage() {

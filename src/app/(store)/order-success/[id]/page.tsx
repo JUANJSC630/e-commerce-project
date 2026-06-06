@@ -5,16 +5,16 @@ import { getServerSession } from "next-auth"
 import { CheckCircle2, UserPlus } from "lucide-react"
 import { authOptions } from "@/lib/auth-options"
 import { getOrderForConfirmation } from "@/lib/orders"
-import { brand, routes } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { privatePageMetadata } from "@/lib/seo"
 import { OrderSummary } from "@/components/order/order-summary"
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export const metadata: Metadata = {
-  title: `Pedido confirmado — ${brand.name}`,
-  robots: { index: false, follow: false },
+export function generateMetadata(): Promise<Metadata> {
+  return privatePageMetadata("Pedido confirmado")
 }
 
 export default async function OrderSuccessPage({ params }: PageProps) {

@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getProductById, getRelatedProducts } from "@/lib/products"
 import { ProductDetail } from "@/components/product/product-detail"
-import { brand } from "@/config/store.config"
+import { loadAllSettings } from "@/lib/settings"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -10,7 +10,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
-  const product = await getProductById(id)
+  const [product, { brand }] = await Promise.all([getProductById(id), loadAllSettings()])
 
   if (!product) {
     return { title: `Producto no encontrado — ${brand.name}` }

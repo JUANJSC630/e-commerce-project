@@ -10,18 +10,12 @@ import {
   homeFeatures,
   homePageContent,
   routes,
-  pageSeo,
 } from "@/config/store.config"
 import { getFeaturedProducts } from "@/lib/products"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: pageSeo.home.title,
-  description: pageSeo.home.description,
-  openGraph: {
-    title: pageSeo.home.title,
-    description: pageSeo.home.description,
-    type: "website",
-  },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("home")
 }
 
 export default async function HomePage() {

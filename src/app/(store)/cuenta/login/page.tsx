@@ -1,11 +1,10 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import { LoginForm } from "@/components/account/login-form"
-import { brand } from "@/config/store.config"
+import { privatePageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: `Iniciar sesión — ${brand.name}`,
-  robots: { index: false, follow: false },
+export function generateMetadata(): Promise<Metadata> {
+  return privatePageMetadata("Iniciar sesión")
 }
 
 export default function LoginPage() {

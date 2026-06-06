@@ -7,12 +7,12 @@ import { authOptions } from "@/lib/auth-options"
 import { getOrdersByUser } from "@/lib/orders"
 import { formatPrice } from "@/lib/utils"
 import { loadAllSettings } from "@/lib/settings"
-import { brand, routes } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { privatePageMetadata } from "@/lib/seo"
 import { OrderStatusBadge } from "@/components/order/order-status-badge"
 
-export const metadata: Metadata = {
-  title: `Mis pedidos — ${brand.name}`,
-  robots: { index: false, follow: false },
+export function generateMetadata(): Promise<Metadata> {
+  return privatePageMetadata("Mis pedidos")
 }
 
 export default async function CustomerOrdersPage() {

@@ -280,38 +280,48 @@ export const categories: CategoryConfig[] = [
 
 // ─── SEO / Metadata ───────────────────────────────────────────────────────────
 
-export const seo = {
-  title: `${brand.name} Shop`,
-  description: brand.tagline,
-  generator: "e-commerce-project",
+/** Brand shape consumed by the SEO builders below (so they honor live settings). */
+export type BrandInfo = typeof brand
+
+export interface SeoCopy {
+  title: string
+  description: string
 }
 
+/** Global site metadata defaults. Pass the active brand to reflect settings. */
+export const seo = (b: BrandInfo) => ({
+  title: `${b.name} Shop`,
+  description: b.tagline,
+  generator: "e-commerce-project",
+})
+
 /**
- * Per-page SEO metadata. Used by generateMetadata() in each page.
- * Update here to change titles/descriptions without touching page files.
+ * Per-page SEO copy as functions of the active brand. The page's
+ * generateMetadata() resolves the live brand (from settings) and calls these,
+ * so titles/descriptions update when the brand changes in /admin.
  */
 export const pageSeo = {
-  home: {
-    title: `${brand.name} — Ropa infantil adorable`,
-    description: `${brand.description} Descubre bebés, niñas, niños y esenciales.`,
-  },
-  products: {
-    title: `Todos los Productos — ${brand.name}`,
-    description: `Explora el catálogo completo de prendas adorables para bebés, niñas y niños en ${brand.name}.`,
-  },
-  essentials: {
-    title: `Esenciales — ${brand.name}`,
-    description: `Básicos cómodos, duraderos y versátiles para el armario de tu hijo/a. Selección de esenciales en ${brand.name}.`,
-  },
-  search: {
-    title: `Buscar — ${brand.name}`,
-    description: `Encuentra prendas para bebés, niñas y niños en ${brand.name}.`,
-  },
-  favorites: {
-    title: `Mis Favoritos — ${brand.name}`,
-    description: `Tus prendas guardadas en ${brand.name}. Revísalas y añádelas al carrito cuando quieras.`,
-  },
-}
+  home: (b: BrandInfo): SeoCopy => ({
+    title: `${b.name} — Ropa infantil adorable`,
+    description: `${b.description} Descubre bebés, niñas, niños y esenciales.`,
+  }),
+  products: (b: BrandInfo): SeoCopy => ({
+    title: `Todos los Productos — ${b.name}`,
+    description: `Explora el catálogo completo de prendas adorables para bebés, niñas y niños en ${b.name}.`,
+  }),
+  essentials: (b: BrandInfo): SeoCopy => ({
+    title: `Esenciales — ${b.name}`,
+    description: `Básicos cómodos, duraderos y versátiles para el armario de tu hijo/a. Selección de esenciales en ${b.name}.`,
+  }),
+  search: (b: BrandInfo): SeoCopy => ({
+    title: `Buscar — ${b.name}`,
+    description: `Encuentra prendas para bebés, niñas y niños en ${b.name}.`,
+  }),
+  favorites: (b: BrandInfo): SeoCopy => ({
+    title: `Mis Favoritos — ${b.name}`,
+    description: `Tus prendas guardadas en ${b.name}. Revísalas y añádelas al carrito cuando quieras.`,
+  }),
+} as const
 
 // ─── Promo Banner ─────────────────────────────────────────────────────────────
 

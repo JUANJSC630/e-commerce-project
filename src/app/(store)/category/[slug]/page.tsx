@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { CategoryPage } from "@/components/category/category-page"
 import { getActiveCategorySlugs, getCategoryBySlug } from "@/lib/categories"
 import { getProductsByCategoryId } from "@/lib/products"
-import { brand } from "@/config/store.config"
+import { loadAllSettings } from "@/lib/settings"
 
 // ISR: served statically, refreshed periodically; the admin also revalidates the
 // `categories` tag on edits so the nav updates immediately.
@@ -20,7 +20,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const category = await getCategoryBySlug(slug)
+  const [category, { brand }] = await Promise.all([getCategoryBySlug(slug), loadAllSettings()])
   if (!category) return { title: `Categoría no encontrada — ${brand.name}` }
 
   const title = category.metaTitle ?? `${category.name} — ${brand.name}`

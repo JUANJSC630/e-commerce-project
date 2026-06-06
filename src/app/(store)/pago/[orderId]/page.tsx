@@ -5,16 +5,15 @@ import { getOrderPaymentInfo } from "@/lib/orders"
 import { isMockPaymentsEnabled } from "@/lib/payments"
 import { formatPrice } from "@/lib/utils"
 import { loadAllSettings } from "@/lib/settings"
-import { brand } from "@/config/store.config"
+import { privatePageMetadata } from "@/lib/seo"
 import { SimulatedPaymentActions } from "@/components/checkout/simulated-payment-actions"
 
 interface PageProps {
   params: Promise<{ orderId: string }>
 }
 
-export const metadata: Metadata = {
-  title: `Pago — ${brand.name}`,
-  robots: { index: false, follow: false },
+export function generateMetadata(): Promise<Metadata> {
+  return privatePageMetadata("Pago")
 }
 
 export default async function PaymentPage({ params }: PageProps) {

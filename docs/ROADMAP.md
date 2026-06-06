@@ -418,26 +418,28 @@ arregla esto y es el cimiento de todo lo demás.
 > **Objetivo**: que TODO lo editable desde el admin se aplique de verdad al
 > storefront, y eliminar el contenido hardcoded restante.
 > **Estado**: Tabla A cableada al storefront (✅), salvo `theme`/`typography`
-> (→ 9.7) y títulos `<title>`/metadata (pendiente). Falta grupo B (home).
+> (→ 9.7). Falta grupo B (contenido del home).
 
 #### Audit de hardcoded
 
 **A. Settings de la DB aplicados al storefront vía `loadAllSettings` + `SettingsProvider`:**
 
-| Setting (DB key)       | Estado | Cómo se aplica ahora                                               |
-| ---------------------- | ------ | ------------------------------------------------------------------ |
-| `brand`                | ✅     | header (layout server), footer, checkout — `useSettings()`         |
-| `locale`               | ✅     | `formatPrice(amount, locale)` + `useFormatPrice()`, fechas, país   |
-| `shipping`             | ✅     | cart-summary (×2), checkout, product-detail, order-summary         |
-| `payment_methods`      | ✅     | `payment-form` vía `useSettings()`                                 |
-| `promo_banner`         | ✅     | `PromoBanner` vía `useSettings()`                                  |
-| `social` / `contact`   | ✅     | footer vía `useSettings()`                                         |
-| brand en `<title>`/SEO | ⏳     | `metadata` estático → convertir a `generateMetadata` (~12 páginas) |
-| `theme` / `typography` | ⏳     | `globals.css` estático → Bloque 9.7                                |
+| Setting (DB key)       | Estado | Cómo se aplica ahora                                                 |
+| ---------------------- | ------ | -------------------------------------------------------------------- |
+| `brand`                | ✅     | header (layout server), footer, checkout — `useSettings()`           |
+| `locale`               | ✅     | `formatPrice(amount, locale)` + `useFormatPrice()`, fechas, país     |
+| `shipping`             | ✅     | cart-summary (×2), checkout, product-detail, order-summary           |
+| `payment_methods`      | ✅     | `payment-form` vía `useSettings()`                                   |
+| `promo_banner`         | ✅     | `PromoBanner` vía `useSettings()`                                    |
+| `social` / `contact`   | ✅     | footer vía `useSettings()`                                           |
+| brand en `<title>`/SEO | ✅     | `generateMetadata` + `lib/seo.ts` en todas las páginas + root layout |
+| `theme` / `typography` | ⏳     | `globals.css` estático → Bloque 9.7                                  |
 
 Infra: `loadAllSettings` cacheado (`unstable_cache`, tag `settings`);
 `saveSetting` hace `revalidateTag("settings")` → el admin refresca el storefront.
 `SettingsProvider` montado en `(store)/layout.tsx` (server lee, client consume).
+SEO: `lib/seo.ts` (`pageMetadata`/`privatePageMetadata`/`customMetadata`/`rootMetadata`)
+resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
 **B. Totalmente hardcoded, sin admin** (no hay forma de editarlos):
 
@@ -487,10 +489,15 @@ Infra: `loadAllSettings` cacheado (`unstable_cache`, tag `settings`);
     checkout-flow, promo-banner, payment-form, order-summary, páginas pedidos/pago
 [x] Bug corregido: checkout/cart-summary tenía umbral/costo de envío y "$" hardcodeados
     (50.000/5.000) inconsistentes con la config → ahora usa shipping de settings
-[ ] Pendiente: títulos `<title>`/metadata (brand) — convertir metadata estático a
-    generateMetadata en ~12 páginas
-[ ] Pendiente: limpiar de store.config las claves ya en DB (dejar solo defaults)
+[x] Títulos `<title>`/metadata (brand): generateMetadata + lib/seo.ts en todas las
+    páginas (home, products, favoritos, search, sales, category/[slug], products/[id],
+    cuenta/login/registro/pedidos, order-success, pago, pago-fallido) + root layout
+[x] store.config queda como capa de defaults pura (loadAllSettings la consume) — OK
 ```
+
+> **Fase 3 cerrada**: brand/locale/shipping/payment/promo/social/contact + todos los
+> `<title>`/SEO se sirven desde settings. Solo resta `theme`/`typography` (9.7) y el
+> grupo B (contenido del home).
 
 **Fase 4 — Contenido del home administrable (grupo B):**
 

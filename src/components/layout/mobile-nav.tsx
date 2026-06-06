@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Search, Heart } from "lucide-react"
+import { Menu, X, Search, Heart, User } from "lucide-react"
 import { navigation, routes } from "@/config/store.config"
 
 export function MobileNav() {
@@ -79,6 +79,16 @@ export function MobileNav() {
                 >
                   <Heart className="h-4 w-4 shrink-0" aria-hidden="true" />
                   Mis Favoritos
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={routes.account}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-6 py-3 text-brand-ink hover:bg-brand-surface-alt hover:text-brand-base transition-colors text-base font-medium"
+                >
+                  <User className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Mi Cuenta
                 </Link>
               </li>
             </ul>

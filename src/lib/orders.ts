@@ -39,6 +39,8 @@ export interface CreateOrderInput {
   items: CreateOrderItemInput[]
   customer: ShippingData
   paymentMethod: string
+  /** Links the order to a logged-in customer account; omitted for guests. */
+  userId?: string
 }
 
 export interface CreateOrderResult {
@@ -60,7 +62,7 @@ async function nextOrderNumber(tx: Prisma.TransactionClient): Promise<string> {
 }
 
 export async function createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {
-  const { items, customer, paymentMethod } = input
+  const { items, customer, paymentMethod, userId } = input
   if (items.length === 0) throw new OrderError("EMPTY_CART", "El carrito está vacío")
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -119,6 +121,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           return tx.order.create({
             data: {
               orderNumber: await nextOrderNumber(tx),
+              userId,
               customerName: `${customer.firstName} ${customer.lastName}`.trim(),
               customerEmail: customer.email,
               subtotal,
@@ -173,39 +176,32 @@ export interface OrderConfirmationDTO {
   items: OrderConfirmationItem[]
 }
 
-/**
- * Read a single order for its confirmation page. The unguessable cuid acts as a
- * capability token (guest checkout has no account), so we expose only what the
- * customer needs to see — never payment internals.
- */
-export async function getOrderForConfirmation(id: string): Promise<OrderConfirmationDTO | null> {
-  const order = await prisma.order.findUnique({
-    where: { id },
+const ORDER_DETAIL_SELECT = {
+  orderNumber: true,
+  customerName: true,
+  customerEmail: true,
+  status: true,
+  paymentStatus: true,
+  subtotal: true,
+  shippingCost: true,
+  total: true,
+  createdAt: true,
+  shippingAddress: true,
+  items: {
     select: {
-      orderNumber: true,
-      customerName: true,
-      customerEmail: true,
-      status: true,
-      paymentStatus: true,
-      subtotal: true,
-      shippingCost: true,
-      total: true,
-      createdAt: true,
-      shippingAddress: true,
-      items: {
-        select: {
-          id: true,
-          quantity: true,
-          price: true,
-          size: true,
-          color: true,
-          product: { select: { name: true, image: true } },
-        },
-      },
+      id: true,
+      quantity: true,
+      price: true,
+      size: true,
+      color: true,
+      product: { select: { name: true, image: true } },
     },
-  })
-  if (!order) return null
+  },
+} satisfies Prisma.OrderSelect
 
+type OrderDetailRow = Prisma.OrderGetPayload<{ select: typeof ORDER_DETAIL_SELECT }>
+
+function toConfirmationDTO(order: OrderDetailRow): OrderConfirmationDTO {
   return {
     orderNumber: order.orderNumber,
     customerName: order.customerName,
@@ -227,6 +223,64 @@ export async function getOrderForConfirmation(id: string): Promise<OrderConfirma
       color: item.color,
     })),
   }
+}
+
+/**
+ * Read a single order for its confirmation page. The unguessable cuid acts as a
+ * capability token (guest checkout has no account), so we expose only what the
+ * customer needs to see — never payment internals.
+ */
+export async function getOrderForConfirmation(id: string): Promise<OrderConfirmationDTO | null> {
+  const order = await prisma.order.findUnique({ where: { id }, select: ORDER_DETAIL_SELECT })
+  return order ? toConfirmationDTO(order) : null
+}
+
+/** Same detail, but scoped to the owning account so customers can't read others'. */
+export async function getCustomerOrder(
+  id: string,
+  userId: string,
+): Promise<OrderConfirmationDTO | null> {
+  const order = await prisma.order.findFirst({
+    where: { id, userId },
+    select: ORDER_DETAIL_SELECT,
+  })
+  return order ? toConfirmationDTO(order) : null
+}
+
+export interface CustomerOrderSummary {
+  id: string
+  orderNumber: string
+  status: string
+  paymentStatus: PaymentStatus
+  total: number
+  itemCount: number
+  createdAt: Date
+}
+
+/** Order history for a customer's account, newest first. */
+export async function getOrdersByUser(userId: string): Promise<CustomerOrderSummary[]> {
+  const orders = await prisma.order.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      orderNumber: true,
+      status: true,
+      paymentStatus: true,
+      total: true,
+      createdAt: true,
+      _count: { select: { items: true } },
+    },
+  })
+  return orders.map((o) => ({
+    id: o.id,
+    orderNumber: o.orderNumber,
+    status: o.status,
+    paymentStatus: o.paymentStatus,
+    total: o.total,
+    createdAt: o.createdAt,
+    itemCount: o._count.items,
+  }))
 }
 
 export interface OrderPaymentInfo {

@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth-options"
 import { createOrder, OrderError } from "@/lib/orders"
 import type { CreateOrderItemInput } from "@/lib/orders"
 import { validateShippingData } from "@/lib/validation"
 import type { ShippingData } from "@/lib/validation"
+import { isCustomer } from "@/lib/permissions"
 
 interface OrderRequestBody {
   items?: unknown
@@ -48,8 +51,12 @@ export async function POST(request: Request) {
 
   const paymentMethod = typeof body.paymentMethod === "string" ? body.paymentMethod : "unknown"
 
+  // Link the order to a logged-in customer so it shows in their history.
+  const session = await getServerSession(authOptions)
+  const userId = session && isCustomer(session.user.role.slug) ? session.user.id : undefined
+
   try {
-    const result = await createOrder({ items, customer, paymentMethod })
+    const result = await createOrder({ items, customer, paymentMethod, userId })
     return NextResponse.json(result, { status: 201 })
   } catch (err) {
     if (err instanceof OrderError) {

@@ -112,6 +112,7 @@ export const routes = {
   essentials: "/essentials",
   search: "/search",
   favorites: "/favoritos",
+  account: "/cuenta",
   policies: "/politicas",
   categoryBase: "/category", // e.g. /category/babies
 }

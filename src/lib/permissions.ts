@@ -2,6 +2,18 @@ export type Resource = "dashboard" | "products" | "orders" | "users" | "roles" |
 export type Action = "read" | "create" | "update" | "delete"
 export type Permissions = Partial<Record<Resource, Action[]>>
 
+/** Slug of the storefront customer role — has no admin permissions. */
+export const CUSTOMER_ROLE_SLUG = "customer"
+
+/** A customer shops the store; everyone else is staff with admin access. */
+export function isCustomer(roleSlug: string | undefined): boolean {
+  return roleSlug === CUSTOMER_ROLE_SLUG
+}
+
+export function isStaff(roleSlug: string | undefined): boolean {
+  return !!roleSlug && !isCustomer(roleSlug)
+}
+
 export const ALL_RESOURCES: Resource[] = [
   "dashboard",
   "products",

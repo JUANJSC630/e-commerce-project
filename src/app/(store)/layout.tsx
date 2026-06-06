@@ -7,7 +7,7 @@ import { SearchBar } from "@/components/search/search-bar"
 import { PromoBanner } from "@/components/layout/promo-banner"
 import { Footer } from "@/components/layout/footer"
 import Link from "next/link"
-import { Heart } from "lucide-react"
+import { Heart, User } from "lucide-react"
 import { brand, navigation, routes } from "@/config/store.config"
 
 const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
@@ -47,6 +47,13 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               className="hidden md:flex p-2 rounded-md text-brand-ink hover:text-brand-base hover:bg-brand-surface-alt transition-colors"
             >
               <Heart className="h-5 w-5" aria-hidden="true" />
+            </Link>
+            <Link
+              href={routes.account}
+              aria-label="Mi cuenta"
+              className="hidden md:flex p-2 rounded-md text-brand-ink hover:text-brand-base hover:bg-brand-surface-alt transition-colors"
+            >
+              <User className="h-5 w-5" aria-hidden="true" />
             </Link>
             <CartCounter />
             <MobileNav />

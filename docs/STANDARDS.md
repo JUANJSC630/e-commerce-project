@@ -23,11 +23,11 @@ Cada archivo tiene una sola razón para cambiar.
 
 El código se extiende sin modificar los existentes.
 
-| ✅ Correcto                                                                                   | ❌ Incorrecto                                            |
-| --------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Agregar un nuevo método de pago en `store.config.ts` → aparece en el checkout automáticamente | Editar `payment-form.tsx` para agregar un método de pago |
-| Agregar una categoría en `store.config.ts` → aparece en la navegación y el footer             | Editar `layout.tsx` para agregar un link de categoría    |
-| `homePageContent` en config — copy cambia sin tocar TSX                                       | Strings hardcodeados en JSX                              |
+| ✅ Correcto                                                                        | ❌ Incorrecto                                            |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Crear una categoría en `/admin` → aparece en nav/footer/storefront automáticamente | Editar `layout.tsx` para agregar un link de categoría    |
+| Agregar un método de pago en `store.config.ts` → aparece en el checkout            | Editar `payment-form.tsx` para agregar un método de pago |
+| `homePageContent` en config — copy cambia sin tocar TSX                            | Strings hardcodeados en JSX                              |
 
 **Regla práctica**: Si cambiar texto de UI requiere editar un `.tsx`, algo está hardcodeado.
 
@@ -52,11 +52,11 @@ Las props solo incluyen lo que el componente realmente usa.
 
 Los componentes dependen de abstracciones (interfaces/types), no de implementaciones.
 
-| ✅ Correcto                                      | ❌ Incorrecto                                             |
-| ------------------------------------------------ | --------------------------------------------------------- |
-| `FeaturedProducts` recibe `products: Product[]`  | `FeaturedProducts` importa `allMockProducts` directamente |
-| `page.tsx` llama `getFeaturedProducts(limit)`    | `page.tsx` llama `allMockProducts.slice(0, 8)`            |
-| `formatPrice(amount)` usando `locale` del config | `price.toLocaleString()` sin locale                       |
+| ✅ Correcto                                         | ❌ Incorrecto                                         |
+| --------------------------------------------------- | ----------------------------------------------------- |
+| `FeaturedProducts` recibe `products: Product[]`     | `FeaturedProducts` consulta Prisma directamente       |
+| `page.tsx` llama `getFeaturedProducts(limit)` (lib) | `page.tsx` hace `prisma.product.findMany(...)` inline |
+| `formatPrice(amount)` usando `locale` del config    | `price.toLocaleString()` sin locale                   |
 
 **Regla práctica**: Las páginas no llaman arrays directamente. Usan funciones con nombre semántico.
 
@@ -87,22 +87,24 @@ Un componente solo lleva `"use client"` si usa: `useState`, `useEffect`, `useRef
 
 ```
 src/components/
-  home/           ← Componentes exclusivos de la homepage
-  cart/           ← Componentes del sistema de carrito
-  checkout/       ← Pasos del checkout
-  layout/         ← Header, footer, nav
-  product/        ← Componentes de producto (reutilizables entre páginas)
-  ui/             ← shadcn/ui — NO modificar directamente
+  home/ cart/ checkout/ layout/ product/ order/ account/ admin/ favorites/
+  ui/             ← shadcn/ui + primitivos (Combobox, Command) — NO romper la API
 
-src/lib/
-  types.ts        ← Tipos del dominio (Product, CartItem, etc.)
-  validation.ts   ← Toda la lógica de validación
-  utils.ts        ← Utilidades puras (cn, formatPrice)
-  mock-data.ts    ← Datos y funciones de acceso (getFeaturedProducts, etc.)
+src/lib/                ← Capa de datos/dominio. Las marcadas server-only NO llegan al cliente
+  prisma.ts       ← Cliente Prisma (PrismaPg + pg.Pool, SSL)
+  products.ts     ← (server-only) repositorio Prisma→Product
+  orders.ts       ← (server-only) createOrder transaccional, lecturas de pedido
+  categories.ts   ← (server-only) categorías + nav + CRUD admin
+  account.ts / favorites.ts ← (server-only) cuenta de cliente y favoritos
+  payments/       ← abstracción PaymentProvider (mock + futuro MercadoPago)
+  settings.ts     ← loader de Settings (DB overrides sobre defaults)
+  auth-options.ts permissions.ts validation.ts utils.ts types.ts
 
 src/config/
-  store.config.ts ← Todo el contenido de marca: copy, rutas, nav, colores de texto
-  theme.config.ts ← Paleta OKLCH y tipografía
+  store.config.ts ← defaults de marca/rutas/nav especial/pagos/SEO/home content
+  theme.config.ts ← defaults de paleta OKLCH y tipografía
+
+prisma/            ← schema + migrations + seed (datos: products/categories)
 ```
 
 ---
@@ -111,15 +113,18 @@ src/config/
 
 ### Fuentes de verdad
 
-| Tipo de dato                                           | Dónde vive                                                |
-| ------------------------------------------------------ | --------------------------------------------------------- |
-| Nombre de marca, tagline, copyright                    | `store.config.ts → brand`                                 |
-| Rutas de navegación                                    | `store.config.ts → routes` y `navigation`                 |
-| Textos visibles en homepage (eyebrows, headings, CTAs) | `store.config.ts → homePageContent`                       |
-| Métodos de pago                                        | `store.config.ts → paymentMethods`                        |
-| Redes sociales y contacto                              | `store.config.ts → social` y `contact`                    |
-| Colores OKLCH                                          | `theme.config.ts → brandColors` + `globals.css → :root`   |
-| Tipografía                                             | `theme.config.ts → typography` + `layout.tsx` (next/font) |
+| Tipo de dato                               | Dónde vive (fuente de verdad)                               |
+| ------------------------------------------ | ----------------------------------------------------------- |
+| Productos                                  | **DB** (Prisma) vía `lib/products.ts`                       |
+| Categorías + navegación                    | **DB** (`Category`) vía `lib/categories.ts` (`getNavItems`) |
+| Pedidos                                    | **DB** (`Order`) vía `lib/orders.ts`                        |
+| Clientes / favoritos                       | **DB** (`User`, `Favorite`)                                 |
+| Settings (marca, locale, shipping, promo…) | **DB** (`Setting`) vía `lib/settings.ts` — _ver audit 9.8_  |
+| Defaults de marca/rutas/SEO/home content   | `store.config.ts`                                           |
+| Defaults de paleta OKLCH y tipografía      | `theme.config.ts` + `globals.css → :root`                   |
+
+> **Importante**: algunos Settings de la DB aún no se aplican al storefront (se
+> lee el default estático). Cerrar esto es el Bloque 9.8 (ver ROADMAP).
 
 ### Verificación antes de cada commit
 
@@ -259,6 +264,59 @@ export function TrustBar() {
 - [ ] ¿Alguna variable de entorno con `SECRET` o `KEY` se expone en código cliente?
 - [ ] ¿Algún dato sensible se almacena en `localStorage` o cookies sin cifrar?
 - [ ] ¿Los inputs del usuario se usan directamente en queries/comandos sin sanitizar?
+
+---
+
+## 7.5 Arquitectura de datos (Prisma + dinámico)
+
+Estándares establecidos al conectar el storefront a la base de datos.
+
+### Capa de datos server-only
+
+- Toda lectura/escritura de la DB vive en `src/lib/*` con `import "server-only"`
+  (`products.ts`, `orders.ts`, `categories.ts`, `account.ts`, `favorites.ts`).
+  Las páginas y API routes dependen de esas funciones; **nunca** llaman `prisma.*`
+  inline ni en componentes cliente.
+- Cada lib expone un tipo de dominio (mapper Prisma→dominio) y un `select`
+  acotado — no se sobre-consulta ni se filtran datos sensibles al cliente.
+
+### Dinero, stock y transacciones
+
+- **El servidor es la única fuente de verdad del dinero**: precios, subtotal,
+  envío y total se recalculan desde la DB en `createOrder` — jamás se confía en
+  el cliente.
+- **Stock sin oversell**: decremento con `updateMany({ where: { stock: { gte } } })`
+  dentro de una transacción; si `count === 0` se aborta.
+- Operaciones multi-paso → `prisma.$transaction` (con `maxWait`/`timeout`
+  ampliados por el cold-start del pool de Prisma Postgres).
+
+### Contenido dinámico + caché
+
+- Datos administrables que alimentan páginas estáticas (categorías, nav) se leen
+  con `unstable_cache` etiquetado (p. ej. tag `categories`) y las páginas usan
+  **ISR** (`export const revalidate = N`). El admin llama `revalidateTag(...)` al
+  guardar → el storefront se actualiza sin volverse dinámico.
+
+### Migraciones (Prisma 7)
+
+- `prisma migrate dev` es interactivo y **no corre en Node 18** (Prisma 7 exige
+  Node ≥20). Flujo: escribir el `migration.sql` y aplicar con
+  `npx prisma migrate deploy` usando Node 20 (`nvm use 20`).
+- Cambios de schema **aditivos y en pasos**: columna nullable → backfill (seed) →
+  exigir. Nunca romper datos existentes.
+
+### Seguridad de acceso
+
+- Defensa en profundidad: `middleware.ts` + **guard autoritativo server-side**
+  (p. ej. el layout `/admin` redirige a no-staff). Cada página/route admin valida
+  `hasPermission(perms, resource, action)`; nunca se confía solo en el cliente.
+- Endpoints "mock" (pagos simulados) se deshabilitan fuera de su modo.
+
+### Verificación E2E
+
+- Los flujos interactivos (checkout, combobox, cuenta, favoritos, admin) se
+  validan con Playwright (`scripts/verify-*.mjs`, `yarn verify:*`) — curl no basta
+  para UI. Limpiar siempre los datos de prueba creados en la DB.
 
 ---
 
@@ -428,9 +486,9 @@ yarn lint:fix
 
 - [ ] Si se resolvió un bug, actualizar `ROADMAP.md`
 - [ ] Si se completó un módulo, actualizar tabla de `ROADMAP.md`
-- [ ] Si hay un cambio arquitectónico significativo, actualizar `AUDIT.md` o `ROADMAP.md`
+- [ ] Si hay un cambio arquitectónico significativo, actualizar `ROADMAP.md` y `PROJECT.md`
 
 ---
 
 _Este documento es vivo. Si se establece un nuevo patrón en el proyecto que no está aquí, agregarlo._
-_Referencias: `AUDIT.md` (estado técnico), `ROADMAP.md` (qué falta), `PROJECT.md` (visión y negocio)._
+_Referencias: `ROADMAP.md` (estado de módulos, qué falta, audit de hardcoded), `PROJECT.md` (visión y negocio)._

@@ -53,16 +53,22 @@ cp .env.local.example .env.local
 
 ## Configuración de marca
 
-Toda la configuración de la tienda está centralizada en dos archivos:
+Gran parte de la tienda es **administrable desde `/admin`** sin tocar código:
+productos, categorías, pedidos, usuarios, roles y la sección de Configuración.
 
-- `src/config/store.config.ts` — nombre, rutas, nav, categorías, pagos, redes sociales, contacto
-- `src/config/theme.config.ts` — paleta de colores OKLCH y tipografía
+Los valores por defecto y la config estructural viven en:
 
-Para clonar el proyecto para otra marca: actualizar solo esos dos archivos.
+- `src/config/store.config.ts` — marca, rutas, nav especial, pagos, SEO base, contenido del home
+- `src/config/theme.config.ts` — paleta OKLCH y tipografía (defaults)
+
+> Nota: algunas secciones del editor de Configuración todavía no se aplican al
+> storefront (se leen del config estático). Ver el audit de hardcoded en
+> [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ## Documentación
 
-- [`STANDARDS.md`](./STANDARDS.md) — **Leer antes de cada commit.** SOLID, accesibilidad, seguridad, patrones obligatorios y checklist de PR
-- [`PROJECT.md`](./PROJECT.md) — Visión, modelo de negocio, KPIs y fases del proyecto
-- [`ROADMAP.md`](./ROADMAP.md) — Estado de módulos y plan de ejecución (score 20/20)
-- [`AUDIT.md`](./AUDIT.md) — Auditoría técnica: accesibilidad, performance, arquitectura
+Toda la documentación vive en [`docs/`](./docs):
+
+- [`docs/STANDARDS.md`](./docs/STANDARDS.md) — **Leer antes de cada commit.** SOLID, accesibilidad, seguridad, patrones y checklist de PR
+- [`docs/PROJECT.md`](./docs/PROJECT.md) — Visión, modelo de negocio y arquitectura
+- [`docs/ROADMAP.md`](./docs/ROADMAP.md) — Estado de módulos, plan de ejecución y audit de hardcoded

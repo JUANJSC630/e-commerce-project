@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-05 | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-06 | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -38,8 +38,8 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ### Código con bugs menores
 
-✅ Sin bugs menores pendientes. (`brand-coral` ya no existe en el código; todas las
-páginas leen `categoryLabels` desde `store.config.ts`.)
+✅ Sin bugs menores pendientes. (`brand-coral` ya no existe en el código; las
+categorías son dinámicas desde la DB vía `src/lib/categories.ts` — Bloque 9.6.)
 
 ---
 
@@ -413,6 +413,51 @@ arregla esto y es el cimiento de todo lo demás.
 
 ---
 
+### ⏳ Bloque 9.8 — Config dinámica (aplicar Settings al storefront)
+
+> **Objetivo**: que TODO lo editable desde el admin se aplique de verdad al
+> storefront, y eliminar el contenido hardcoded restante.
+
+#### Audit de hardcoded (estado actual)
+
+**A. Settings guardados en DB pero NO aplicados** (el editor es cosmético — el
+storefront lee `store.config.ts` estático, no `loadAllSettings`):
+
+| Setting (DB key)       | Dónde se edita  | Dónde se lee hoy (hardcoded)              |
+| ---------------------- | --------------- | ----------------------------------------- |
+| `brand`                | /admin/settings | `store.config.ts` (header, footer, SEO)   |
+| `locale`               | /admin/settings | `store.config.ts` (formatPrice, fechas)   |
+| `shipping`             | /admin/settings | `store.config.ts` (checkout, createOrder) |
+| `payment_methods`      | /admin/settings | `store.config.ts` (payment-form)          |
+| `promo_banner`         | /admin/settings | `store.config.ts` (PromoBanner)           |
+| `social` / `contact`   | /admin/settings | `store.config.ts` (footer)                |
+| `theme` / `typography` | /admin/settings | `globals.css` estático (→ Bloque 9.7)     |
+
+**B. Totalmente hardcoded, sin admin** (no hay forma de editarlos):
+
+- `heroBanners` (slides del home), `featuredCategories` (tarjetas del home),
+  `homeFeatures` (trust bar), `homePageContent` (todo el copy del home), `pageSeo`.
+
+**C. Limpiado** ✅: `categoryLabels`, `productCategories`, `categoryHrefFor`,
+`essentialsConfig` (config muerto tras categorías dinámicas) — eliminados.
+
+#### Plan
+
+```
+[ ] Capa de aplicación de settings: cargar loadAllSettings (cacheado, tag "settings")
+    y proveerlo al storefront — un SettingsProvider/contexto server o helpers que
+    reemplacen los imports directos de store.config en el storefront
+[ ] Aplicar brand (header/footer/SEO), locale (formatPrice/fechas), shipping
+    (checkout + createOrder), payment_methods, promo_banner, social, contact
+[ ] revalidateTag("settings") al guardar en el admin (storefront sigue estático/ISR)
+[ ] Contenido del home administrable: hero, featured, features, copy (B) → settings
+    o modelos propios + editor en /admin
+[ ] Eliminar de store.config lo que pase a DB; dejar solo defaults/estructura
+[ ] (theme/typography se cubren en Bloque 9.7)
+```
+
+---
+
 ### ⏳ Bloque 10 — Pagos reales con MercadoPago
 
 > **Objetivo**: El cliente paga de verdad. El pedido se confirma solo cuando el pago es exitoso.
@@ -706,4 +751,4 @@ src/
 
 ---
 
-_Para estándares de calidad ver `STANDARDS.md`. Para análisis técnico ver `AUDIT.md`. Para visión de negocio ver `PROJECT.md`._
+_Para estándares de calidad y arquitectura de datos ver `STANDARDS.md`. Para visión de negocio ver `PROJECT.md`._

@@ -1,7 +1,7 @@
 # PROJECT — Dulce Infancia Shop
 
 > Documento vivo de visión, propósito y alcance del proyecto  
-> Última actualización: 2026-06-03
+> Última actualización: 2026-06-06
 
 ---
 
@@ -30,17 +30,20 @@ El objetivo principal es **establecer una marca confiable** en el mercado hispan
 
 ## Stack Tecnológico
 
-| Capa               | Tecnología                              | Decisión                                           |
-| ------------------ | --------------------------------------- | -------------------------------------------------- |
-| Framework          | Next.js 15.3.3 (App Router + Turbopack) | SSR + ISR para SEO, routing nativo                 |
-| Lenguaje           | TypeScript                              | Tipado fuerte en productos, carrito, config        |
-| Estilos            | Tailwind CSS v4                         | Sistema de tokens OKLCH, dark mode ready           |
-| Componentes        | shadcn/ui (Radix UI)                    | Accesibilidad base, composable                     |
-| Fuentes            | Google Fonts via `next/font`            | Sin layout shift, optimización automática          |
-| Notificaciones     | Sonner                                  | Toast system unificado (react-hot-toast eliminado) |
-| Estado del carrito | React Context + Provider                | Sin dependencias externas, extensible              |
-| Mock data          | `src/lib/mock-data.ts`                  | Datos locales hasta integración de backend real    |
-| Deploy objetivo    | Vercel                                  | Edge network, integración nativa Next.js           |
+| Capa            | Tecnología                              | Decisión                                           |
+| --------------- | --------------------------------------- | -------------------------------------------------- |
+| Framework       | Next.js 15.3.3 (App Router + Turbopack) | SSR + ISR para SEO, routing nativo                 |
+| Lenguaje        | TypeScript (strict)                     | Tipado fuerte en dominio, carrito, config          |
+| Base de datos   | PostgreSQL (Prisma Postgres, pooled)    | Productos, pedidos, usuarios, categorías, settings |
+| ORM             | Prisma v7 (driver adapters, `PrismaPg`) | Migraciones, type-safety, transacciones            |
+| Autenticación   | NextAuth v4 (JWT + Credentials)         | Staff (admin) y clientes sobre el mismo User/Role  |
+| Imágenes        | UploadThing v7                          | Upload desde el admin, CDN propio                  |
+| Estilos         | Tailwind CSS v4 + tokens OKLCH          | Sistema de tokens, modo claro                      |
+| Componentes     | shadcn/ui (Radix UI) + cmdk             | Accesibilidad base, composable                     |
+| Estado cliente  | React Context (carrito, favoritos)      | Favoritos sincronizados a DB si hay sesión         |
+| Notificaciones  | Sonner                                  | Toast unificado                                    |
+| Pagos           | Abstracción `PaymentProvider` (mock)    | Mock simulado; MercadoPago pendiente (Bloque 10)   |
+| Deploy objetivo | Vercel                                  | Edge network, integración nativa Next.js           |
 
 ---
 
@@ -119,7 +122,7 @@ Confirmación / Post-compra                                           │
 
 ### 1. Diseño moderno e intuitivo
 
-**Estado actual**: ✅ Implementado. AUDIT score 20/20.
+**Estado actual**: ✅ Implementado. Score técnico frontend 20/20.
 
 - Paleta OKLCH aplicada: Verde Salvia (`oklch(0.68 0.08 145)`) + Beige (`oklch(0.95 0.022 80)`)
 - Tipografía: Nunito (display, 400–800) + Atkinson Hyperlegible (cuerpo)
@@ -286,7 +289,7 @@ Todo el flujo funciona y el código es de calidad de producción:
 - ✅ Nav móvil con hamburger + Sheet drawer
 - ✅ Página de detalle de producto `/products/[id]`
 - ✅ Footer conectado a `store.config.ts`
-- ✅ Todos los bugs críticos del AUDIT resueltos (score 20/20)
+- ✅ Todos los bugs críticos resueltos (score técnico frontend 20/20)
 - ✅ Identidad visual aplicada: Nunito, verde salvia, beige
 - ✅ Homepage rediseñada (hero split, trust bar marquee, brand promise)
 - ✅ Arquitectura SOLID con componentes enfocados
@@ -294,26 +297,28 @@ Todo el flujo funciona y el código es de calidad de producción:
 - ⏳ Imágenes reales de productos (placeholder.svg en la mayoría)
 - ⏳ Deploy en Vercel con dominio real
 
-### Fase 2 — MVP Lanzable (en progreso)
+### Fase 2 — Backend real + administrable ✅ (en gran parte)
 
-Lo que falta para abrir al público real:
-
-- Imágenes reales de productos
-- Buscador + filtros por precio, talla y color
-- `generateMetadata()` + sitemap.ts + robots.txt (SEO base)
-- Breadcrumbs en categorías y detalle
-- Deploy en Vercel con dominio propio
-- Integración MercadoPago (Checkout Bricks)
-- Analytics (GA4 + Meta Pixel)
+- ✅ Backend propio: Prisma + PostgreSQL (productos, pedidos, usuarios, settings)
+- ✅ Panel admin `/admin` multi-rol (CRUD productos, pedidos, usuarios, roles, settings)
+- ✅ Storefront lee productos reales desde la DB (mock-data eliminado)
+- ✅ Buscador + filtros, SEO base (generateMetadata, sitemap, robots), breadcrumbs
+- ✅ Imágenes vía UploadThing desde el admin
+- ✅ Checkout guarda pedidos reales (transaccional, stock, número `DI-2026-001`)
+- ✅ Pago simulado (abstracción de proveedor) para probar el flujo completo
+- ✅ Categorías administrables (modelo `Category` + CRUD + rutas dinámicas)
+- ⏳ Cargar contenido/imágenes reales · Deploy en Vercel con dominio propio
+- ⏳ Aplicar todos los Settings de la DB al storefront (audit de hardcoded, Bloque 9.8)
 
 ### Fase 3 — Crecimiento
 
-- CMS headless (Sanity recomendado) para gestión de productos sin código
-- Email transaccional (confirmaciones, abandono de carrito)
-- Página `/cuenta` + historial de pedidos
-- Wishlist `/favoritos` con página pública compartible
-- Reviews y calificaciones en detalle de producto
-- Banner de promoción con countdown
+- ✅ Cuenta de cliente: registro/login, `/cuenta`, historial de pedidos, favoritos en DB
+- ✅ Wishlist `/favoritos` (sincronizada a la cuenta)
+- ⏳ Editor de temas y branding visual (Bloque 9.7)
+- ⏳ Pagos reales con MercadoPago (Bloque 10)
+- ⏳ Email transaccional (confirmaciones, abandono de carrito)
+- ⏳ Analytics (GA4 + Meta Pixel)
+- ⏳ Reviews y calificaciones en detalle de producto
 
 ### Fase 4 — Escala
 
@@ -333,14 +338,14 @@ Lo que falta para abrir al público real:
 
 ## Referencias Cruzadas
 
-| Documento                                                    | Contenido                                                                                 |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| [ROADMAP.md](./ROADMAP.md)                                   | Estado actual de módulos, bugs pendientes, plan de ejecución técnico por fases            |
-| [AUDIT.md](./AUDIT.md)                                       | Auditoría técnica completa: accesibilidad, performance, responsive, theming (score 20/20) |
-| [`src/config/store.config.ts`](./src/config/store.config.ts) | Toda la configuración de la marca: nombre, rutas, nav, categorías, pagos, banners         |
-| [`src/config/theme.config.ts`](./src/config/theme.config.ts) | Paleta de colores OKLCH y tipografía                                                      |
-| [`src/lib/types.ts`](./src/lib/types.ts)                     | Tipos TypeScript del dominio: `Product`, `CartItem`, `CartContextType`                    |
-| [`src/lib/mock-data.ts`](./src/lib/mock-data.ts)             | Catálogo de productos de prueba en español                                                |
+| Documento                      | Contenido                                                         |
+| ------------------------------ | ----------------------------------------------------------------- |
+| [ROADMAP.md](./ROADMAP.md)     | Estado de módulos, plan por bloques y audit de hardcoded          |
+| [STANDARDS.md](./STANDARDS.md) | SOLID, arquitectura de datos, seguridad, accesibilidad, checklist |
+| `src/config/store.config.ts`   | Defaults de marca, rutas, nav especial, pagos, SEO, home content  |
+| `src/config/theme.config.ts`   | Defaults de paleta OKLCH y tipografía                             |
+| `prisma/schema.prisma`         | Modelos: Role, User, Product, Category, Order, Favorite, Setting… |
+| `src/lib/*` (server-only)      | Capa de datos: products, orders, categories, account, favorites   |
 
 ---
 

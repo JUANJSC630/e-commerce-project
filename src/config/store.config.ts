@@ -278,13 +278,6 @@ export const categories: CategoryConfig[] = [
   },
 ]
 
-export const essentialsConfig = {
-  title: "Esenciales de Cada Día",
-  description: "Básicos cómodos, duraderos y versátiles para el armario de tu hijo/a.",
-  emptyMessage:
-    "No se encontraron productos esenciales. Por favor, revisa nuestras otras categorías.",
-}
-
 // ─── SEO / Metadata ───────────────────────────────────────────────────────────
 
 export const seo = {
@@ -330,37 +323,6 @@ export const promoBanner = {
   message: `🚚 Envío gratis en compras mayores a $${(150_000).toLocaleString("es-CO")}`,
   ctaText: "Ver ofertas",
   ctaHref: "/category/sales",
-}
-
-/**
- * Human-readable labels for product.category values.
- * Used in breadcrumbs and product detail pages.
- */
-export const categoryLabels: Record<string, string> = {
-  Babies: "Bebés",
-  Girls: "Niñas",
-  Boys: "Niños",
-  Essentials: "Esenciales",
-  Sales: "Ofertas",
-}
-
-/**
- * Categories a product can be assigned to in the admin. These keys MUST match
- * the `product.category` values the storefront filters by (see category pages
- * and `src/lib/products.ts`). "Sales" is intentionally excluded — it's driven
- * by the `isOnSale` flag, not a real category.
- */
-export const productCategories = ["Babies", "Girls", "Boys", "Essentials"] as const
-
-/**
- * Resolves a product's category key to its storefront listing URL. "Essentials"
- * lives at its own route, the rest under /category/<slug>; unknown keys fall
- * back to the full catalog. Avoids broken links like /category/essentials.
- */
-export function categoryHrefFor(categoryKey: string): string {
-  if (categoryKey === "Essentials") return routes.essentials
-  const category = categories.find((c) => c.key === categoryKey)
-  return category ? `${routes.categoryBase}/${category.slug}` : routes.products
 }
 
 // ─── Social Links (optional) ──────────────────────────────────────────────────

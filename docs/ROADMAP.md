@@ -391,7 +391,8 @@ Ver historial al final del documento.
 ```
 [ ] Esquema extendido: success/danger, estilo de botón (solid/outline), banner,
     toasts (posición, richColors) — mapear a CSS vars + props leídos de settings
-[ ] (Mejora) uploader UploadThing en imágenes; tipografía dinámica (limitada por next/font)
+[x] Uploader UploadThing para imágenes del home (hecho en 9.8)
+[ ] (Mejora) tipografía dinámica (limitada por next/font)
 ```
 
 #### Consideraciones (cumplidas)
@@ -501,9 +502,16 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 [x] Editor en /admin (permiso settings): "Contenido del inicio" con array-editors
     (add/remove + preview de imagen) — primitivos extraídos a primitives.tsx
 [x] (store)/page.tsx lee loadAllSettings().homeContent y pasa props a las secciones
-[ ] Mejora futura: reemplazar campos de URL de imagen por uploader UploadThing
+[x] Imágenes vía UploadThing (no hardcoded): banners del hero y categorías destacadas
+    usan ImageUploadField (endpoint settingsImage, gated por permiso settings) → suben
+    al CDN y guardan la URL en la DB; se acabaron los campos de URL manuales
 [x] (theme/typography se cubren en Bloque 9.7, no aquí)
 ```
+
+> **Arquitectura de imágenes**: ninguna imagen del contenido administrable se gestiona
+> dentro del repo. El admin sube a UploadThing (CDN) y la DB guarda la URL `*.ufs.sh`.
+> Las imágenes demo en `/public` quedan solo como defaults iniciales y pueden borrarse
+> cuando el dueño suba las suyas (no se referencian una vez reemplazadas).
 
 > **Bloque 9.8 COMPLETO** salvo `theme`/`typography` (Bloque 9.7). Todo lo editable
 > desde /admin se aplica al storefront en vivo (revalidateTag al guardar).

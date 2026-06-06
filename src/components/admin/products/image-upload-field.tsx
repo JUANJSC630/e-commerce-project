@@ -10,12 +10,16 @@ import type { UploadRouter } from "@/app/api/uploadthing/core"
 const PLACEHOLDER = "/placeholder.svg"
 
 interface ImageUploadFieldProps {
-  /** Current image URL (may be the placeholder). */
+  /** Current image URL (may be the placeholder/empty). */
   value: string
-  /** Called with the new URL after upload, or the placeholder after removal. */
+  /** Called with the new URL after upload, or `emptyValue` after removal. */
   onChange: (url: string) => void
   /** Which upload endpoint (and permission) to use. */
   endpoint?: keyof UploadRouter
+  /** Value treated as "no image" (shown as dropzone) and set on removal. */
+  emptyValue?: string
+  /** Tailwind sizing for the preview box (default: product portrait). */
+  previewClassName?: string
 }
 
 /**
@@ -27,23 +31,21 @@ export function ImageUploadField({
   value,
   onChange,
   endpoint = "productImage",
+  emptyValue = PLACEHOLDER,
+  previewClassName = "w-40 aspect-[3/4]",
 }: ImageUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false)
-  const hasImage = Boolean(value) && value !== PLACEHOLDER
+  const hasImage = Boolean(value) && value !== PLACEHOLDER && value !== emptyValue
 
   if (hasImage) {
     return (
-      <div className="relative w-40 aspect-[3/4] rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
-        <Image
-          src={value}
-          alt="Vista previa del producto"
-          fill
-          className="object-cover"
-          sizes="160px"
-        />
+      <div
+        className={`relative rounded-lg overflow-hidden border border-slate-200 bg-slate-50 ${previewClassName}`}
+      >
+        <Image src={value} alt="Vista previa" fill className="object-cover" sizes="240px" />
         <button
           type="button"
-          onClick={() => onChange(PLACEHOLDER)}
+          onClick={() => onChange(emptyValue)}
           aria-label="Quitar imagen"
           className="absolute top-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full bg-white/90 text-slate-700 shadow-sm hover:bg-white"
         >

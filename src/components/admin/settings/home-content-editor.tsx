@@ -3,10 +3,11 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { LayoutTemplate, Plus, Trash2, ImageIcon } from "lucide-react"
+import { LayoutTemplate, Plus, Trash2 } from "lucide-react"
 import { SETTINGS_KEYS } from "@/lib/settings-keys"
 import type { HomeContent } from "@/config/store.config"
 import { SectionCard, Field, saveSection } from "./primitives"
+import { ImageUploadField } from "@/components/admin/products/image-upload-field"
 
 /** Small heading that separates the sub-blocks inside the home content card. */
 function SubHeading({ children }: { children: React.ReactNode }) {
@@ -14,20 +15,6 @@ function SubHeading({ children }: { children: React.ReactNode }) {
     <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400 pt-2">
       {children}
     </h3>
-  )
-}
-
-/** Square thumbnail preview for an image URL (falls back to an icon). */
-function ImagePreview({ src }: { src: string }) {
-  return (
-    <div className="h-10 w-10 shrink-0 rounded-md border border-slate-200 bg-slate-50 overflow-hidden grid place-items-center">
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <ImageIcon className="h-4 w-4 text-slate-300" />
-      )}
-    </div>
   )
 }
 
@@ -95,8 +82,21 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
       <SubHeading>Banners del hero ({heroBanners.length})</SubHeading>
       <div className="space-y-3">
         {heroBanners.map((banner, i) => (
-          <div key={i} className="flex items-start gap-2">
-            <ImagePreview src={banner.image} />
+          <div key={i} className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
+            <div className="w-44 shrink-0">
+              <span className="block text-xs font-medium text-slate-600 mb-1">Imagen</span>
+              <ImageUploadField
+                value={banner.image}
+                onChange={(url) =>
+                  patch({
+                    heroBanners: heroBanners.map((b, j) => (j === i ? { ...b, image: url } : b)),
+                  })
+                }
+                endpoint="settingsImage"
+                emptyValue=""
+                previewClassName="w-40 aspect-video"
+              />
+            </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
               <Field
                 label="Título"
@@ -117,16 +117,6 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
                     ),
                   })
                 }
-              />
-              <Field
-                label="Imagen (URL)"
-                value={banner.image}
-                onChange={(v) =>
-                  patch({
-                    heroBanners: heroBanners.map((b, j) => (j === i ? { ...b, image: v } : b)),
-                  })
-                }
-                placeholder="/banner.jpg"
               />
               <Field
                 label="Texto del botón"
@@ -170,9 +160,24 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
       <SubHeading>Categorías destacadas ({featuredCategories.length})</SubHeading>
       <div className="space-y-3">
         {featuredCategories.map((cat, i) => (
-          <div key={i} className="flex items-start gap-2">
-            <ImagePreview src={cat.image} />
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div key={i} className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
+            <div className="w-24 shrink-0">
+              <span className="block text-xs font-medium text-slate-600 mb-1">Imagen</span>
+              <ImageUploadField
+                value={cat.image}
+                onChange={(url) =>
+                  patch({
+                    featuredCategories: featuredCategories.map((c, j) =>
+                      j === i ? { ...c, image: url } : c,
+                    ),
+                  })
+                }
+                endpoint="settingsImage"
+                emptyValue=""
+                previewClassName="w-24 aspect-square"
+              />
+            </div>
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
               <Field
                 label="Nombre"
                 value={cat.name}
@@ -180,17 +185,6 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
                   patch({
                     featuredCategories: featuredCategories.map((c, j) =>
                       j === i ? { ...c, name: v } : c,
-                    ),
-                  })
-                }
-              />
-              <Field
-                label="Imagen (URL)"
-                value={cat.image}
-                onChange={(v) =>
-                  patch({
-                    featuredCategories: featuredCategories.map((c, j) =>
-                      j === i ? { ...c, image: v } : c,
                     ),
                   })
                 }

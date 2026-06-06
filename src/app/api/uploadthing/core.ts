@@ -32,6 +32,7 @@ function imageEndpoint(resource: Resource) {
 export const uploadRouter = {
   productImage: imageEndpoint("products"),
   categoryImage: imageEndpoint("categories"),
+  settingsImage: imageEndpoint("settings"),
 } satisfies FileRouter
 
 export type UploadRouter = typeof uploadRouter

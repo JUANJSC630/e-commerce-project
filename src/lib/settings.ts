@@ -10,8 +10,9 @@ import {
   social as defaultSocial,
   contact as defaultContact,
 } from "@/config/store.config"
-import { brandColors as defaultTheme, typography as defaultTypography } from "@/config/theme.config"
+import { typography as defaultTypography } from "@/config/theme.config"
 import { homeContent as defaultHomeContent, type HomeContent } from "@/config/store.config"
+import { THEME_DEFAULTS, type ThemeTokens } from "@/lib/theme"
 
 /** Cache tag for all settings reads. Revalidated whenever a setting is saved. */
 export const SETTINGS_TAG = "settings"
@@ -24,7 +25,7 @@ export interface StoreSettings {
   promoBanner: typeof defaultPromoBanner
   social: typeof defaultSocial
   contact: typeof defaultContact
-  theme: typeof defaultTheme
+  theme: ThemeTokens
   typography: typeof defaultTypography
   homeContent: HomeContent
 }
@@ -49,7 +50,7 @@ export const loadAllSettings = unstable_cache(
       promoBanner: merge(defaultPromoBanner, dbMap.get(SETTINGS_KEYS.promoBanner)),
       social: merge(defaultSocial, dbMap.get(SETTINGS_KEYS.social)),
       contact: merge(defaultContact, dbMap.get(SETTINGS_KEYS.contact)),
-      theme: merge(defaultTheme, dbMap.get(SETTINGS_KEYS.theme)),
+      theme: merge(THEME_DEFAULTS, dbMap.get(SETTINGS_KEYS.theme)),
       typography: merge(defaultTypography, dbMap.get(SETTINGS_KEYS.typography)),
       homeContent: merge(defaultHomeContent, dbMap.get(SETTINGS_KEYS.homeContent)),
     }

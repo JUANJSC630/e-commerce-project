@@ -127,8 +127,10 @@ prisma/            ← schema + migrations + seed (datos: products/categories)
 > merge DB→defaults. Server Components lo llaman directo; Client Components leen
 > `useSettings()`/`useFormatPrice()` desde el `SettingsProvider` montado en
 > `(store)/layout.tsx`. `saveSetting()` hace `revalidateTag("settings")`. Los títulos
-> `<title>`/SEO se resuelven con el brand vivo vía `lib/seo.ts`, y el contenido del
-> home (`home_content`) es editable. Solo resta `theme`/`typography` (Bloque 9.7).
+> `<title>`/SEO se resuelven con el brand vivo vía `lib/seo.ts`, el contenido del home
+> (`home_content`) es editable, y el **tema visual** se aplica vía `ThemeStyle` +
+> `lib/theme.ts` (colores validados, `lib/color.ts` para oklch⇄hex). Todo lo editable
+> en /admin se refleja en el storefront.
 
 ### Verificación antes de cada commit
 

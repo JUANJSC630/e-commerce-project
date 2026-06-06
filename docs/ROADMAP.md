@@ -27,14 +27,14 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ### Storefront → Backend (alta prioridad)
 
-| Problema                         | Detalle                                                                                 |
-| -------------------------------- | --------------------------------------------------------------------------------------- |
-| ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`          |
-| ~~Checkout no guarda pedido~~ ✅ | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                      |
-| Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                          |
-| ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB             |
-| ~~Categorías hardcoded~~ ✅      | Resuelto: modelo `Category` + admin CRUD + `/category/[slug]` dinámico (Bloque 9.6)     |
-| Tema editado no se aplica        | El editor de "Tema visual" guarda en DB pero el storefront usa globals.css → Bloque 9.7 |
+| Problema                         | Detalle                                                                             |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`      |
+| ~~Checkout no guarda pedido~~ ✅ | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                  |
+| Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                      |
+| ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB         |
+| ~~Categorías hardcoded~~ ✅      | Resuelto: modelo `Category` + admin CRUD + `/category/[slug]` dinámico (Bloque 9.6) |
+| ~~Tema editado no se aplica~~ ✅ | Resuelto: `ThemeStyle` inyecta el tema de la DB (scopeado, validado) — Bloque 9.7   |
 
 ### Código con bugs menores
 
@@ -348,68 +348,60 @@ Ver historial al final del documento.
 
 ---
 
-### ⏳ Bloque 9.7 — Editor de temas y branding (theming avanzado)
+### ✅ Bloque 9.7 — Editor de temas y branding (theming avanzado)
 
-> **Objetivo**: que el cliente personalice el look completo de la tienda sin
-> tocar código — colores con selectores visuales, plantillas pre-hechas,
-> crear/editar/aplicar temas, y estilos de botones, banners y toasts. Con vista
-> previa en vivo, seguro y de alta calidad.
+> **Objetivo**: que el cliente personalice el look de la tienda sin tocar código
+> — colores con selectores visuales, plantillas, vista previa en vivo, seguro.
+> **Estado**: ✅ Fases 1–3 completas (colores + radius + presets + preview +
+> contraste AA + inyección segura). Fase 4 (estilos por componente) opcional.
 
-#### ⚠️ Hallazgo crítico (base a resolver primero)
-
-El editor "Tema visual" **hoy guarda los colores en la DB pero NO se aplican al
-storefront**: el root layout usa los valores estáticos de `globals.css` y nada
-lee el `theme` de la DB. Es decir, la sección actual es cosmética. La Fase 1
-arregla esto y es el cimiento de todo lo demás.
-
-#### Fase 1 — Aplicar el tema de la DB al storefront (cimiento)
+#### Fase 1 — Aplicar el tema de la DB al storefront (cimiento) ✅
 
 ```
-[ ] Cargar el theme activo (loadSetting "theme") en el root layout e inyectar un
-    <style> con :root { --brand-*: ...; --radius: ... } que sobreescribe globals
-[ ] Seguridad: validar/sanitizar cada valor (solo oklch()/hex/hsl válidos) antes
-    de inyectar — nunca CSS arbitrario (previene CSS injection)
-[ ] Cache del theme (tag "theme") + revalidar al guardar; sin volver dinámico el storefront
-[ ] Aplicar también radius (y tipografía en fase posterior)
+[x] ThemeStyle (server) lee loadAllSettings().theme e inyecta un <style> scopeado
+    a .dulce-theme con --brand-* + tokens shadcn derivados + --radius
+[x] Seguridad: lib/theme.ts sanitiza cada valor (isValidColor/isValidRadius — solo
+    #hex/oklch()/rgb()/hsl() y longitudes) antes de inyectar; jamás CSS arbitrario
+[x] Cacheado (tag "settings") + revalidado al guardar; storefront sigue ISR
+[x] Scope correcto: el wrapper .dulce-theme aísla el storefront; el admin (slate)
+    no consume tokens de marca, así que no se ve afectado
 ```
 
-#### Fase 2 — Editor visual (color pickers + vista previa en vivo)
+#### Fase 2 — Editor visual (color pickers + vista previa en vivo) ✅
 
 ```
-[ ] Reemplazar inputs OKLCH crudos por selectores de color visuales
-    (lib `culori` para convertir hex⇄oklch; swatch + picker + campo avanzado OKLCH)
-[ ] Panel de vista previa en vivo (botones, badges, cards, banner, toast) que
-    refleja los colores elegidos ANTES de guardar (CSS vars inline en el preview)
-[ ] Validación de contraste (AA) entre base/onBase, ink/surface — avisos de accesibilidad
+[x] lib/color.ts propio (sin dependencias): oklch⇄hex (matemática OKLab verificada),
+    parse/format OKLCH, contraste WCAG
+[x] ColorRow: swatch + <input type="color"> + campo OKLCH avanzado con validación visual
+[x] Panel de vista previa en vivo (banner, card, botones, badge, input) con los mismos
+    tokens Tailwind del storefront vía CSS vars inline — refleja cambios ANTES de guardar
+[x] Slider de radius; badges de contraste AA (botón base/onBase, texto ink/surface)
 ```
 
-#### Fase 3 — Plantillas / temas (presets)
+#### Fase 3 — Plantillas / presets ✅
 
 ```
-[ ] Modelo ThemeTemplate (id, name, tokens JSON, isBuiltin, isActive) o presets en settings
-[ ] Seed de plantillas base ("Dulce Infancia", "Pastel", "Minimal", "Vibrante", "Oscuro")
-[ ] Admin: listar, aplicar, duplicar, crear, editar, eliminar (built-ins no eliminables)
-[ ] Puntero de "tema activo"; aplicar = setear el theme activo + revalidar
+[x] THEME_PRESETS built-in ("Dulce Infancia", "Pastel", "Océano", "Vibrante", "Minimal")
+[x] Chips con muestra de colores; aplicar carga el preset en el form (no guarda hasta Guardar)
+[x] Preset activo resaltado; todo reversible (Deshacer + presets)
 ```
 
-#### Fase 4 — Personalización por componente (botones, banners, toasts)
+#### Fase 4 — Personalización por componente (opcional, futuro)
 
 ```
-[ ] Esquema de tema extendido: colores (incl. success/danger), radius por escala,
-    estilo de botón (solid/outline), banner (bg/texto), toasts (posición, richColors)
-[ ] Mapear a CSS vars + props de componentes leídos desde settings (Toaster, PromoBanner, Button)
-[ ] Vista previa por componente
+[ ] Esquema extendido: success/danger, estilo de botón (solid/outline), banner,
+    toasts (posición, richColors) — mapear a CSS vars + props leídos de settings
+[ ] (Mejora) uploader UploadThing en imágenes; tipografía dinámica (limitada por next/font)
 ```
 
-#### Consideraciones
+#### Consideraciones (cumplidas)
 
-- **Seguridad**: el tema solo produce valores de color/medida validados que se
-  inyectan en un `<style>` controlado; jamás CSS libre del usuario. Gated por el
-  permiso `settings`. Conversión de color server/client con `culori`.
-- **Rendimiento**: theme cacheado con tag; el storefront sigue estático/ISR, se
-  revalida al guardar. Vista previa 100% client (sin guardar).
-- **Calidad**: tokens centralizados (un solo origen), avisos de contraste AA,
-  plantillas reutilizables, todo reversible (restaurar built-in).
+- **Seguridad** ✅: el tema solo produce valores validados inyectados en un `<style>`
+  controlado; nunca CSS libre. Gated por permiso `settings`. Conversión propia en `lib/color.ts`.
+- **Rendimiento** ✅: theme cacheado con tag; storefront ISR, revalida al guardar.
+  Vista previa 100% client.
+- **Calidad** ✅: tokens centralizados (`lib/theme.ts`), avisos de contraste AA,
+  presets reutilizables, reversible.
 
 ---
 

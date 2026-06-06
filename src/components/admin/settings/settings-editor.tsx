@@ -6,7 +6,6 @@ import { toast } from "sonner"
 import {
   Store,
   Globe,
-  Palette,
   Truck,
   CreditCard,
   Megaphone,
@@ -19,6 +18,7 @@ import {
 import { SETTINGS_KEYS } from "@/lib/settings-keys"
 import type { StoreSettings } from "@/lib/settings"
 import { SectionCard, Field, Toggle, saveSection } from "./primitives"
+import { ThemeEditor } from "./theme-editor"
 import { HomeContentEditor } from "./home-content-editor"
 
 interface SettingsEditorProps {
@@ -177,63 +177,6 @@ function LocaleEditor({ data }: { data: Record<string, unknown> }) {
           value={form.dateLocale}
           onChange={(v) => setForm({ ...form, dateLocale: v })}
         />
-      </div>
-    </SectionCard>
-  )
-}
-
-// ─── Theme Editor ─────────────────────────────────────────────────────────────
-
-function ThemeEditor({ data }: { data: Record<string, unknown> }) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [form, setForm] = useState({
-    base: (data.base as string) ?? "",
-    onBase: (data.onBase as string) ?? "",
-    surface: (data.surface as string) ?? "",
-    surfaceAlt: (data.surfaceAlt as string) ?? "",
-    muted: (data.muted as string) ?? "",
-    ink: (data.ink as string) ?? "",
-  })
-  const [original] = useState(form)
-  const isDirty = JSON.stringify(form) !== JSON.stringify(original)
-
-  function handleSave() {
-    startTransition(async () => {
-      try {
-        await saveSection(SETTINGS_KEYS.theme, form)
-        toast.success("Tema visual actualizado")
-        router.refresh()
-      } catch (e) {
-        toast.error((e as Error).message)
-      }
-    })
-  }
-
-  return (
-    <SectionCard
-      icon={Palette}
-      title="Tema visual (colores OKLCH)"
-      onSave={handleSave}
-      onReset={() => setForm(original)}
-      isPending={isPending}
-      isDirty={isDirty}
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {Object.entries(form).map(([key, value]) => (
-          <div key={key} className="flex items-center gap-2">
-            <div
-              className="h-8 w-8 rounded-md border border-slate-200 shrink-0"
-              style={{ background: value }}
-            />
-            <Field
-              label={key}
-              value={value}
-              onChange={(v) => setForm({ ...form, [key]: v })}
-              placeholder="oklch(0.68 0.08 145)"
-            />
-          </div>
-        ))}
       </div>
     </SectionCard>
   )

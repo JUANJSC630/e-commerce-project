@@ -5,6 +5,8 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { AddressSelectors } from "@/components/checkout/address-selectors"
+import type { AddressValue } from "@/components/checkout/address-selectors"
 
 interface ShippingData {
   firstName: string
@@ -36,7 +38,6 @@ const validateShippingData = (data: ShippingData) => {
     "city",
     "country",
     "state",
-    "zipCode",
     "phone",
   ]
   const validationResults: {
@@ -94,17 +95,9 @@ export function ShippingForm({
 
     // Required field check
     if (
-      [
-        "firstName",
-        "lastName",
-        "email",
-        "address",
-        "city",
-        "zipCode",
-        "country",
-        "phone",
-        "state",
-      ].includes(field)
+      ["firstName", "lastName", "email", "address", "city", "country", "phone", "state"].includes(
+        field,
+      )
     ) {
       if (!value || value.trim() === "") {
         return "Este campo es requerido"
@@ -158,6 +151,17 @@ export function ShippingForm({
         return newErrors
       })
     }
+  }
+
+  // Country/state/city come from the AddressSelectors as names; merge them and
+  // clear any errors on the changed fields.
+  const handleAddressChange = (patch: Partial<AddressValue>) => {
+    setFormData((prev) => ({ ...prev, ...patch }))
+    setErrors((prev) => {
+      const next = { ...prev }
+      for (const field of Object.keys(patch)) delete next[field]
+      return next
+    })
   }
 
   // Focus out handler - validate field when user leaves it
@@ -286,38 +290,23 @@ export function ShippingForm({
           />
           {errors.address && <p className="text-destructive text-sm mt-1">{errors.address}</p>}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="city">Ciudad *</Label>
-            <Input
-              id="city"
-              value={formData.city}
-              onChange={(e) => handleChange("city", e.target.value)}
-              className={errors.city ? "border-destructive" : ""}
-            />
-            {errors.city && <p className="text-destructive text-sm mt-1">{errors.city}</p>}
-          </div>
-          <div>
-            <Label htmlFor="state">Departamento *</Label>
-            <Input
-              id="state"
-              value={formData.state}
-              onChange={(e) => handleChange("state", e.target.value)}
-              className={errors.state ? "border-destructive" : ""}
-            />
-            {errors.state && <p className="text-destructive text-sm mt-1">{errors.state}</p>}
-          </div>
-          <div>
-            <Label htmlFor="zipCode">Código Postal *</Label>
-            <Input
-              id="zipCode"
-              value={formData.zipCode}
-              onChange={(e) => handleChange("zipCode", e.target.value)}
-              className={errors.zipCode ? "border-destructive" : ""}
-            />
-            {errors.zipCode && <p className="text-destructive text-sm mt-1">{errors.zipCode}</p>}
-          </div>
-        </div>
+        <AddressSelectors
+          value={{ country: formData.country, state: formData.state, city: formData.city }}
+          onChange={handleAddressChange}
+          errors={{ country: errors.country, state: errors.state, city: errors.city }}
+          zipField={
+            <div>
+              <Label htmlFor="zipCode">Código Postal (opcional)</Label>
+              <Input
+                id="zipCode"
+                value={formData.zipCode}
+                onChange={(e) => handleChange("zipCode", e.target.value)}
+                className={errors.zipCode ? "border-destructive" : ""}
+              />
+              {errors.zipCode && <p className="text-destructive text-sm mt-1">{errors.zipCode}</p>}
+            </div>
+          }
+        />
         <div className="flex gap-4 pt-6">
           <Button type="button" variant="outline" onClick={onBack} className="flex-1">
             Volver al carrito

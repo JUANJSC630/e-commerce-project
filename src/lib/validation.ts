@@ -62,7 +62,6 @@ export function validateShippingData(data: ShippingData): ValidationResult {
     "email",
     "address",
     "city",
-    "zipCode",
     "country",
   ]
 

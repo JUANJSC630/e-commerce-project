@@ -43,3 +43,6 @@ next-env.d.ts
 !.env.example
 
 /src/generated/prisma
+
+# next dev --experimental-https self-signed certs
+/certificates

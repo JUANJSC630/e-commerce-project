@@ -6,7 +6,8 @@ import { ChevronRight, Package } from "lucide-react"
 import { authOptions } from "@/lib/auth-options"
 import { getOrdersByUser } from "@/lib/orders"
 import { formatPrice } from "@/lib/utils"
-import { brand, routes, locale } from "@/config/store.config"
+import { loadAllSettings } from "@/lib/settings"
+import { brand, routes } from "@/config/store.config"
 import { OrderStatusBadge } from "@/components/order/order-status-badge"
 
 export const metadata: Metadata = {
@@ -18,7 +19,10 @@ export default async function CustomerOrdersPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect("/cuenta/login")
 
-  const orders = await getOrdersByUser(session.user.id)
+  const [orders, { locale }] = await Promise.all([
+    getOrdersByUser(session.user.id),
+    loadAllSettings(),
+  ])
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-2xl">
@@ -63,7 +67,9 @@ export default async function CustomerOrdersPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="font-semibold text-brand-ink">{formatPrice(order.total)}</span>
+                  <span className="font-semibold text-brand-ink">
+                    {formatPrice(order.total, locale)}
+                  </span>
                   <ChevronRight className="h-5 w-5 text-brand-muted" aria-hidden="true" />
                 </div>
               </Link>

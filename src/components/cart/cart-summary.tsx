@@ -1,7 +1,8 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { shipping, routes, locale } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { useSettings, useFormatPrice } from "@/components/providers/settings-provider"
 
 interface CartItemSummary {
   id: string
@@ -15,12 +16,11 @@ interface CartSummaryProps {
 }
 
 export function CartSummary({ items }: CartSummaryProps) {
+  const { shipping } = useSettings()
+  const formatPrice = useFormatPrice()
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shippingCost = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
   const total = subtotal + shippingCost
-
-  const formatPrice = (amount: number) =>
-    `${locale.currencySymbol}${amount.toLocaleString(locale.dateLocale)}`
 
   return (
     <div className="bg-brand-surface-alt rounded-2xl p-6 text-brand-ink sticky top-28">

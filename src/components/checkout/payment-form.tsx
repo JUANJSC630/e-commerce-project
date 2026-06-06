@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import { paymentMethods as configPaymentMethods } from "@/config/store.config"
+import { useSettings } from "@/components/providers/settings-provider"
 import { getCardType, validatePaymentData } from "@/lib/validation"
 import type { LucideIcon } from "lucide-react"
 
@@ -40,6 +40,7 @@ export function PaymentForm({
   onNext,
   onBack,
 }: PaymentFormProps) {
+  const { paymentMethods: configPaymentMethods } = useSettings()
   const [formData, setFormData] = useState<PaymentData>(data)
   const [errors, setErrors] = useState<Record<string, string>>(externalErrors || {})
 

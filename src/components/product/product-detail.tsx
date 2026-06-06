@@ -20,7 +20,8 @@ import { StockBadge } from "@/components/product/stock-badge"
 import { isOutOfStock } from "@/lib/inventory"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
-import { locale, shipping, routes } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { useSettings } from "@/components/providers/settings-provider"
 import type { Product } from "@/lib/types"
 
 interface ProductDetailProps {
@@ -29,6 +30,7 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ product, relatedProducts }: ProductDetailProps) {
+  const { locale, shipping } = useSettings()
   const { addItem, openCart } = useCart()
   const outOfStock = isOutOfStock(product.stock)
   const { isFavorite, toggleFavorite } = useFavorites(product.id)

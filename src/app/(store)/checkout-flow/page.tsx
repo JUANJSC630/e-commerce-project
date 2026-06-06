@@ -10,12 +10,14 @@ import { PaymentForm } from "@/components/checkout/payment-form"
 import { OrderConfirmation } from "@/components/checkout/order-confirmation"
 import { toast } from "sonner"
 import { useCart } from "@/hooks/use-cart"
-import { locale, routes, brand } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { useSettings } from "@/components/providers/settings-provider"
 import { validateShippingData, validatePaymentData } from "@/lib/validation"
 
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
 
 export default function CheckoutPage() {
+  const { locale, brand } = useSettings()
   const { items, updateItemQuantity, removeItem } = useCart()
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)

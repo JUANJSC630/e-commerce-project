@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { Check, MapPin, CreditCard, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { shipping, locale, routes } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { useSettings, useFormatPrice } from "@/components/providers/settings-provider"
 
 interface OrderConfirmationProps {
   orderData: {
@@ -65,6 +66,8 @@ interface SectionData {
 }
 
 export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirmationProps) {
+  const { shipping } = useSettings()
+  const formatPrice = useFormatPrice()
   const [isProcessing, setIsProcessing] = useState(false)
   const [validationState, setValidationState] = useState({ isValid: true, message: "" })
 
@@ -103,8 +106,6 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
   const subtotal = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shippingCost = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
   const total = subtotal + shippingCost
-  const formatPrice = (n: number) =>
-    `${locale.currencySymbol}${n.toLocaleString(locale.dateLocale)}`
 
   const sections: SectionData[] = [
     {

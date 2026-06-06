@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Combobox } from "@/components/ui/combobox"
 import { useCities, useCountries, useDetectedCountry, useStates } from "@/hooks/use-locations"
-import { locale } from "@/config/store.config"
+import { useSettings } from "@/components/providers/settings-provider"
 
 export interface AddressValue {
   country: string
@@ -31,6 +31,7 @@ let geoSeeded = false
  * internally for chaining.
  */
 export function AddressSelectors({ value, onChange, errors, zipField }: AddressSelectorsProps) {
+  const { locale } = useSettings()
   const [countryCode, setCountryCode] = useState<string | undefined>()
   const [stateCode, setStateCode] = useState<string | undefined>()
 
@@ -61,7 +62,7 @@ export function AddressSelectors({ value, onChange, errors, zipField }: AddressS
       const name = labelOf(countries, code)
       if (name && name !== value.country) onChange({ country: name })
     }
-  }, [countries, countryCode, value.country, onChange])
+  }, [countries, countryCode, value.country, onChange, locale.defaultCountry])
 
   // Once (per session), upgrade to the geo-detected country if it differs and
   // the user hasn't picked one yet. Runs after the immediate seed above.

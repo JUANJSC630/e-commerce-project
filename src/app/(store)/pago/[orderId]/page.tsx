@@ -4,6 +4,7 @@ import { ShieldCheck } from "lucide-react"
 import { getOrderPaymentInfo } from "@/lib/orders"
 import { isMockPaymentsEnabled } from "@/lib/payments"
 import { formatPrice } from "@/lib/utils"
+import { loadAllSettings } from "@/lib/settings"
 import { brand } from "@/config/store.config"
 import { SimulatedPaymentActions } from "@/components/checkout/simulated-payment-actions"
 
@@ -21,7 +22,7 @@ export default async function PaymentPage({ params }: PageProps) {
   if (!isMockPaymentsEnabled()) notFound()
 
   const { orderId } = await params
-  const order = await getOrderPaymentInfo(orderId)
+  const [order, { locale }] = await Promise.all([getOrderPaymentInfo(orderId), loadAllSettings()])
 
   if (!order) notFound()
   if (order.paymentStatus === "PAID") redirect(`/order-success/${orderId}`)
@@ -42,7 +43,7 @@ export default async function PaymentPage({ params }: PageProps) {
           Pedido <span className="font-medium text-brand-ink">{order.orderNumber}</span>
         </p>
 
-        <p className="text-4xl font-bold text-brand-ink my-6">{formatPrice(order.total)}</p>
+        <p className="text-4xl font-bold text-brand-ink my-6">{formatPrice(order.total, locale)}</p>
 
         <SimulatedPaymentActions orderId={order.id} successHref={`/order-success/${order.id}`} />
 

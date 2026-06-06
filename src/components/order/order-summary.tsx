@@ -1,7 +1,7 @@
 import Image from "next/image"
 import { Package, MapPin } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
-import { shipping as shippingConfig } from "@/config/store.config"
+import { loadAllSettings } from "@/lib/settings"
 import type { OrderConfirmationDTO } from "@/lib/orders"
 
 interface OrderSummaryProps {
@@ -11,8 +11,10 @@ interface OrderSummaryProps {
 }
 
 /** Reusable order breakdown: items, totals and (optionally) the shipping address. */
-export function OrderSummary({ order, showShipping = true }: OrderSummaryProps) {
+export async function OrderSummary({ order, showShipping = true }: OrderSummaryProps) {
   const { shippingAddress: address } = order
+  const { locale, shipping } = await loadAllSettings()
+  const price = (amount: number) => formatPrice(amount, locale)
 
   return (
     <div className="space-y-5">
@@ -48,7 +50,7 @@ export function OrderSummary({ order, showShipping = true }: OrderSummaryProps) 
                   </p>
                 </div>
                 <p className="font-medium text-brand-ink whitespace-nowrap">
-                  {formatPrice(item.price * item.quantity)}
+                  {price(item.price * item.quantity)}
                 </p>
               </div>
             </li>
@@ -58,15 +60,15 @@ export function OrderSummary({ order, showShipping = true }: OrderSummaryProps) 
         <dl className="border-t border-border mt-4 pt-4 space-y-2 text-sm">
           <div className="flex justify-between">
             <dt className="text-brand-muted">Subtotal</dt>
-            <dd>{formatPrice(order.subtotal)}</dd>
+            <dd>{price(order.subtotal)}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-brand-muted">Envío</dt>
-            <dd>{order.shippingCost === 0 ? "Gratis" : formatPrice(order.shippingCost)}</dd>
+            <dd>{order.shippingCost === 0 ? "Gratis" : price(order.shippingCost)}</dd>
           </div>
           <div className="flex justify-between text-lg font-semibold border-t border-border pt-2">
             <dt>Total</dt>
-            <dd className="text-brand-base">{formatPrice(order.total)}</dd>
+            <dd className="text-brand-base">{price(order.total)}</dd>
           </div>
         </dl>
       </section>
@@ -94,7 +96,7 @@ export function OrderSummary({ order, showShipping = true }: OrderSummaryProps) 
             {address.country}
             {address.phone ? ` · ${address.phone}` : ""}
             <br />
-            <span className="text-xs">Entrega estimada: {shippingConfig.estimatedDays}</span>
+            <span className="text-xs">Entrega estimada: {shipping.estimatedDays}</span>
           </address>
         </section>
       )}

@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { Minus, Plus, Trash2 } from "lucide-react"
+import { useSettings, useFormatPrice } from "@/components/providers/settings-provider"
 import type { CartItem } from "@/lib/types"
 
 // Modified item type that uses size and color instead of selectedSize and selectedColor
@@ -23,9 +24,11 @@ export function CartSummary({
   onRemoveItem,
   isEditable = true,
 }: CartSummaryProps) {
+  const { shipping } = useSettings()
+  const formatPrice = useFormatPrice()
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = subtotal > 50000 ? 0 : 5000
-  const total = subtotal + shipping
+  const shippingCost = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
+  const total = subtotal + shippingCost
 
   return (
     <div className="bg-brand-surface-alt/50 rounded-2xl p-6 text-foreground">
@@ -51,7 +54,7 @@ export function CartSummary({
               <p className="text-xs text-muted-foreground">
                 Talla: {item.size || "Única"} • Color: {item.color || "Estándar"}
               </p>
-              <p className="font-semibold text-sm">${item.price.toLocaleString()}</p>
+              <p className="font-semibold text-sm">{formatPrice(item.price)}</p>
             </div>
             {isEditable ? (
               <div className="flex flex-col items-end gap-2">
@@ -89,9 +92,7 @@ export function CartSummary({
             ) : (
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Cant: {item.quantity}</p>
-                <p className="font-semibold text-sm">
-                  ${(item.price * item.quantity).toLocaleString()}
-                </p>
+                <p className="font-semibold text-sm">{formatPrice(item.price * item.quantity)}</p>
               </div>
             )}
           </div>
@@ -100,20 +101,22 @@ export function CartSummary({
       <div className="border-t border-border pt-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Subtotal</span>
-          <span className="font-medium">${subtotal.toLocaleString()}</span>
+          <span className="font-medium">{formatPrice(subtotal)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Envío</span>
           <span className="font-medium">
-            {shipping === 0 ? "Gratis" : `$${shipping.toLocaleString()}`}
+            {shippingCost === 0 ? "Gratis" : formatPrice(shippingCost)}
           </span>
         </div>
-        {shipping === 0 && (
-          <p className="text-xs text-green-600">¡Envío gratis por compras superiores a $50.000!</p>
+        {shippingCost === 0 && (
+          <p className="text-xs text-green-600">
+            ¡Envío gratis por compras superiores a {formatPrice(shipping.freeThreshold)}!
+          </p>
         )}
         <div className="flex justify-between text-lg font-semibold pt-2 border-t border-border">
           <span>Total</span>
-          <span className="text-brand-base">${total.toLocaleString()}</span>
+          <span className="text-brand-base">{formatPrice(total)}</span>
         </div>
       </div>
     </div>

@@ -4,7 +4,8 @@ import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { getCustomerOrder } from "@/lib/orders"
-import { brand, routes, locale } from "@/config/store.config"
+import { loadAllSettings } from "@/lib/settings"
+import { brand, routes } from "@/config/store.config"
 import { OrderStatusBadge } from "@/components/order/order-status-badge"
 import { OrderSummary } from "@/components/order/order-summary"
 
@@ -22,7 +23,10 @@ export default async function CustomerOrderDetailPage({ params }: PageProps) {
   if (!session) redirect("/cuenta/login")
 
   const { id } = await params
-  const order = await getCustomerOrder(id, session.user.id)
+  const [order, { locale }] = await Promise.all([
+    getCustomerOrder(id, session.user.id),
+    loadAllSettings(),
+  ])
   if (!order) notFound()
 
   return (

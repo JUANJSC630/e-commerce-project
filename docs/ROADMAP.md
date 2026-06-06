@@ -417,21 +417,27 @@ arregla esto y es el cimiento de todo lo demás.
 
 > **Objetivo**: que TODO lo editable desde el admin se aplique de verdad al
 > storefront, y eliminar el contenido hardcoded restante.
+> **Estado**: Tabla A cableada al storefront (✅), salvo `theme`/`typography`
+> (→ 9.7) y títulos `<title>`/metadata (pendiente). Falta grupo B (home).
 
-#### Audit de hardcoded (estado actual)
+#### Audit de hardcoded
 
-**A. Settings guardados en DB pero NO aplicados** (el editor es cosmético — el
-storefront lee `store.config.ts` estático, no `loadAllSettings`):
+**A. Settings de la DB aplicados al storefront vía `loadAllSettings` + `SettingsProvider`:**
 
-| Setting (DB key)       | Dónde se edita  | Dónde se lee hoy (hardcoded)              |
-| ---------------------- | --------------- | ----------------------------------------- |
-| `brand`                | /admin/settings | `store.config.ts` (header, footer, SEO)   |
-| `locale`               | /admin/settings | `store.config.ts` (formatPrice, fechas)   |
-| `shipping`             | /admin/settings | `store.config.ts` (checkout, createOrder) |
-| `payment_methods`      | /admin/settings | `store.config.ts` (payment-form)          |
-| `promo_banner`         | /admin/settings | `store.config.ts` (PromoBanner)           |
-| `social` / `contact`   | /admin/settings | `store.config.ts` (footer)                |
-| `theme` / `typography` | /admin/settings | `globals.css` estático (→ Bloque 9.7)     |
+| Setting (DB key)       | Estado | Cómo se aplica ahora                                               |
+| ---------------------- | ------ | ------------------------------------------------------------------ |
+| `brand`                | ✅     | header (layout server), footer, checkout — `useSettings()`         |
+| `locale`               | ✅     | `formatPrice(amount, locale)` + `useFormatPrice()`, fechas, país   |
+| `shipping`             | ✅     | cart-summary (×2), checkout, product-detail, order-summary         |
+| `payment_methods`      | ✅     | `payment-form` vía `useSettings()`                                 |
+| `promo_banner`         | ✅     | `PromoBanner` vía `useSettings()`                                  |
+| `social` / `contact`   | ✅     | footer vía `useSettings()`                                         |
+| brand en `<title>`/SEO | ⏳     | `metadata` estático → convertir a `generateMetadata` (~12 páginas) |
+| `theme` / `typography` | ⏳     | `globals.css` estático → Bloque 9.7                                |
+
+Infra: `loadAllSettings` cacheado (`unstable_cache`, tag `settings`);
+`saveSetting` hace `revalidateTag("settings")` → el admin refresca el storefront.
+`SettingsProvider` montado en `(store)/layout.tsx` (server lee, client consume).
 
 **B. Totalmente hardcoded, sin admin** (no hay forma de editarlos):
 
@@ -454,35 +460,36 @@ storefront lee `store.config.ts` estático, no `loadAllSettings`):
 
 #### Plan por fases
 
-**Fase 1 — Infra de lectura (sin cambiar UI):**
+**Fase 1 — Infra de lectura (sin cambiar UI):** ✅
 
 ```
-[ ] Cachear loadAllSettings con unstable_cache, tag "settings" (cold-start friendly)
-[ ] saveSetting() → revalidateTag("settings") tras el upsert (cerrar el ciclo admin→store)
-[ ] Definir frontera: qué se queda en store.config (estructura: routes, types,
-    pageSeo base, defaults) vs. qué pasa a DB (brand, locale, shipping,
-    paymentMethods, promoBanner, social, contact)
+[x] Cachear loadAllSettings con unstable_cache, tag "settings" (cold-start friendly)
+[x] saveSetting() → revalidateTag("settings") tras el upsert (cerrar el ciclo admin→store)
+[x] Frontera definida: store.config queda como defaults + estructura (routes, types,
+    pageSeo, home content); brand/locale/shipping/payment/promo/social/contact → DB
 ```
 
-**Fase 2 — Distribución al árbol de render:**
+**Fase 2 — Distribución al árbol de render:** ✅
 
 ```
-[ ] Server Components: leer settings en el layout/page y PASAR POR PROPS hacia abajo
-    (footer, promo-banner, order-summary, checkout) — sin imports estáticos
-[ ] Client Components: crear SettingsProvider en (store)/layout.tsx — el layout
-    (server) lee loadAllSettings y hidrata el provider; los Client leen vía hook
-    useSettings() en vez de importar store.config
-[ ] formatPrice/fechas: que reciban locale (de settings) en vez de leer el módulo
+[x] SettingsProvider (client) en (store)/layout.tsx — el layout (server) lee
+    loadAllSettings y lo hidrata; los Client leen vía useSettings()/useFormatPrice()
+[x] Server Components con precios: order-summary (async) + páginas de pedidos/pago
+    leen settings y pasan locale a formatPrice
+[x] formatPrice(amount, locale?) retrocompatible (default estático)
 ```
 
-**Fase 3 — Migración archivo por archivo (los ~38 importers):**
+**Fase 3 — Migración de importers (brand/locale/shipping/payment/promo/social):** ✅
 
 ```
-[ ] Reemplazar import estático por props (server) o useSettings() (client),
-    grupo por grupo: brand → locale → shipping → payment → promo → social/contact
-[ ] Verificar con E2E (verify scripts) que cambiar un Setting en /admin se refleja
-    en el storefront tras revalidate
-[ ] Eliminar de store.config las claves migradas; dejar SOLO defaults + estructura
+[x] Migrados a useSettings()/props: footer, header(layout), cart-summary (cart + checkout),
+    mini-cart, order-confirmation, product-detail, product-card, address-selectors,
+    checkout-flow, promo-banner, payment-form, order-summary, páginas pedidos/pago
+[x] Bug corregido: checkout/cart-summary tenía umbral/costo de envío y "$" hardcodeados
+    (50.000/5.000) inconsistentes con la config → ahora usa shipping de settings
+[ ] Pendiente: títulos `<title>`/metadata (brand) — convertir metadata estático a
+    generateMetadata en ~12 páginas
+[ ] Pendiente: limpiar de store.config las claves ya en DB (dejar solo defaults)
 ```
 
 **Fase 4 — Contenido del home administrable (grupo B):**

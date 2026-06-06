@@ -16,9 +16,11 @@ import {
   SheetFooter,
   SheetClose,
 } from "@/components/ui/sheet"
-import { routes, locale } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { useSettings } from "@/components/providers/settings-provider"
 
 export function MiniCart() {
+  const { locale } = useSettings()
   const { items, getSubtotal, getItemCount, isCartOpen, closeCart } = useCart()
   const itemCount = getItemCount()
   const subtotal = getSubtotal()

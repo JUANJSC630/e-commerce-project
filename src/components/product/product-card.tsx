@@ -6,11 +6,12 @@ import { useState } from "react"
 import { Heart, Eye, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { cn, formatPrice } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { AddToCartButton } from "@/components/cart/add-to-cart-button"
 import { StockBadge } from "@/components/product/stock-badge"
 import { isOutOfStock } from "@/lib/inventory"
 import { useFavorites } from "@/hooks/use-favorites"
+import { useFormatPrice } from "@/components/providers/settings-provider"
 import type { Product } from "@/lib/types"
 
 interface ProductCardProps {
@@ -20,6 +21,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
+  const formatPrice = useFormatPrice()
   const [isImageLoaded, setIsImageLoaded] = useState(false)
   const { isFavorite, toggleFavorite } = useFavorites(product.id)
 

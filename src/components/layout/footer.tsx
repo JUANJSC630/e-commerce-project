@@ -1,11 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { brand, routes, locale, social, contact } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import { useSettings } from "@/components/providers/settings-provider"
 import type { NavItem } from "@/lib/categories"
 import { Instagram, Facebook, Twitter } from "lucide-react"
 
 export function Footer({ navItems }: { navItems: NavItem[] }) {
+  const { brand, locale, social, contact } = useSettings()
   const year = new Date().getFullYear()
 
   return (

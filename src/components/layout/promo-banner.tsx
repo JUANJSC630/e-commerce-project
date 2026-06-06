@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { X } from "lucide-react"
-import { promoBanner } from "@/config/store.config"
+import { useSettings } from "@/components/providers/settings-provider"
 
 const DISMISSED_KEY = "dulceInfanciaPromoBannerDismissed"
 
 export function PromoBanner() {
+  const { promoBanner } = useSettings()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -17,7 +18,7 @@ export function PromoBanner() {
     } catch {
       setVisible(true)
     }
-  }, [])
+  }, [promoBanner.enabled])
 
   function dismiss() {
     setVisible(false)

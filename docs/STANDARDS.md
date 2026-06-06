@@ -113,18 +113,22 @@ prisma/            ← schema + migrations + seed (datos: products/categories)
 
 ### Fuentes de verdad
 
-| Tipo de dato                               | Dónde vive (fuente de verdad)                               |
-| ------------------------------------------ | ----------------------------------------------------------- |
-| Productos                                  | **DB** (Prisma) vía `lib/products.ts`                       |
-| Categorías + navegación                    | **DB** (`Category`) vía `lib/categories.ts` (`getNavItems`) |
-| Pedidos                                    | **DB** (`Order`) vía `lib/orders.ts`                        |
-| Clientes / favoritos                       | **DB** (`User`, `Favorite`)                                 |
-| Settings (marca, locale, shipping, promo…) | **DB** (`Setting`) vía `lib/settings.ts` — _ver audit 9.8_  |
-| Defaults de marca/rutas/SEO/home content   | `store.config.ts`                                           |
-| Defaults de paleta OKLCH y tipografía      | `theme.config.ts` + `globals.css → :root`                   |
+| Tipo de dato                               | Dónde vive (fuente de verdad)                                 |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| Productos                                  | **DB** (Prisma) vía `lib/products.ts`                         |
+| Categorías + navegación                    | **DB** (`Category`) vía `lib/categories.ts` (`getNavItems`)   |
+| Pedidos                                    | **DB** (`Order`) vía `lib/orders.ts`                          |
+| Clientes / favoritos                       | **DB** (`User`, `Favorite`)                                   |
+| Settings (marca, locale, shipping, promo…) | **DB** (`Setting`) vía `lib/settings.ts` + `SettingsProvider` |
+| Defaults de marca/rutas/SEO/home content   | `store.config.ts`                                             |
+| Defaults de paleta OKLCH y tipografía      | `theme.config.ts` + `globals.css → :root`                     |
 
-> **Importante**: algunos Settings de la DB aún no se aplican al storefront (se
-> lee el default estático). Cerrar esto es el Bloque 9.8 (ver ROADMAP).
+> **Patrón de Settings**: `loadAllSettings()` (cacheado, tag `settings`) hace el
+> merge DB→defaults. Server Components lo llaman directo; Client Components leen
+> `useSettings()`/`useFormatPrice()` desde el `SettingsProvider` montado en
+> `(store)/layout.tsx`. `saveSetting()` hace `revalidateTag("settings")`.
+> Pendiente de aplicar: títulos `<title>`/metadata y `theme`/`typography` (Bloque
+> 9.7). Ver audit en ROADMAP (Bloque 9.8).
 
 ### Verificación antes de cada commit
 

@@ -67,29 +67,12 @@ export default function CheckoutPage() {
     removeItem(id, size, color)
   }
 
-  const handleShippingNext = () => {
-    const validationResult = validateShippingData(shippingData)
-    if (validationResult.isValid) {
-      setCurrentStep(3)
-    } else {
-      // Use toast instead of alert for better UX
-      toast.error("Por favor completa correctamente todos los campos requeridos")
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    }
-  }
+  // Each step's form validates its own data and only calls onNext when valid, so
+  // these just advance. (Re-validating the parent state here was a bug: onUpdate
+  // hadn't flushed yet, so the first click read stale/empty data and failed.)
+  const handleShippingNext = () => setCurrentStep(3)
 
-  const handlePaymentNext = () => {
-    const validationResult = validatePaymentData(paymentData)
-    if (validationResult.isValid) {
-      setCurrentStep(4)
-    } else {
-      // Use toast instead of alert for better UX
-      toast.error("Por favor completa correctamente todos los datos de pago")
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    }
-  }
+  const handlePaymentNext = () => setCurrentStep(4)
 
   const handleOrderConfirm = async () => {
     if (isSubmitting) return

@@ -382,20 +382,26 @@ Ver historial al final del documento.
 
 ---
 
-### ⏳ Bloque 13 — Cuenta de cliente y post-compra
+### ✅ Bloque 13 — Cuenta de cliente y post-compra
 
-> **Objetivo**: El cliente puede ver sus pedidos anteriores y gestionar su información.
+> **Completado**. El cliente se registra, inicia sesión, ve su historial de
+> pedidos y gestiona su cuenta. Sobre el mismo NextAuth/User/Role del admin.
 
 ```
-[ ] /cuenta/registro — crear cuenta con email + contraseña
-[ ] /cuenta/login — autenticación
-[ ] /cuenta — panel: nombre, email, cambiar contraseña
-[ ] /cuenta/pedidos — historial de pedidos con estado
-[ ] /cuenta/pedidos/[id] — detalle de un pedido específico
-[ ] /favoritos — página de productos guardados (useFavorites + persistencia en DB si hay cuenta)
-
-[ ] Autenticación: NextAuth con rol 'customer' (mismo sistema que el admin)
-[ ] Guest checkout: compra sin cuenta, con opción de crear una al final
+[x] /cuenta/registro — crear cuenta (rol customer idempotente en el primer signup)
+[x] /cuenta/login — autenticación (NextAuth Credentials, email normalizado)
+[x] /cuenta — panel: nombre, email, cambiar contraseña, cerrar sesión
+[x] /cuenta/pedidos — historial con estado + paymentStatus
+[x] /cuenta/pedidos/[id] — detalle (verificación de propiedad por userId)
+[x] Rol 'customer' sin permisos de admin; middleware protege /cuenta/* y bloquea
+    clientes en /admin
+[x] Pedidos se enlazan al userId del cliente logueado (createOrder + /api/orders)
+[x] Componentes reutilizables <OrderSummary> + <OrderStatusBadge>; order-success
+    refactorizado para usarlos
+[x] Enlace de cuenta en header (desktop) y menú móvil
+[x] Verificado E2E con Playwright (scripts/verify-account.mjs, 7/7)
+[ ] Guest checkout ya funciona (pedidos sin cuenta); falta "crear cuenta al final" (opcional)
+[ ] Favoritos: persistencia en DB cuando hay cuenta (hoy localStorage) — opcional
 ```
 
 ---

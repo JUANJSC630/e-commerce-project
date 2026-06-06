@@ -258,11 +258,11 @@ Ver historial al final del documento.
 
 ---
 
-### ⏳ Bloque 9.5 — Autocompletado inteligente de dirección (checkout)
+### ✅ Bloque 9.5 — Autocompletado inteligente de dirección (checkout)
 
-> **Objetivo**: en el paso de Envío, los campos País / Departamento / Ciudad se
-> autocompletan y se eligen con buscadores (combobox), encadenados por país.
-> Debe ser **instantáneo** (búsqueda local, sin esperas) y **limpio** (UX fluida).
+> **Completado**. País / Departamento / Ciudad como comboboxes buscables y
+> encadenados, con auto-detección de país. Instantáneo (dataset server-side +
+> caché) y limpio (cmdk, sin dependencias extra).
 
 #### Requisitos UX
 
@@ -275,42 +275,45 @@ Ver historial al final del documento.
 - **Código postal: opcional** (quitar obligatoriedad y validación estricta).
 - Inputs **custom y buscables** (no `<select>` nativo) para mejor experiencia.
 
-#### Enfoque técnico (propuesto)
+#### Enfoque técnico (implementado)
 
-- **Datos país/estado/ciudad**: dataset **local** (`country-state-city`) en vez de
-  llamar una API por cada tecla → búsqueda en memoria, sin latencia ni rate-limits,
-  funciona offline. _(Alternativa por API: countrystatecity.in o GeoNames si se
-  exige fuente remota, detrás de un route handler con caché.)_
-- **Auto-detección de país**: preferir el header de geo del edge
-  (`request.geo.country` en Vercel) → cero latencia, sin API key. _Fallback_:
-  route handler `/api/geo` que consulta una geo-IP gratuita (ipwho.is / ipapi.co)
-  con caché; el valor solo **prerellena**, nunca bloquea la edición.
-- **UI**: `Combobox` con `cmdk` (Popover + Command, ya en el repo) → input editable
-  con búsqueda y ARIA correcto. **Virtualizar** la lista de ciudades (pueden ser
-  miles) para mantenerlo fluido.
-- **Integración**: reemplazar los `<Input>` de país/estado/ciudad en
-  `shipping-form.tsx` por comboboxes encadenados; `defaultCountry` del config como
-  fallback inicial.
+- **Datos país/estado/ciudad**: dataset `country-state-city` usado **solo en el
+  servidor** (`lib/locations.ts`), expuesto vía `/api/locations/*` cacheadas. El
+  dataset multi-MB nunca llega al cliente; las ciudades se buscan y limitan en el
+  server (rápido incluso en países con miles de ciudades).
+- **Auto-detección de país**: `/api/geo` lee el header de geo del edge
+  (`x-vercel-ip-country` / `cf-ipcountry`) → cero latencia, sin API key. _Fallback_:
+  geo-IP keyless (ipwho.is); si falla devuelve `null` y el cliente usa el default.
+  El valor solo **prerellena**, nunca bloquea la edición.
+- **UI**: `<Combobox>` propio sobre `cmdk`, **autocontenido** (dropdown posicionado
+  - click-outside, sin dependencia de popover — el del repo era un stub), con
+    filtrado local (país/estado) o búsqueda async (ciudad) y ARIA combobox/listbox.
+- **Integración**: `<AddressSelectors>` reemplaza los inputs en `shipping-form.tsx`;
+  guarda nombres legibles en el pedido y rastrea códigos ISO internamente.
 
 #### Tareas
 
 ```
-[ ] Agregar dataset local (country-state-city) o cliente de API con caché
-[ ] Componente reutilizable <Combobox> (cmdk) buscable + virtualización de ciudades
-[ ] Detección de país por edge geo (Vercel) con fallback a /api/geo (geo-IP + caché)
-[ ] shipping-form.tsx: País/Estado/Ciudad como comboboxes encadenados (reset en cambio de país)
-[ ] zipCode → opcional en validation.ts (quitar required + validación estricta) y en el form
-[ ] Mapear país/estado/ciudad seleccionados al shippingAddress del pedido
-[ ] Estados de carga/vacío + accesibilidad (roles ARIA, teclado)
+[x] Dataset server-only (lib/locations.ts sobre country-state-city) — no llega al cliente
+[x] APIs cacheadas: /api/locations/{countries,states,cities} (ciudades buscadas + cap en server)
+[x] Componente reutilizable <Combobox> (cmdk) buscable, autocontenido, con estados de carga
+[x] command.tsx (wrapper cmdk) reutilizable
+[x] Detección de país: /api/geo (header de edge + fallback geo-IP keyless, null seguro)
+[x] use-locations hooks con caché de módulo + búsqueda de ciudad con debounce
+[x] <AddressSelectors>: País/Departamento/Ciudad encadenados, reset en cambio de país,
+    seed por geo (editable), restaura selección al volver atrás
+[x] zipCode → opcional (validation.ts + shipping-form)
+[x] Mapea nombres legibles al shippingAddress del pedido (códigos ISO solo internos)
+[x] Accesibilidad: roles ARIA combobox/listbox, navegación por teclado (cmdk)
 ```
 
-#### Consideraciones
+#### Notas de implementación
 
-- Rendimiento: cargar el dataset con **dynamic import** solo en el step de Envío;
-  debounce de búsqueda; virtualización para listas grandes.
+- Rendimiento: el dataset (multi-MB) vive **server-side**; el cliente solo recibe
+  JSON pequeño y cacheado. Ciudades buscadas + limitadas en el server (sin necesidad
+  de virtualización). Búsqueda con debounce; estados/países cacheados en memoria.
 - Privacidad: la geo-IP solo prerellena; no se persiste la IP.
-- El país detectado debe respetar el `locale.defaultCountry` como valor por defecto
-  si la detección falla.
+- Fallback: si la detección falla (`null`), usa `locale.defaultCountry`.
 
 ---
 

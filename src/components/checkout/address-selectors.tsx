@@ -46,27 +46,37 @@ export function AddressSelectors({ value, onChange, errors, zipField }: AddressS
   const labelOf = (options: { value: string; label: string }[], code?: string) =>
     options.find((o) => o.value === code)?.label
 
-  // Resolve the country code from geo / existing name / config default.
-  const countryInit = useRef(false)
+  // Seed the country immediately from the saved name or the config default —
+  // without waiting on geo, so the field is never blank on load.
+  const seededDefault = useRef(false)
   useEffect(() => {
-    if (countryInit.current || countryCode || countries.length === 0 || !geoResolved) return
-    countryInit.current = true
+    if (seededDefault.current || countryCode || countries.length === 0) return
+    seededDefault.current = true
 
-    let code: string | undefined
-    if (!geoSeeded && detected && countries.some((c) => c.value === detected)) {
-      code = detected
-    } else if (value.country) {
-      code = countries.find((c) => c.label === value.country)?.value
-    }
-    if (!code) code = countries.find((c) => c.label === locale.defaultCountry)?.value
-    geoSeeded = true
-
+    const code =
+      (value.country && countries.find((c) => c.label === value.country)?.value) ??
+      countries.find((c) => c.label === locale.defaultCountry)?.value
     if (code) {
       setCountryCode(code)
       const name = labelOf(countries, code)
-      if (name && name !== value.country) onChange({ country: name, state: "", city: "" })
+      if (name && name !== value.country) onChange({ country: name })
     }
-  }, [countries, countryCode, detected, geoResolved, value.country, onChange])
+  }, [countries, countryCode, value.country, onChange])
+
+  // Once (per session), upgrade to the geo-detected country if it differs and
+  // the user hasn't picked one yet. Runs after the immediate seed above.
+  const geoChecked = useRef(false)
+  useEffect(() => {
+    if (geoChecked.current || geoSeeded || !geoResolved || countries.length === 0) return
+    geoChecked.current = true
+    geoSeeded = true
+
+    if (detected && detected !== countryCode && countries.some((c) => c.value === detected)) {
+      setCountryCode(detected)
+      setStateCode(undefined)
+      onChange({ country: labelOf(countries, detected) ?? "", state: "", city: "" })
+    }
+  }, [geoResolved, detected, countryCode, countries, onChange])
 
   // Restore the state code from its saved name once the state list is available.
   useEffect(() => {
@@ -76,6 +86,7 @@ export function AddressSelectors({ value, onChange, errors, zipField }: AddressS
   }, [states, stateCode, value.state])
 
   const handleCountry = (code: string) => {
+    geoSeeded = true // an explicit choice must not be overridden by geo
     setCountryCode(code)
     setStateCode(undefined)
     setCityQuery("") // drop any leftover city search from the previous country
@@ -130,7 +141,9 @@ export function AddressSelectors({ value, onChange, errors, zipField }: AddressS
             options={cities}
             value={value.city}
             onChange={(name) => onChange({ city: name })}
-            onSearchChange={setCityQuery}
+            // State-scoped: the full (bounded) list is loaded → filter locally
+            // (instant). Country-wide: search on the server.
+            onSearchChange={stateCode ? undefined : setCityQuery}
             loading={citiesLoading}
             disabled={!countryCode}
             placeholder="Selecciona…"

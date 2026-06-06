@@ -59,7 +59,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
   const canUpdate = hasPermission(perms, "orders", "update")
 
   return (
-    <div className="p-6 max-w-2xl space-y-6">
+    <div className="p-6 space-y-6">
       <div>
         <Link href="/admin/pedidos" className="text-sm text-slate-500 hover:text-indigo-600">
           ← Volver a pedidos

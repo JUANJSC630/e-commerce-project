@@ -97,131 +97,133 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-        <h2 className="font-semibold text-slate-900">Información básica</h2>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4 lg:col-span-2">
+          <h2 className="font-semibold text-slate-900">Información básica</h2>
 
-        <Field label="Nombre *">
-          <input
-            required
-            type="text"
-            value={form.name}
-            onChange={(e) => set("name", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Precio *">
+          <Field label="Nombre *">
             <input
               required
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.price}
-              onChange={(e) => set("price", e.target.value)}
+              type="text"
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
               className={inputClass}
             />
           </Field>
-          <Field label="Precio original">
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.originalPrice}
-              onChange={(e) => set("originalPrice", e.target.value)}
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Precio *">
+              <input
+                required
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price}
+                onChange={(e) => set("price", e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Precio original">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.originalPrice}
+                onChange={(e) => set("originalPrice", e.target.value)}
+                className={inputClass}
+                placeholder="Solo si está en oferta"
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Categoría">
+              <select
+                value={form.categoryId}
+                onChange={(e) => set("categoryId", e.target.value)}
+                className={inputClass}
+              >
+                {categories.length === 0 && <option value="">Sin categorías</option>}
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Stock">
+              <input
+                type="number"
+                min="0"
+                value={form.stock}
+                onChange={(e) => set("stock", e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+          </div>
+
+          <Field label="Imagen del producto">
+            <ImageUploadField value={form.image} onChange={(url) => set("image", url)} />
+          </Field>
+
+          <Field label="Descripción">
+            <textarea
+              rows={3}
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
               className={inputClass}
-              placeholder="Solo si está en oferta"
+            />
+          </Field>
+
+          <Field label="Tallas (separadas por coma)">
+            <input
+              type="text"
+              value={form.sizes}
+              onChange={(e) => set("sizes", e.target.value)}
+              placeholder="XS, S, M, L, XL"
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Colores (separados por coma)">
+            <input
+              type="text"
+              value={form.colors}
+              onChange={(e) => set("colors", e.target.value)}
+              placeholder="Rosa, Azul, Blanco"
+              className={inputClass}
             />
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Categoría">
-            <select
-              value={form.categoryId}
-              onChange={(e) => set("categoryId", e.target.value)}
-              className={inputClass}
-            >
-              {categories.length === 0 && <option value="">Sin categorías</option>}
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Stock">
-            <input
-              type="number"
-              min="0"
-              value={form.stock}
-              onChange={(e) => set("stock", e.target.value)}
-              className={inputClass}
-            />
-          </Field>
+        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-3">
+          <h2 className="font-semibold text-slate-900">Visibilidad y etiquetas</h2>
+          {(
+            [
+              { field: "isPublished", label: "Publicado", desc: "Visible en la tienda" },
+              {
+                field: "isFeatured",
+                label: "Destacado",
+                desc: "Aparece en la sección de destacados",
+              },
+              { field: "isNew", label: "Nuevo", desc: "Muestra la etiqueta NUEVO" },
+              { field: "isOnSale", label: "En oferta", desc: "Muestra la etiqueta OFERTA" },
+            ] as const
+          ).map(({ field, label, desc }) => (
+            <label key={field} className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={form[field]}
+                onChange={(e) => set(field, e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <div>
+                <span className="text-sm font-medium text-slate-900">{label}</span>
+                <p className="text-xs text-slate-400">{desc}</p>
+              </div>
+            </label>
+          ))}
         </div>
-
-        <Field label="Imagen del producto">
-          <ImageUploadField value={form.image} onChange={(url) => set("image", url)} />
-        </Field>
-
-        <Field label="Descripción">
-          <textarea
-            rows={3}
-            value={form.description}
-            onChange={(e) => set("description", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-
-        <Field label="Tallas (separadas por coma)">
-          <input
-            type="text"
-            value={form.sizes}
-            onChange={(e) => set("sizes", e.target.value)}
-            placeholder="XS, S, M, L, XL"
-            className={inputClass}
-          />
-        </Field>
-
-        <Field label="Colores (separados por coma)">
-          <input
-            type="text"
-            value={form.colors}
-            onChange={(e) => set("colors", e.target.value)}
-            placeholder="Rosa, Azul, Blanco"
-            className={inputClass}
-          />
-        </Field>
-      </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-3">
-        <h2 className="font-semibold text-slate-900">Visibilidad y etiquetas</h2>
-        {(
-          [
-            { field: "isPublished", label: "Publicado", desc: "Visible en la tienda" },
-            {
-              field: "isFeatured",
-              label: "Destacado",
-              desc: "Aparece en la sección de destacados",
-            },
-            { field: "isNew", label: "Nuevo", desc: "Muestra la etiqueta NUEVO" },
-            { field: "isOnSale", label: "En oferta", desc: "Muestra la etiqueta OFERTA" },
-          ] as const
-        ).map(({ field, label, desc }) => (
-          <label key={field} className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={form[field]}
-              onChange={(e) => set(field, e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-            />
-            <div>
-              <span className="text-sm font-medium text-slate-900">{label}</span>
-              <p className="text-xs text-slate-400">{desc}</p>
-            </div>
-          </label>
-        ))}
       </div>
 
       {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg">{error}</p>}

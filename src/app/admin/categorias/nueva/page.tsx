@@ -14,7 +14,7 @@ export default async function NuevaCategoriaPage() {
   if (!hasPermission(perms, "categories", "create")) redirect("/admin/categorias")
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-6 max-w-5xl">
       <div className="mb-6">
         <Link href="/admin/categorias" className="text-sm text-slate-500 hover:text-indigo-600">
           ← Volver a categorías

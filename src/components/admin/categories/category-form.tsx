@@ -88,92 +88,94 @@ export function CategoryForm({ category }: { category?: CategoryFormData }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-        <h2 className="font-semibold text-slate-900">Información</h2>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4 lg:col-span-2">
+          <h2 className="font-semibold text-slate-900">Información</h2>
 
-        <Field label="Nombre *">
-          <input
-            required
-            type="text"
-            value={form.name}
-            onChange={(e) => handleName(e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-
-        <Field label="Slug *">
-          <input
-            required
-            type="text"
-            value={form.slug}
-            onChange={(e) => {
-              setSlugTouched(true)
-              setField("slug", e.target.value)
-            }}
-            className={inputClass}
-            placeholder="bebes"
-          />
-          <p className="text-xs text-slate-400 mt-1">URL: /category/{form.slug || "…"}</p>
-        </Field>
-
-        <Field label="Descripción">
-          <textarea
-            rows={2}
-            value={form.description}
-            onChange={(e) => setField("description", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-
-        <Field label="Imagen">
-          <ImageUploadField
-            value={form.image}
-            onChange={(url) => setField("image", url)}
-            endpoint="categoryImage"
-          />
-        </Field>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Orden">
+          <Field label="Nombre *">
             <input
-              type="number"
-              value={form.order}
-              onChange={(e) => setField("order", e.target.value)}
+              required
+              type="text"
+              value={form.name}
+              onChange={(e) => handleName(e.target.value)}
               className={inputClass}
             />
           </Field>
-          <label className="flex items-center gap-3 cursor-pointer pt-7">
-            <input
-              type="checkbox"
-              checked={form.isActive}
-              onChange={(e) => setField("isActive", e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-            />
-            <span className="text-sm font-medium text-slate-900">
-              Activa (visible en la tienda)
-            </span>
-          </label>
-        </div>
-      </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-        <h2 className="font-semibold text-slate-900">SEO</h2>
-        <Field label="Meta título">
-          <input
-            type="text"
-            value={form.metaTitle}
-            onChange={(e) => setField("metaTitle", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Meta descripción">
-          <textarea
-            rows={2}
-            value={form.metaDescription}
-            onChange={(e) => setField("metaDescription", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
+          <Field label="Slug *">
+            <input
+              required
+              type="text"
+              value={form.slug}
+              onChange={(e) => {
+                setSlugTouched(true)
+                setField("slug", e.target.value)
+              }}
+              className={inputClass}
+              placeholder="bebes"
+            />
+            <p className="text-xs text-slate-400 mt-1">URL: /category/{form.slug || "…"}</p>
+          </Field>
+
+          <Field label="Descripción">
+            <textarea
+              rows={2}
+              value={form.description}
+              onChange={(e) => setField("description", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Imagen">
+            <ImageUploadField
+              value={form.image}
+              onChange={(url) => setField("image", url)}
+              endpoint="categoryImage"
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Orden">
+              <input
+                type="number"
+                value={form.order}
+                onChange={(e) => setField("order", e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+            <label className="flex items-center gap-3 cursor-pointer pt-7">
+              <input
+                type="checkbox"
+                checked={form.isActive}
+                onChange={(e) => setField("isActive", e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <span className="text-sm font-medium text-slate-900">
+                Activa (visible en la tienda)
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+          <h2 className="font-semibold text-slate-900">SEO</h2>
+          <Field label="Meta título">
+            <input
+              type="text"
+              value={form.metaTitle}
+              onChange={(e) => setField("metaTitle", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Meta descripción">
+            <textarea
+              rows={2}
+              value={form.metaDescription}
+              onChange={(e) => setField("metaDescription", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg">{error}</p>}

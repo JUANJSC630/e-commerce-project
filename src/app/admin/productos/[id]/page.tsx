@@ -23,7 +23,7 @@ export default async function EditarProductoPage({ params }: { params: Promise<{
   if (!product) notFound()
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-6 max-w-5xl">
       <div className="mb-6">
         <Link href="/admin/productos" className="text-sm text-slate-500 hover:text-indigo-600">
           ← Volver a productos

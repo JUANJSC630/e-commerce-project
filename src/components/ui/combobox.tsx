@@ -67,14 +67,21 @@ export function Combobox({
   const selected =
     options.find((o) => o.value === value) ?? (value ? { value, label: value } : undefined)
 
-  // Close on outside pointer or Escape.
+  const close = React.useCallback(() => {
+    setOpen(false)
+    setQuery("")
+    // Keep async consumers (e.g. city search) in sync with the cleared input.
+    onSearchChange?.("")
+  }, [onSearchChange])
+
+  // Close (and reset search) on outside pointer or Escape.
   React.useEffect(() => {
     if (!open) return
     const onPointerDown = (e: PointerEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) setOpen(false)
+      if (!containerRef.current?.contains(e.target as Node)) close()
     }
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false)
+      if (e.key === "Escape") close()
     }
     document.addEventListener("pointerdown", onPointerDown)
     document.addEventListener("keydown", onKeyDown)
@@ -82,12 +89,7 @@ export function Combobox({
       document.removeEventListener("pointerdown", onPointerDown)
       document.removeEventListener("keydown", onKeyDown)
     }
-  }, [open])
-
-  const close = () => {
-    setOpen(false)
-    setQuery("")
-  }
+  }, [open, close])
 
   const handleQuery = (q: string) => {
     setQuery(q)
@@ -105,7 +107,7 @@ export function Combobox({
         aria-haspopup="listbox"
         aria-invalid={ariaInvalid}
         disabled={disabled}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => (open ? close() : setOpen(true))}
         className={cn(
           "flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none",
           "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",

@@ -78,11 +78,13 @@ export function AddressSelectors({ value, onChange, errors, zipField }: AddressS
   const handleCountry = (code: string) => {
     setCountryCode(code)
     setStateCode(undefined)
+    setCityQuery("") // drop any leftover city search from the previous country
     onChange({ country: labelOf(countries, code) ?? "", state: "", city: "" })
   }
 
   const handleState = (code: string) => {
     setStateCode(code)
+    setCityQuery("") // drop any leftover city search from the previous department
     onChange({ state: labelOf(states, code) ?? "", city: "" })
   }
 

@@ -518,6 +518,52 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
 ---
 
+### ⏳ Bloque 9.9 — Gestión de medios (imágenes) unificada
+
+> **Objetivo**: una experiencia de imágenes consistente, intuitiva y eficiente en
+> TODO el admin — subir, reemplazar, reutilizar y limpiar — sin imágenes dentro
+> del repo y sin pegar URLs a mano.
+
+#### Estado actual ✅
+
+```
+[x] ImageUploadField (UploadThing) reutilizable: preview + botón quitar + dropzone
+    con subida automática (mode "auto"); formas portrait/landscape/square por prop
+[x] Endpoints por permiso: productImage (products), categoryImage (categories),
+    settingsImage (settings) — la subida se aborta si el usuario no tiene permiso
+[x] Usado en: productos, categorías y "Contenido del inicio" (hero + cat. destacadas)
+[x] next/image remotePatterns ya permite el CDN (*.ufs.sh, utfs.io)
+```
+
+#### Pendiente / mejoras (para abordar luego)
+
+```
+[ ] Auditar TODOS los campos de imagen del admin y garantizar que ninguno sea un
+    input de URL de texto (todos deben usar ImageUploadField)
+[ ] Mover ImageUploadField a una ubicación compartida (p. ej. components/admin/media/)
+    — hoy vive en components/admin/products y lo importan otros módulos
+[ ] Limpieza de huérfanas: al reemplazar/eliminar una imagen, borrarla de UploadThing
+    con UTApi (server action) para no acumular archivos sin usar
+[ ] Biblioteca de medios: un selector que liste imágenes ya subidas para reutilizarlas
+    sin volver a subir (modal "Elegir de la biblioteca | Subir nueva")
+[ ] Alt text por imagen (campo en el editor) para accesibilidad y SEO; usarlo en
+    next/image alt en hero/categorías/productos
+[ ] Guía por slot: dimensión/aspecto recomendado y validación (hero ~16:9 ancho,
+    categoría 1:1, producto 3:4); avisos si la imagen es muy pequeña
+[ ] `sizes` de next/image afinado por slot (hero full-bleed vs card) para performance
+[ ] Reordenar banners/categorías por drag & drop (afecta también al editor del inicio)
+[ ] Quitar de /public las imágenes demo y mover los defaults a seeds/placeholder neutro
+    para que el repo no contenga imágenes de contenido
+[ ] Barra de progreso/scaling de imagen en la subida (UX) y límite/optimización de peso
+```
+
+> **Nota**: el `ImageUploadField` muestra el dropzone solo cuando no hay imagen; si
+> ves campos "Imagen (URL)" de texto, es una vista previa al cambio de 9.8 — el editor
+> ya usa el uploader. La biblioteca de medios + limpieza de huérfanas son el mayor valor
+> pendiente aquí.
+
+---
+
 ### ⏳ Bloque 10 — Pagos reales con MercadoPago
 
 > **Objetivo**: El cliente paga de verdad. El pedido se confirma solo cuando el pago es exitoso.

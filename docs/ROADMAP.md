@@ -45,36 +45,36 @@ categorías son dinámicas desde la DB vía `src/lib/categories.ts` — Bloque 9
 
 ## Módulos Existentes
 
-| Módulo               | Ruta                | Estado          | Notas                                                             |
-| -------------------- | ------------------- | --------------- | ----------------------------------------------------------------- |
-| Home                 | `/`                 | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise                |
-| Categoría Bebés      | `/category/babies`  | ✅ Funcional    | 5 productos                                                       |
-| Categoría Niñas      | `/category/girls`   | ✅ Funcional    | 4 productos                                                       |
-| Categoría Niños      | `/category/boys`    | ✅ Funcional    | 4 productos                                                       |
-| Ofertas              | `/category/sales`   | ✅ Funcional    | Filtra `isOnSale: true`                                           |
-| Esenciales           | `/essentials`       | ✅ Funcional    | 3 productos                                                       |
-| Todos los productos  | `/products`         | ✅ Funcional    | Server Component async desde Prisma                               |
-| Detalle de producto  | `/products/[id]`    | ✅ Funcional    | Prisma + relacionados por props + badge de stock                  |
-| Carrito              | `/carrito`          | ✅ Funcional    | AlertDialog, edición de cantidad                                  |
-| Checkout             | `/checkout-flow`    | ✅ Funcional    | Guarda el pedido vía `POST /api/orders` → `/order-success/[id]`   |
-| 404 (store)          | —                   | ✅ Funcional    | Branding + CTAs                                                   |
-| Error (store)        | —                   | ✅ Funcional    | Botón reset + branding                                            |
-| Cart Context         | —                   | ✅ Sólido       | localStorage, extensible                                          |
-| useFavorites         | —                   | ✅ Funcional    | localStorage, persiste entre navegaciones                         |
-| Sistema de tema      | —                   | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                               |
-| store.config.ts      | —                   | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                     |
-| validation.ts        | —                   | ✅ Centralizado | Luhn, shipping, payment                                           |
-| products.ts (lib)    | —                   | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts)   |
-| **Admin Dashboard**  | `/admin`            | ✅ Completo     | Stats, gráficos, accesos rápidos                                  |
-| **Admin Login**      | `/admin/login`      | ✅ Funcional    | NextAuth JWT + Credentials                                        |
-| **Admin Productos**  | `/admin/productos`  | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                           |
-| **Admin Categorías** | `/admin/categorias` | ✅ CRUD         | Crear/editar/eliminar/ordenar, imagen, SEO — permiso `categories` |
-| **Admin Pedidos**    | `/admin/pedidos`    | ✅ CRUD         | Lista, detalle, cambio de estado                                  |
-| **Admin Usuarios**   | `/admin/usuarios`   | ✅ CRUD         | Gestión con asignación de rol                                     |
-| **Admin Roles**      | `/admin/roles`      | ✅ CRUD         | Permisos granulares por módulo                                    |
-| **Admin Settings**   | `/admin/settings`   | ✅ CRUD         | 9 secciones editables (brand, theme, shipping, etc.)              |
-| **Admin 404**        | `/admin/*`          | ✅ Profesional  | Página personalizada con branding                                 |
-| **Admin Error**      | `/admin/*`          | ✅ Profesional  | Error boundary con retry + navegación                             |
+| Módulo               | Ruta                | Estado          | Notas                                                               |
+| -------------------- | ------------------- | --------------- | ------------------------------------------------------------------- |
+| Home                 | `/`                 | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise                  |
+| Categoría Bebés      | `/category/babies`  | ✅ Funcional    | 5 productos                                                         |
+| Categoría Niñas      | `/category/girls`   | ✅ Funcional    | 4 productos                                                         |
+| Categoría Niños      | `/category/boys`    | ✅ Funcional    | 4 productos                                                         |
+| Ofertas              | `/category/sales`   | ✅ Funcional    | Filtra `isOnSale: true`                                             |
+| Esenciales           | `/essentials`       | ✅ Funcional    | 3 productos                                                         |
+| Todos los productos  | `/products`         | ✅ Funcional    | Server Component async desde Prisma                                 |
+| Detalle de producto  | `/products/[id]`    | ✅ Funcional    | Prisma + relacionados por props + badge de stock                    |
+| Carrito              | `/carrito`          | ✅ Funcional    | AlertDialog, edición de cantidad                                    |
+| Checkout             | `/checkout-flow`    | ✅ Funcional    | Guarda el pedido vía `POST /api/orders` → `/order-success/[id]`     |
+| 404 (store)          | —                   | ✅ Funcional    | Branding + CTAs                                                     |
+| Error (store)        | —                   | ✅ Funcional    | Botón reset + branding                                              |
+| Cart Context         | —                   | ✅ Sólido       | localStorage, extensible                                            |
+| useFavorites         | —                   | ✅ Funcional    | localStorage, persiste entre navegaciones                           |
+| Sistema de tema      | —                   | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                                 |
+| store.config.ts      | —                   | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                       |
+| validation.ts        | —                   | ✅ Centralizado | Luhn, shipping, payment                                             |
+| products.ts (lib)    | —                   | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts)     |
+| **Admin Dashboard**  | `/admin`            | ✅ Completo     | Stats, gráficos, accesos rápidos                                    |
+| **Admin Login**      | `/admin/login`      | ✅ Funcional    | NextAuth JWT + Credentials                                          |
+| **Admin Productos**  | `/admin/productos`  | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                             |
+| **Admin Categorías** | `/admin/categorias` | ✅ CRUD         | Crear/editar/eliminar/ordenar, imagen, SEO — permiso `categories`   |
+| **Admin Pedidos**    | `/admin/pedidos`    | ✅ CRUD         | Lista, detalle, cambio de estado                                    |
+| **Admin Usuarios**   | `/admin/usuarios`   | ✅ CRUD         | Gestión con asignación de rol                                       |
+| **Admin Roles**      | `/admin/roles`      | ✅ CRUD         | Permisos granulares por módulo                                      |
+| **Admin Settings**   | `/admin/settings`   | ✅ Modular      | Subpáginas por sección (marca, tema, envíos…) + nav, gate en layout |
+| **Admin 404**        | `/admin/*`          | ✅ Profesional  | Página personalizada con branding                                   |
+| **Admin Error**      | `/admin/*`          | ✅ Profesional  | Error boundary con retry + navegación                               |
 
 ---
 

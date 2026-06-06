@@ -14,6 +14,7 @@ import pg from "pg"
 import bcrypt from "bcryptjs"
 
 import { productsSeed } from "./products-data"
+import { categoriesSeed } from "./categories-data"
 
 const { Pool } = pg
 
@@ -134,6 +135,28 @@ async function main() {
     })
   }
   console.log(`  ✓ ${productsSeed.length} products`)
+
+  console.log("Seeding categories…")
+
+  for (const { legacyKey, ...data } of categoriesSeed) {
+    const category = await prisma.category.upsert({
+      where: { slug: data.slug },
+      update: {
+        name: data.name,
+        description: data.description,
+        order: data.order,
+        metaTitle: data.metaTitle,
+        metaDescription: data.metaDescription,
+      },
+      create: data,
+    })
+    // Backfill: link existing products with the legacy category string.
+    const { count } = await prisma.product.updateMany({
+      where: { category: legacyKey },
+      data: { categoryId: category.id },
+    })
+    console.log(`  ✓ ${category.name} (${count} productos vinculados)`)
+  }
 
   console.log("\nSeed complete.")
 }

@@ -28,15 +28,17 @@ export function getStates(countryCode: string): LocationOption[] {
 }
 
 /**
- * Searches cities within a country (optionally narrowed to a state). Filtering
- * and the result cap happen server-side, so even countries with thousands of
- * cities return a small, fast payload.
+ * Searches cities within a country, optionally narrowed to a state. When a state
+ * is given the full (bounded) list is returned — a department/state has at most
+ * a few hundred cities, so it's both complete and fast. Only the country-wide
+ * search (no state) is capped, to avoid dumping the thousands of cities a large
+ * country can have; typing then narrows it.
  */
 export function searchCities(
   countryCode: string,
   stateCode: string | undefined,
   query: string,
-  limit = 20,
+  limit = 50,
 ): string[] {
   const source = stateCode
     ? City.getCitiesOfState(countryCode, stateCode)
@@ -45,6 +47,7 @@ export function searchCities(
   if (!source) return []
 
   const q = query.trim().toLowerCase()
+  const cap = stateCode ? Infinity : limit
   const seen = new Set<string>()
   const results: string[] = []
 
@@ -53,7 +56,7 @@ export function searchCities(
     if (seen.has(city.name)) continue
     seen.add(city.name)
     results.push(city.name)
-    if (results.length >= limit) break
+    if (results.length >= cap) break
   }
 
   return results.sort((a, b) => a.localeCompare(b))

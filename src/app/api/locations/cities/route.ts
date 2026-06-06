@@ -13,7 +13,7 @@ export function GET(request: Request) {
 
   const state = searchParams.get("state") || undefined
   const query = searchParams.get("q") ?? ""
-  const limit = Math.min(Number(searchParams.get("limit")) || 20, MAX_LIMIT)
+  const limit = Math.min(Number(searchParams.get("limit")) || 50, MAX_LIMIT)
 
   return NextResponse.json(searchCities(country, state, query, limit), {
     headers: { "Cache-Control": CACHE },

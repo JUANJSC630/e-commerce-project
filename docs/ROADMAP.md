@@ -441,20 +441,63 @@ storefront lee `store.config.ts` estático, no `loadAllSettings`):
 **C. Limpiado** ✅: `categoryLabels`, `productCategories`, `categoryHrefFor`,
 `essentialsConfig` (config muerto tras categorías dinámicas) — eliminados.
 
-#### Plan
+#### Reto técnico (por qué no es solo "leer de la DB")
+
+- **~38 archivos** importan `@/config/store.config` directamente (Server _y_ Client
+  Components). Un loader `async` (`loadAllSettings`) solo lo pueden llamar Server
+  Components; los Client (`cart-summary`, `mini-cart`, `payment-form`, `hero-section`,
+  `trust-bar`, `promo-banner`, `footer`, `mobile-nav`…) importan en module-scope.
+- `loadAllSettings()` (en `lib/settings.ts`) **ya hace el merge DB→defaults**, pero
+  **no está cacheado** y **nadie lo consume desde el storefront**.
+- `saveSetting()` **no revalida** → aunque se cableara, el storefront ISR no se
+  actualizaría tras guardar en el admin.
+
+#### Plan por fases
+
+**Fase 1 — Infra de lectura (sin cambiar UI):**
 
 ```
-[ ] Capa de aplicación de settings: cargar loadAllSettings (cacheado, tag "settings")
-    y proveerlo al storefront — un SettingsProvider/contexto server o helpers que
-    reemplacen los imports directos de store.config en el storefront
-[ ] Aplicar brand (header/footer/SEO), locale (formatPrice/fechas), shipping
-    (checkout + createOrder), payment_methods, promo_banner, social, contact
-[ ] revalidateTag("settings") al guardar en el admin (storefront sigue estático/ISR)
-[ ] Contenido del home administrable: hero, featured, features, copy (B) → settings
-    o modelos propios + editor en /admin
-[ ] Eliminar de store.config lo que pase a DB; dejar solo defaults/estructura
-[ ] (theme/typography se cubren en Bloque 9.7)
+[ ] Cachear loadAllSettings con unstable_cache, tag "settings" (cold-start friendly)
+[ ] saveSetting() → revalidateTag("settings") tras el upsert (cerrar el ciclo admin→store)
+[ ] Definir frontera: qué se queda en store.config (estructura: routes, types,
+    pageSeo base, defaults) vs. qué pasa a DB (brand, locale, shipping,
+    paymentMethods, promoBanner, social, contact)
 ```
+
+**Fase 2 — Distribución al árbol de render:**
+
+```
+[ ] Server Components: leer settings en el layout/page y PASAR POR PROPS hacia abajo
+    (footer, promo-banner, order-summary, checkout) — sin imports estáticos
+[ ] Client Components: crear SettingsProvider en (store)/layout.tsx — el layout
+    (server) lee loadAllSettings y hidrata el provider; los Client leen vía hook
+    useSettings() en vez de importar store.config
+[ ] formatPrice/fechas: que reciban locale (de settings) en vez de leer el módulo
+```
+
+**Fase 3 — Migración archivo por archivo (los ~38 importers):**
+
+```
+[ ] Reemplazar import estático por props (server) o useSettings() (client),
+    grupo por grupo: brand → locale → shipping → payment → promo → social/contact
+[ ] Verificar con E2E (verify scripts) que cambiar un Setting en /admin se refleja
+    en el storefront tras revalidate
+[ ] Eliminar de store.config las claves migradas; dejar SOLO defaults + estructura
+```
+
+**Fase 4 — Contenido del home administrable (grupo B):**
+
+```
+[ ] Modelos/Settings para heroBanners, featuredCategories, homeFeatures,
+    homePageContent, pageSeo (decidir: Setting JSON vs. modelos propios + orden)
+[ ] Editor en /admin (permiso settings) con upload de imágenes (UploadThing)
+[ ] hero-section/categories-section/trust-bar leen de DB vía props
+[ ] (theme/typography se cubren en Bloque 9.7, no aquí)
+```
+
+> **Riesgo/orden recomendado**: empezar por Fase 1 (barato, sin regresiones), luego
+> migrar grupo brand+locale como piloto (toca header/footer/SEO/precios) para validar
+> el patrón SettingsProvider antes de seguir con el resto.
 
 ---
 

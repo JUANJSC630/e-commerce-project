@@ -1,4 +1,11 @@
-export type Resource = "dashboard" | "products" | "orders" | "users" | "roles" | "settings"
+export type Resource =
+  | "dashboard"
+  | "products"
+  | "categories"
+  | "orders"
+  | "users"
+  | "roles"
+  | "settings"
 export type Action = "read" | "create" | "update" | "delete"
 export type Permissions = Partial<Record<Resource, Action[]>>
 
@@ -17,6 +24,7 @@ export function isStaff(roleSlug: string | undefined): boolean {
 export const ALL_RESOURCES: Resource[] = [
   "dashboard",
   "products",
+  "categories",
   "orders",
   "users",
   "roles",
@@ -37,6 +45,7 @@ export function getResourceLabel(resource: Resource): string {
   const labels: Record<Resource, string> = {
     dashboard: "Dashboard",
     products: "Productos",
+    categories: "Categorías",
     orders: "Pedidos",
     users: "Usuarios",
     roles: "Roles",

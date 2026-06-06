@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 import { ProductForm } from "@/components/admin/products/product-form"
+import { getAdminCategories } from "@/lib/categories"
 
 export default async function NuevoProductoPage() {
   const session = await getServerSession(authOptions)
@@ -12,6 +13,8 @@ export default async function NuevoProductoPage() {
 
   const perms = session.user.role.permissions as Permissions
   if (!hasPermission(perms, "products", "create")) redirect("/admin/productos")
+
+  const categories = await getAdminCategories()
 
   return (
     <div className="p-6 max-w-2xl">
@@ -21,7 +24,7 @@ export default async function NuevoProductoPage() {
         </Link>
         <h1 className="text-2xl font-bold text-slate-900 mt-2">Nuevo producto</h1>
       </div>
-      <ProductForm />
+      <ProductForm categories={categories} />
     </div>
   )
 }

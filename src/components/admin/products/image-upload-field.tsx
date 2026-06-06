@@ -5,6 +5,7 @@ import { useState } from "react"
 import { X } from "lucide-react"
 import { toast } from "sonner"
 import { UploadDropzone } from "@/lib/uploadthing"
+import type { UploadRouter } from "@/app/api/uploadthing/core"
 
 const PLACEHOLDER = "/placeholder.svg"
 
@@ -13,14 +14,20 @@ interface ImageUploadFieldProps {
   value: string
   /** Called with the new URL after upload, or the placeholder after removal. */
   onChange: (url: string) => void
+  /** Which upload endpoint (and permission) to use. */
+  endpoint?: keyof UploadRouter
 }
 
 /**
- * Admin product image control. Shows a preview when an image is set, otherwise
- * an UploadThing dropzone. Uploads start automatically on drop (mode: "auto")
- * and the resulting CDN URL is lifted to the parent form via `onChange`.
+ * Admin image control. Shows a preview when an image is set, otherwise an
+ * UploadThing dropzone. Uploads start automatically on drop (mode: "auto") and
+ * the resulting CDN URL is lifted to the parent form via `onChange`.
  */
-export function ImageUploadField({ value, onChange }: ImageUploadFieldProps) {
+export function ImageUploadField({
+  value,
+  onChange,
+  endpoint = "productImage",
+}: ImageUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false)
   const hasImage = Boolean(value) && value !== PLACEHOLDER
 
@@ -49,7 +56,7 @@ export function ImageUploadField({ value, onChange }: ImageUploadFieldProps) {
   return (
     <div className="space-y-2">
       <UploadDropzone
-        endpoint="productImage"
+        endpoint={endpoint}
         config={{ mode: "auto" }}
         onUploadBegin={() => setIsUploading(true)}
         onClientUploadComplete={(res) => {

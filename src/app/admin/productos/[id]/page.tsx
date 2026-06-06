@@ -6,6 +6,7 @@ import { redirect, notFound } from "next/navigation"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 import { ProductForm } from "@/components/admin/products/product-form"
+import { getAdminCategories } from "@/lib/categories"
 
 export default async function EditarProductoPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -15,7 +16,10 @@ export default async function EditarProductoPage({ params }: { params: Promise<{
   if (!hasPermission(perms, "products", "update")) redirect("/admin/productos")
 
   const { id } = await params
-  const product = await prisma.product.findUnique({ where: { id } })
+  const [product, categories] = await Promise.all([
+    prisma.product.findUnique({ where: { id } }),
+    getAdminCategories(),
+  ])
   if (!product) notFound()
 
   return (
@@ -26,7 +30,7 @@ export default async function EditarProductoPage({ params }: { params: Promise<{
         </Link>
         <h1 className="text-2xl font-bold text-slate-900 mt-2">Editar producto</h1>
       </div>
-      <ProductForm product={product} />
+      <ProductForm product={product} categories={categories} />
     </div>
   )
 }

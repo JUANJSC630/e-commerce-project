@@ -42,6 +42,7 @@ const roles = [
     permissions: {
       dashboard: READ_ONLY,
       products: ALL,
+      categories: ALL,
       orders: ALL,
       users: ALL,
       roles: ALL,
@@ -56,6 +57,7 @@ const roles = [
     permissions: {
       dashboard: READ_ONLY,
       products: ALL,
+      categories: ALL,
       orders: ALL,
       users: ["read", "create", "update"],
       roles: NONE,
@@ -70,6 +72,7 @@ const roles = [
     permissions: {
       dashboard: READ_ONLY,
       products: ["read", "create", "update"],
+      categories: ["read", "create", "update"],
       orders: READ_UPDATE,
       users: NONE,
       roles: NONE,
@@ -84,6 +87,7 @@ const roles = [
     permissions: {
       dashboard: READ_ONLY,
       products: READ_ONLY,
+      categories: READ_ONLY,
       orders: READ_UPDATE,
       users: NONE,
       roles: NONE,

@@ -15,7 +15,8 @@
     "validate": "yarn type-check && yarn lint && yarn format:check",
     "verify:address": "node scripts/verify-combobox.mjs",
     "verify:account": "node scripts/verify-account.mjs",
-    "verify:favorites": "node scripts/verify-favorites.mjs"
+    "verify:favorites": "node scripts/verify-favorites.mjs",
+    "verify:categories": "node scripts/verify-categories-admin.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

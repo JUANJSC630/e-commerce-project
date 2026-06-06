@@ -5,13 +5,19 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import type { Product } from "@prisma/client"
 import { ImageUploadField } from "@/components/admin/products/image-upload-field"
-import { productCategories, categoryLabels } from "@/config/store.config"
+
+interface CategoryOption {
+  id: string
+  name: string
+  slug: string
+}
 
 interface ProductFormProps {
   product?: Product
+  categories: CategoryOption[]
 }
 
-export function ProductForm({ product }: ProductFormProps) {
+export function ProductForm({ product, categories }: ProductFormProps) {
   const router = useRouter()
   const isEditing = !!product
 
@@ -20,7 +26,7 @@ export function ProductForm({ product }: ProductFormProps) {
     price: product?.price?.toString() ?? "",
     originalPrice: product?.originalPrice?.toString() ?? "",
     image: product?.image ?? "/placeholder.svg",
-    category: product?.category ?? productCategories[0],
+    categoryId: product?.categoryId ?? categories[0]?.id ?? "",
     description: product?.description ?? "",
     stock: product?.stock?.toString() ?? "0",
     sizes: product?.sizes?.join(", ") ?? "",
@@ -43,12 +49,15 @@ export function ProductForm({ product }: ProductFormProps) {
     setError(null)
     setLoading(true)
 
+    const selectedCategory = categories.find((c) => c.id === form.categoryId)
     const body = {
       name: form.name.trim(),
       price: parseFloat(form.price),
       originalPrice: form.originalPrice ? parseFloat(form.originalPrice) : null,
       image: form.image.trim() || "/placeholder.svg",
-      category: form.category,
+      categoryId: form.categoryId || null,
+      // Legacy non-null string column, kept in sync with the chosen category.
+      category: selectedCategory?.slug ?? "",
       description: form.description.trim() || null,
       stock: parseInt(form.stock, 10),
       sizes: form.sizes
@@ -129,13 +138,14 @@ export function ProductForm({ product }: ProductFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <Field label="Categoría">
             <select
-              value={form.category}
-              onChange={(e) => set("category", e.target.value)}
+              value={form.categoryId}
+              onChange={(e) => set("categoryId", e.target.value)}
               className={inputClass}
             >
-              {productCategories.map((key) => (
-                <option key={key} value={key}>
-                  {categoryLabels[key]}
+              {categories.length === 0 && <option value="">Sin categorías</option>}
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>

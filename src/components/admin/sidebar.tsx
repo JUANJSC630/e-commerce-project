@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   ShoppingBag,
   Package,
+  Tags,
   Users,
   Shield,
   Settings,
@@ -31,6 +32,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard, resource: "dashboard" },
   { label: "Productos", href: "/admin/productos", icon: Package, resource: "products" },
+  { label: "Categorías", href: "/admin/categorias", icon: Tags, resource: "categories" },
   { label: "Pedidos", href: "/admin/pedidos", icon: ShoppingBag, resource: "orders" },
   { label: "Usuarios", href: "/admin/usuarios", icon: Users, resource: "users" },
   { label: "Roles", href: "/admin/roles", icon: Shield, resource: "roles" },

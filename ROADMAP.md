@@ -27,12 +27,13 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ### Storefront → Backend (alta prioridad)
 
-| Problema                         | Detalle                                                                        |
-| -------------------------------- | ------------------------------------------------------------------------------ |
-| ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products` |
-| ~~Checkout no guarda pedido~~ ✅ | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`             |
-| Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                 |
-| ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB    |
+| Problema                         | Detalle                                                                            |
+| -------------------------------- | ---------------------------------------------------------------------------------- |
+| ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`     |
+| ~~Checkout no guarda pedido~~ ✅ | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                 |
+| Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                     |
+| ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB        |
+| Categorías hardcoded             | En `store.config.ts` + rutas por archivo; no editables desde el admin → Bloque 9.6 |
 
 ### Código con bugs menores
 
@@ -314,6 +315,53 @@ Ver historial al final del documento.
   de virtualización). Búsqueda con debounce; estados/países cacheados en memoria.
 - Privacidad: la geo-IP solo prerellena; no se persiste la IP.
 - Fallback: si la detección falla (`null`), usa `locale.defaultCountry`.
+
+---
+
+### ⏳ Bloque 9.6 — Categorías administrables (dinámicas)
+
+> **Objetivo**: las categorías se gestionan 100% desde el admin (crear, editar,
+> eliminar, ordenar, activar) — **nada hardcoded**. Storefront, navegación, form
+> de producto, breadcrumbs y SEO leen las categorías desde la DB.
+
+#### Estado actual (todo hardcoded)
+
+- `store.config.ts`: `categories[]`, `categoryLabels`, `productCategories`,
+  `essentialsConfig`, y `navigation` con las categorías escritas a mano.
+- Rutas individuales por archivo: `/category/babies|girls|boys|sales` + `/essentials`.
+- `Product.category` es un string libre (no relación), validado contra
+  `productCategories`.
+
+#### Plan
+
+```
+[ ] Modelo Category (id, name, slug, description, image, order, isActive,
+    metaTitle?, metaDescription?, parentId? para subcategorías opcionales)
+[ ] Product.categoryId → relación FK a Category (migración de datos: mapear el
+    string actual "Babies/Girls/Boys/Essentials" a su Category)
+[ ] Ruta dinámica /category/[slug] (reemplaza los 4 archivos individuales);
+    generateMetadata + generateStaticParams desde la DB
+[ ] Admin /admin/categorias — CRUD: nombre, slug (auto), descripción, imagen
+    (UploadThing), orden (drag o campo), activo, SEO. Nuevo permiso "categories"
+[ ] Nav del header/footer y form de producto leen categorías activas desde la DB
+    (cacheado; reemplazan navigation/productCategories de store.config)
+[ ] lib/categories.ts (server-only) + /api/categories; getProductsByCategory por
+    categoryId/slug
+[ ] "Ofertas" (isOnSale) se mantiene como vista especial, no como categoría;
+    "Esenciales" pasa a ser una Category normal
+[ ] Seed: crear las categorías actuales en la DB y vincular los productos
+[ ] SEO: metaTitle/metaDescription por categoría desde la DB; sitemap dinámico
+[ ] Revalidación: las páginas de categoría usan ISR/revalidateTag al editar en admin
+```
+
+#### Consideraciones
+
+- **Rendimiento**: las páginas de categoría hoy son estáticas; con datos dinámicos
+  pasan a ISR (`revalidate`) o `revalidateTag` tras editar en el admin, para no
+  volverlas dinámicas en cada visita.
+- **Migración**: hacerla en pasos (añadir `categoryId` nullable → backfill →
+  exigir) para no romper productos existentes.
+- **Subcategorías** (parentId) y **drag-to-reorder**: opcionales, fase 2.
 
 ---
 

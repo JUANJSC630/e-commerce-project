@@ -47,5 +47,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/cuenta/:path*"],
+  // Include the bare paths — "/admin/:path*" alone doesn't match "/admin".
+  matcher: ["/admin", "/admin/:path*", "/cuenta", "/cuenta/:path*"],
 }

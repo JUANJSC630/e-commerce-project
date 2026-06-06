@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 import { RegisterForm } from "@/components/account/register-form"
 import { brand } from "@/config/store.config"
 
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function RegisterPage() {
-  return <RegisterForm />
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
+  )
 }

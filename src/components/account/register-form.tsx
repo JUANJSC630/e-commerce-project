@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +12,8 @@ const PASSWORD_MIN = 8
 
 export function RegisterForm() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" })
+  const prefillEmail = useSearchParams().get("email") ?? ""
+  const [form, setForm] = useState({ name: "", email: prefillEmail, password: "", confirm: "" })
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 

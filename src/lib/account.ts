@@ -64,6 +64,13 @@ export async function registerCustomer(input: RegisterInput): Promise<{ id: stri
     data: { name, email, password: await bcrypt.hash(password, 12), roleId, status: "ACTIVE" },
     select: { id: true },
   })
+
+  // Claim any guest orders placed with this email so they show in the account.
+  await prisma.order.updateMany({
+    where: { userId: null, customerEmail: email },
+    data: { userId: user.id },
+  })
+
   return user
 }
 

@@ -1,16 +1,28 @@
 import type { MetadataRoute } from "next"
 import { getAllProductIds } from "@/lib/products"
+import { getActiveCategorySlugs } from "@/lib/categories"
 import { routes } from "@/config/store.config"
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dulceinfancia.com"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const productIds = await getAllProductIds()
+  const [productIds, categorySlugs] = await Promise.all([
+    getAllProductIds(),
+    getActiveCategorySlugs(),
+  ])
+
   const productEntries: MetadataRoute.Sitemap = productIds.map((id) => ({
     url: `${BASE_URL}${routes.products}/${id}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.8,
+  }))
+
+  const categoryEntries: MetadataRoute.Sitemap = categorySlugs.map((slug) => ({
+    url: `${BASE_URL}${routes.categoryBase}/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.7,
   }))
 
   return [
@@ -22,35 +34,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}${routes.essentials}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/category/babies`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/category/girls`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/category/boys`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/category/sales`,
+      url: `${BASE_URL}${routes.categoryBase}/sales`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.8,
     },
+    ...categoryEntries,
     ...productEntries,
   ]
 }

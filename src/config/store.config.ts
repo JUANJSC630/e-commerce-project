@@ -120,15 +120,12 @@ export const routes = {
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
 /**
- * Desktop + mobile navigation links.
- * Add, remove or reorder items to change the nav everywhere at once.
+ * Curated nav entries that are NOT database categories (special storefront
+ * views). The main nav = active DB categories (admin-managed) + these. See
+ * `getNavItems()` in src/lib/categories.ts.
  */
-export const navigation: NavItem[] = [
-  { label: "Bebés", href: `${routes.categoryBase}/babies` },
-  { label: "Niñas", href: `${routes.categoryBase}/girls` },
-  { label: "Niños", href: `${routes.categoryBase}/boys` },
+export const specialNavItems: NavItem[] = [
   { label: "Ofertas", href: `${routes.categoryBase}/sales` },
-  { label: "Esenciales", href: routes.essentials },
 ]
 
 // ─── Shipping ─────────────────────────────────────────────────────────────────

@@ -26,7 +26,7 @@ const STOREFRONT_SELECT = {
   price: true,
   originalPrice: true,
   image: true,
-  category: true,
+  categoryRef: { select: { name: true, slug: true } },
   sizes: true,
   colors: true,
   description: true,
@@ -48,7 +48,7 @@ function toProduct(row: ProductRow): Product {
     name: row.name,
     price: row.price,
     image: row.image,
-    category: row.category,
+    category: row.categoryRef,
     sizes: row.sizes,
     colors: row.colors,
     stock: row.stock,
@@ -75,21 +75,16 @@ export function getAllProducts(): Promise<Product[]> {
   return queryProducts({ orderBy: NEWEST_FIRST })
 }
 
-export function getProductsByCategory(category: string): Promise<Product[]> {
-  return queryProducts({ where: { category }, orderBy: NEWEST_FIRST })
+export function getProductsByCategory(slug: string): Promise<Product[]> {
+  return queryProducts({ where: { categoryRef: { slug } }, orderBy: NEWEST_FIRST })
+}
+
+export function getProductsByCategoryId(categoryId: string): Promise<Product[]> {
+  return queryProducts({ where: { categoryId }, orderBy: NEWEST_FIRST })
 }
 
 export function getSaleProducts(): Promise<Product[]> {
   return queryProducts({ where: { isOnSale: true }, orderBy: NEWEST_FIRST })
-}
-
-export function getEssentialProducts(): Promise<Product[]> {
-  return queryProducts({
-    where: {
-      OR: [{ category: "Essentials" }, { name: { contains: "básic", mode: "insensitive" } }],
-    },
-    orderBy: NEWEST_FIRST,
-  })
 }
 
 export function getFeaturedProducts(limit = 8): Promise<Product[]> {
@@ -100,8 +95,9 @@ export function getRelatedProducts(
   product: Pick<Product, "id" | "category">,
   limit = 4,
 ): Promise<Product[]> {
+  if (!product.category) return Promise.resolve([])
   return queryProducts({
-    where: { category: product.category, id: { not: product.id } },
+    where: { categoryRef: { slug: product.category.slug }, id: { not: product.id } },
     orderBy: NEWEST_FIRST,
     take: limit,
   })
@@ -119,7 +115,7 @@ export function searchProducts(query: string): Promise<Product[]> {
     where: {
       OR: [
         { name: { contains: q, mode: "insensitive" } },
-        { category: { contains: q, mode: "insensitive" } },
+        { categoryRef: { name: { contains: q, mode: "insensitive" } } },
         { description: { contains: q, mode: "insensitive" } },
       ],
     },

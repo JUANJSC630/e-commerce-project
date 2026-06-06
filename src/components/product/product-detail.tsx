@@ -20,7 +20,7 @@ import { StockBadge } from "@/components/product/stock-badge"
 import { isOutOfStock } from "@/lib/inventory"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
-import { locale, shipping, routes, categoryLabels, categoryHrefFor } from "@/config/store.config"
+import { locale, shipping, routes } from "@/config/store.config"
 import type { Product } from "@/lib/types"
 
 interface ProductDetailProps {
@@ -47,7 +47,9 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
     openCart()
   }
 
-  const categoryHref = product.category ? categoryHrefFor(product.category) : routes.products
+  const categoryHref = product.category
+    ? `${routes.categoryBase}/${product.category.slug}`
+    : routes.products
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,7 +77,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
                 </li>
                 <li>
                   <Link href={categoryHref} className="hover:text-brand-base transition-colors">
-                    {categoryLabels[product.category] ?? product.category}
+                    {product.category.name}
                   </Link>
                 </li>
               </>
@@ -117,7 +119,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
           <div className="flex flex-col gap-5 py-2">
             {product.category && (
               <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
-                {categoryLabels[product.category] ?? product.category}
+                {product.category.name}
               </p>
             )}
 

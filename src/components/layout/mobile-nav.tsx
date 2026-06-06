@@ -3,9 +3,10 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Menu, X, Search, Heart, User } from "lucide-react"
-import { navigation, routes } from "@/config/store.config"
+import { routes } from "@/config/store.config"
+import type { NavItem } from "@/lib/categories"
 
-export function MobileNav() {
+export function MobileNav({ navItems }: { navItems: NavItem[] }) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -60,7 +61,7 @@ export function MobileNav() {
             </div>
 
             <ul className="flex flex-col py-4" role="list">
-              {navigation.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}

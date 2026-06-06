@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { brand, navigation, routes, locale, social, contact } from "@/config/store.config"
+import { brand, routes, locale, social, contact } from "@/config/store.config"
+import type { NavItem } from "@/lib/categories"
 import { Instagram, Facebook, Twitter } from "lucide-react"
 
-export function Footer() {
+export function Footer({ navItems }: { navItems: NavItem[] }) {
   const year = new Date().getFullYear()
 
   return (
@@ -68,7 +69,7 @@ export function Footer() {
               Colecciones
             </h2>
             <ul className="space-y-2.5" role="list">
-              {navigation.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}

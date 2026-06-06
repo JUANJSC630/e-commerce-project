@@ -9,11 +9,14 @@ import { PromoBanner } from "@/components/layout/promo-banner"
 import { Footer } from "@/components/layout/footer"
 import Link from "next/link"
 import { Heart, User } from "lucide-react"
-import { brand, navigation, routes } from "@/config/store.config"
+import { brand, routes } from "@/config/store.config"
+import { getNavItems } from "@/lib/categories"
 
 const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
 
-export default function StoreLayout({ children }: { children: React.ReactNode }) {
+export default async function StoreLayout({ children }: { children: React.ReactNode }) {
+  const navItems = await getNavItems()
+
   return (
     <CartProvider>
       <FavoritesProvider>
@@ -33,7 +36,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               className="hidden md:flex space-x-6 items-center"
               aria-label="Navegación principal"
             >
-              {navigation.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -61,14 +64,14 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
                 <User className="h-5 w-5" aria-hidden="true" />
               </Link>
               <CartCounter />
-              <MobileNav />
+              <MobileNav navItems={navItems} />
             </div>
           </div>
         </header>
 
         <MiniCart />
         <main className="min-h-screen">{children}</main>
-        <Footer />
+        <Footer navItems={navItems} />
       </FavoritesProvider>
     </CartProvider>
   )

@@ -96,7 +96,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       <div className="p-4 space-y-3">
         {product.category && (
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-            {product.category}
+            {product.category.name}
           </p>
         )}
 

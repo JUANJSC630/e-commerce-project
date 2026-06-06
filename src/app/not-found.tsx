@@ -1,7 +1,9 @@
 import Link from "next/link"
-import { brand, navigation, routes } from "@/config/store.config"
+import { brand, routes } from "@/config/store.config"
+import { getNavItems } from "@/lib/categories"
 
-export default function NotFound() {
+export default async function NotFound() {
+  const navItems = await getNavItems()
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 text-center">
       <p className="text-7xl font-display font-bold text-brand-base">404</p>
@@ -31,7 +33,7 @@ export default function NotFound() {
           O explora nuestras colecciones
         </p>
         <ul className="flex flex-wrap justify-center gap-2">
-          {navigation.map((item) => (
+          {navItems.map((item) => (
             <li key={item.href}>
               <Link href={item.href} className="text-sm text-brand-base hover:underline">
                 {item.label}

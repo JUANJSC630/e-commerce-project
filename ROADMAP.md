@@ -27,13 +27,13 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ### Storefront → Backend (alta prioridad)
 
-| Problema                         | Detalle                                                                            |
-| -------------------------------- | ---------------------------------------------------------------------------------- |
-| ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`     |
-| ~~Checkout no guarda pedido~~ ✅ | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                 |
-| Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                     |
-| ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB        |
-| Categorías hardcoded             | En `store.config.ts` + rutas por archivo; no editables desde el admin → Bloque 9.6 |
+| Problema                         | Detalle                                                                             |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`      |
+| ~~Checkout no guarda pedido~~ ✅ | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                  |
+| Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                      |
+| ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB         |
+| ~~Categorías hardcoded~~ ✅      | Resuelto: modelo `Category` + admin CRUD + `/category/[slug]` dinámico (Bloque 9.6) |
 
 ### Código con bugs menores
 
@@ -44,35 +44,36 @@ páginas leen `categoryLabels` desde `store.config.ts`.)
 
 ## Módulos Existentes
 
-| Módulo              | Ruta               | Estado          | Notas                                                           |
-| ------------------- | ------------------ | --------------- | --------------------------------------------------------------- |
-| Home                | `/`                | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise              |
-| Categoría Bebés     | `/category/babies` | ✅ Funcional    | 5 productos                                                     |
-| Categoría Niñas     | `/category/girls`  | ✅ Funcional    | 4 productos                                                     |
-| Categoría Niños     | `/category/boys`   | ✅ Funcional    | 4 productos                                                     |
-| Ofertas             | `/category/sales`  | ✅ Funcional    | Filtra `isOnSale: true`                                         |
-| Esenciales          | `/essentials`      | ✅ Funcional    | 3 productos                                                     |
-| Todos los productos | `/products`        | ✅ Funcional    | Server Component async desde Prisma                             |
-| Detalle de producto | `/products/[id]`   | ✅ Funcional    | Prisma + relacionados por props + badge de stock                |
-| Carrito             | `/carrito`         | ✅ Funcional    | AlertDialog, edición de cantidad                                |
-| Checkout            | `/checkout-flow`   | ✅ Funcional    | Guarda el pedido vía `POST /api/orders` → `/order-success/[id]` |
-| 404 (store)         | —                  | ✅ Funcional    | Branding + CTAs                                                 |
-| Error (store)       | —                  | ✅ Funcional    | Botón reset + branding                                          |
-| Cart Context        | —                  | ✅ Sólido       | localStorage, extensible                                        |
-| useFavorites        | —                  | ✅ Funcional    | localStorage, persiste entre navegaciones                       |
-| Sistema de tema     | —                  | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                             |
-| store.config.ts     | —                  | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                   |
-| validation.ts       | —                  | ✅ Centralizado | Luhn, shipping, payment                                         |
-| products.ts (lib)   | —                  | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts) |
-| **Admin Dashboard** | `/admin`           | ✅ Completo     | Stats, gráficos, accesos rápidos                                |
-| **Admin Login**     | `/admin/login`     | ✅ Funcional    | NextAuth JWT + Credentials                                      |
-| **Admin Productos** | `/admin/productos` | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                         |
-| **Admin Pedidos**   | `/admin/pedidos`   | ✅ CRUD         | Lista, detalle, cambio de estado                                |
-| **Admin Usuarios**  | `/admin/usuarios`  | ✅ CRUD         | Gestión con asignación de rol                                   |
-| **Admin Roles**     | `/admin/roles`     | ✅ CRUD         | Permisos granulares por módulo                                  |
-| **Admin Settings**  | `/admin/settings`  | ✅ CRUD         | 9 secciones editables (brand, theme, shipping, etc.)            |
-| **Admin 404**       | `/admin/*`         | ✅ Profesional  | Página personalizada con branding                               |
-| **Admin Error**     | `/admin/*`         | ✅ Profesional  | Error boundary con retry + navegación                           |
+| Módulo               | Ruta                | Estado          | Notas                                                             |
+| -------------------- | ------------------- | --------------- | ----------------------------------------------------------------- |
+| Home                 | `/`                 | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise                |
+| Categoría Bebés      | `/category/babies`  | ✅ Funcional    | 5 productos                                                       |
+| Categoría Niñas      | `/category/girls`   | ✅ Funcional    | 4 productos                                                       |
+| Categoría Niños      | `/category/boys`    | ✅ Funcional    | 4 productos                                                       |
+| Ofertas              | `/category/sales`   | ✅ Funcional    | Filtra `isOnSale: true`                                           |
+| Esenciales           | `/essentials`       | ✅ Funcional    | 3 productos                                                       |
+| Todos los productos  | `/products`         | ✅ Funcional    | Server Component async desde Prisma                               |
+| Detalle de producto  | `/products/[id]`    | ✅ Funcional    | Prisma + relacionados por props + badge de stock                  |
+| Carrito              | `/carrito`          | ✅ Funcional    | AlertDialog, edición de cantidad                                  |
+| Checkout             | `/checkout-flow`    | ✅ Funcional    | Guarda el pedido vía `POST /api/orders` → `/order-success/[id]`   |
+| 404 (store)          | —                   | ✅ Funcional    | Branding + CTAs                                                   |
+| Error (store)        | —                   | ✅ Funcional    | Botón reset + branding                                            |
+| Cart Context         | —                   | ✅ Sólido       | localStorage, extensible                                          |
+| useFavorites         | —                   | ✅ Funcional    | localStorage, persiste entre navegaciones                         |
+| Sistema de tema      | —                   | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                               |
+| store.config.ts      | —                   | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                     |
+| validation.ts        | —                   | ✅ Centralizado | Luhn, shipping, payment                                           |
+| products.ts (lib)    | —                   | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts)   |
+| **Admin Dashboard**  | `/admin`            | ✅ Completo     | Stats, gráficos, accesos rápidos                                  |
+| **Admin Login**      | `/admin/login`      | ✅ Funcional    | NextAuth JWT + Credentials                                        |
+| **Admin Productos**  | `/admin/productos`  | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                           |
+| **Admin Categorías** | `/admin/categorias` | ✅ CRUD         | Crear/editar/eliminar/ordenar, imagen, SEO — permiso `categories` |
+| **Admin Pedidos**    | `/admin/pedidos`    | ✅ CRUD         | Lista, detalle, cambio de estado                                  |
+| **Admin Usuarios**   | `/admin/usuarios`   | ✅ CRUD         | Gestión con asignación de rol                                     |
+| **Admin Roles**      | `/admin/roles`      | ✅ CRUD         | Permisos granulares por módulo                                    |
+| **Admin Settings**   | `/admin/settings`   | ✅ CRUD         | 9 secciones editables (brand, theme, shipping, etc.)              |
+| **Admin 404**        | `/admin/*`          | ✅ Profesional  | Página personalizada con branding                                 |
+| **Admin Error**      | `/admin/*`          | ✅ Profesional  | Error boundary con retry + navegación                             |
 
 ---
 
@@ -318,50 +319,31 @@ Ver historial al final del documento.
 
 ---
 
-### ⏳ Bloque 9.6 — Categorías administrables (dinámicas)
+### ✅ Bloque 9.6 — Categorías administrables (dinámicas)
 
-> **Objetivo**: las categorías se gestionan 100% desde el admin (crear, editar,
-> eliminar, ordenar, activar) — **nada hardcoded**. Storefront, navegación, form
-> de producto, breadcrumbs y SEO leen las categorías desde la DB.
-
-#### Estado actual (todo hardcoded)
-
-- `store.config.ts`: `categories[]`, `categoryLabels`, `productCategories`,
-  `essentialsConfig`, y `navigation` con las categorías escritas a mano.
-- Rutas individuales por archivo: `/category/babies|girls|boys|sales` + `/essentials`.
-- `Product.category` es un string libre (no relación), validado contra
-  `productCategories`.
-
-#### Plan
+> **Completado**. Las categorías se gestionan 100% desde el admin (crear, editar,
+> eliminar, ordenar, activar) — **nada hardcoded**. Storefront, nav, form de
+> producto, breadcrumbs y SEO leen las categorías desde la DB. Verificado E2E
+> (scripts/verify-categories-admin.mjs, 6/6).
 
 ```
-[ ] Modelo Category (id, name, slug, description, image, order, isActive,
-    metaTitle?, metaDescription?, parentId? para subcategorías opcionales)
-[ ] Product.categoryId → relación FK a Category (migración de datos: mapear el
-    string actual "Babies/Girls/Boys/Essentials" a su Category)
-[ ] Ruta dinámica /category/[slug] (reemplaza los 4 archivos individuales);
-    generateMetadata + generateStaticParams desde la DB
-[ ] Admin /admin/categorias — CRUD: nombre, slug (auto), descripción, imagen
-    (UploadThing), orden (drag o campo), activo, SEO. Nuevo permiso "categories"
-[ ] Nav del header/footer y form de producto leen categorías activas desde la DB
-    (cacheado; reemplazan navigation/productCategories de store.config)
-[ ] lib/categories.ts (server-only) + /api/categories; getProductsByCategory por
-    categoryId/slug
-[ ] "Ofertas" (isOnSale) se mantiene como vista especial, no como categoría;
-    "Esenciales" pasa a ser una Category normal
-[ ] Seed: crear las categorías actuales en la DB y vincular los productos
-[ ] SEO: metaTitle/metaDescription por categoría desde la DB; sitemap dinámico
-[ ] Revalidación: las páginas de categoría usan ISR/revalidateTag al editar en admin
+[x] Modelo Category (name, slug unique, description, image, order, isActive, SEO)
+[x] Product.categoryId → relación FK (migración aditiva: nullable + backfill del
+    string legacy "Babies/Girls/Boys/Essentials" a su Category)
+[x] Ruta dinámica /category/[slug] (reemplaza babies/girls/boys); ISR +
+    generateStaticParams + generateMetadata desde la DB. /essentials → redirect
+[x] Admin /admin/categorias — CRUD (nombre, slug auto, descripción, imagen vía
+    UploadThing categoryImage, orden, activo, SEO) + permiso "categories"
+[x] Nav (header/footer/mobile/404) y form de producto leen categorías de la DB
+    (getNavItems / getAdminCategories); navigation hardcoded → specialNavItems
+[x] lib/categories.ts (server-only) + /api/admin/categories; productos por
+    categoryId/slug; Product.category (dominio) ahora es la relación { name, slug }
+[x] "Ofertas" (isOnSale) sigue como vista especial; "Esenciales" es Category normal
+[x] Seed crea las categorías y vincula los productos
+[x] SEO por categoría desde la DB; sitemap dinámico
+[x] Cache etiquetada (`categories`) + ISR; revalidateCategories() al editar en admin
+[ ] Subcategorías (parentId) y drag-to-reorder — opcionales, fase futura
 ```
-
-#### Consideraciones
-
-- **Rendimiento**: las páginas de categoría hoy son estáticas; con datos dinámicos
-  pasan a ISR (`revalidate`) o `revalidateTag` tras editar en el admin, para no
-  volverlas dinámicas en cada visita.
-- **Migración**: hacerla en pasos (añadir `categoryId` nullable → backfill →
-  exigir) para no romper productos existentes.
-- **Subcategorías** (parentId) y **drag-to-reorder**: opcionales, fase 2.
 
 ---
 

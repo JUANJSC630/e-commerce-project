@@ -42,7 +42,7 @@ export function BrandEditor({ data }: { data: Record<string, unknown> }) {
       isPending={isPending}
       isDirty={isDirty}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Field label="Nombre" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
         <Field
           label="Tagline"
@@ -61,16 +61,18 @@ export function BrandEditor({ data }: { data: Record<string, unknown> }) {
           onChange={(v) => setForm({ ...form, copyright: v })}
         />
       </div>
-      <Field
-        label="Descripción"
-        value={form.description}
-        onChange={(v) => setForm({ ...form, description: v })}
-      />
-      <Field
-        label="Texto secundario footer"
-        value={form.footerSubtext}
-        onChange={(v) => setForm({ ...form, footerSubtext: v })}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <Field
+          label="Descripción"
+          value={form.description}
+          onChange={(v) => setForm({ ...form, description: v })}
+        />
+        <Field
+          label="Texto secundario footer"
+          value={form.footerSubtext}
+          onChange={(v) => setForm({ ...form, footerSubtext: v })}
+        />
+      </div>
     </SectionCard>
   )
 }

@@ -40,7 +40,7 @@ export function SocialEditor({ data }: { data: Record<string, unknown> }) {
       isPending={isPending}
       isDirty={isDirty}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Field
           label="Instagram"
           value={form.instagram}

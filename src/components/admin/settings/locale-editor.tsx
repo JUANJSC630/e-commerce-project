@@ -41,7 +41,7 @@ export function LocaleEditor({ data }: { data: Record<string, unknown> }) {
       isPending={isPending}
       isDirty={isDirty}
     >
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
         <Field
           label="Idioma (HTML lang)"
           value={form.language}

@@ -18,7 +18,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
   if (!hasPermission(perms, "settings", "read")) redirect("/admin")
 
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Configuración</h1>
         <p className="text-slate-500 text-sm mt-0.5">
@@ -26,8 +26,8 @@ export default async function SettingsLayout({ children }: { children: React.Rea
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[15rem_minmax(0,1fr)] gap-6">
-        <aside className="md:sticky md:top-6 self-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[16rem_minmax(0,1fr)] gap-6">
+        <aside className="lg:sticky lg:top-6 self-start">
           <SettingsNav />
         </aside>
         <div className="min-w-0">{children}</div>

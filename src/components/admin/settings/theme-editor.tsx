@@ -94,7 +94,7 @@ function Preview({ tokens }: { tokens: ThemeTokens }) {
   return (
     <div
       style={style}
-      className="rounded-xl border border-slate-200 overflow-hidden bg-background text-foreground"
+      className="self-start rounded-xl border border-slate-200 overflow-hidden bg-background text-foreground"
     >
       <div className="bg-primary text-primary-foreground text-xs text-center py-1.5 font-medium">
         🚚 Envío gratis en compras mayores a $150.000

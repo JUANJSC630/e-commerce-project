@@ -400,8 +400,11 @@ Ver historial al final del documento.
     refactorizado para usarlos
 [x] Enlace de cuenta en header (desktop) y menú móvil
 [x] Verificado E2E con Playwright (scripts/verify-account.mjs, 7/7)
-[ ] Guest checkout ya funciona (pedidos sin cuenta); falta "crear cuenta al final" (opcional)
-[ ] Favoritos: persistencia en DB cuando hay cuenta (hoy localStorage) — opcional
+[x] Guest checkout + "crear cuenta al final" en order-success; el registro reclama
+    los pedidos guest con ese email (los enlaza a la nueva cuenta)
+[x] Favoritos persistidos en DB (modelo Favorite): FavoritesProvider sincroniza
+    localStorage↔DB, merge del set guest al iniciar sesión, toggle reflejado en DB
+    (verificado E2E, scripts/verify-favorites.mjs, 2/2)
 ```
 
 ---

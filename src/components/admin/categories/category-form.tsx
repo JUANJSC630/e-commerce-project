@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ImageUploadField } from "@/components/admin/products/image-upload-field"
+import { ImageUploadField } from "@/components/admin/media/image-upload-field"
 
 export interface CategoryFormData {
   id: string

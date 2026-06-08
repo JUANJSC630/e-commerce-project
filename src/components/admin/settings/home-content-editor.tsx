@@ -7,7 +7,7 @@ import { LayoutTemplate, Plus, Trash2 } from "lucide-react"
 import { SETTINGS_KEYS } from "@/lib/settings-keys"
 import type { HomeContent } from "@/config/store.config"
 import { SectionCard, Field, saveSection } from "./primitives"
-import { ImageUploadField } from "@/components/admin/products/image-upload-field"
+import { ImageUploadField } from "@/components/admin/media/image-upload-field"
 
 /** Small heading that separates the sub-blocks inside the home content card. */
 function SubHeading({ children }: { children: React.ReactNode }) {

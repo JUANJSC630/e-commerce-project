@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Store } from "lucide-react"
 import { SETTINGS_KEYS } from "@/lib/settings-keys"
+import { ImageUploadField } from "@/components/admin/media/image-upload-field"
 import { SectionCard, Field, saveSection } from "./primitives"
 
 export function BrandEditor({ data }: { data: Record<string, unknown> }) {
@@ -50,16 +51,22 @@ export function BrandEditor({ data }: { data: Record<string, unknown> }) {
           onChange={(v) => setForm({ ...form, tagline: v })}
         />
         <Field
-          label="URL logo (dejar vacío para texto)"
-          value={form.logoImage}
-          onChange={(v) => setForm({ ...form, logoImage: v })}
-          placeholder="/logo.png"
-        />
-        <Field
           label="Copyright"
           value={form.copyright}
           onChange={(v) => setForm({ ...form, copyright: v })}
         />
+        <div>
+          <span className="block text-xs font-medium text-slate-600 mb-1">
+            Logo (vacío = usar el nombre como texto)
+          </span>
+          <ImageUploadField
+            value={form.logoImage}
+            onChange={(url) => setForm({ ...form, logoImage: url })}
+            endpoint="settingsImage"
+            emptyValue=""
+            previewClassName="w-40 aspect-video"
+          />
+        </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <Field

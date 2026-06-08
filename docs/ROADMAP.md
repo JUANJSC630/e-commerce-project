@@ -533,15 +533,15 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     settingsImage (settings) — la subida se aborta si el usuario no tiene permiso
 [x] Usado en: productos, categorías y "Contenido del inicio" (hero + cat. destacadas)
 [x] next/image remotePatterns ya permite el CDN (*.ufs.sh, utfs.io)
+[x] Auditoría completa: ningún campo de imagen del admin es ya input de texto —
+    el logo de "Marca" (brand-editor) se migró a ImageUploadField (endpoint settingsImage)
+[x] ImageUploadField vive ahora en components/admin/media/ (ubicación compartida);
+    imports de productos/categorías/inicio/marca actualizados
 ```
 
 #### Pendiente / mejoras (para abordar luego)
 
 ```
-[ ] Auditar TODOS los campos de imagen del admin y garantizar que ninguno sea un
-    input de URL de texto (todos deben usar ImageUploadField)
-[ ] Mover ImageUploadField a una ubicación compartida (p. ej. components/admin/media/)
-    — hoy vive en components/admin/products y lo importan otros módulos
 [ ] Limpieza de huérfanas: al reemplazar/eliminar una imagen, borrarla de UploadThing
     con UTApi (server action) para no acumular archivos sin usar
 [ ] Biblioteca de medios: un selector que liste imágenes ya subidas para reutilizarlas

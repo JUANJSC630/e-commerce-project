@@ -182,21 +182,21 @@ export const heroBanners: HeroBanner[] = [
   {
     title: "Estilo Moderno para Pequeños",
     description: "Descubre la nueva colección con un toque dorado.",
-    image: "/pexels-matilda-wormwood-7484842.jpg",
+    image: "/placeholder.svg",
     buttonText: "Ver Colección",
     buttonLink: routes.products,
   },
   {
     title: "¡Ofertas Brillantes!",
     description: "Aprovecha descuentos especiales en prendas seleccionadas.",
-    image: "/8683985.jpg",
+    image: "/placeholder.svg",
     buttonText: "Ver Ofertas",
     buttonLink: `${routes.categoryBase}/sales`,
   },
   {
     title: "Comodidad y Estilo",
     description: "Diseños neutros y modernos para el día a día.",
-    image: "/pexels-pixabay-272056.jpg",
+    image: "/placeholder.svg",
     buttonText: "Comprar Ahora",
     buttonLink: routes.essentials,
   },
@@ -205,22 +205,22 @@ export const heroBanners: HeroBanner[] = [
 export const featuredCategories: FeaturedCategory[] = [
   {
     name: "Bebés (0-24m)",
-    image: "/placeholder/bebes-0-24.png",
+    image: "/placeholder.svg",
     href: `${routes.categoryBase}/babies`,
   },
   {
     name: "Niñas",
-    image: "/placeholder/ninas-1-6.png",
+    image: "/placeholder.svg",
     href: `${routes.categoryBase}/girls`,
   },
   {
     name: "Niños",
-    image: "/placeholder/ninos-1-6.png",
+    image: "/placeholder.svg",
     href: `${routes.categoryBase}/boys`,
   },
   {
     name: "Accesorios",
-    image: "/placeholder/accesorios.png",
+    image: "/placeholder.svg",
     href: `${routes.categoryBase}/sales`,
   },
 ]

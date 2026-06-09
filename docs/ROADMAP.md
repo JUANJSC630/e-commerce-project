@@ -561,6 +561,12 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     GripVertical que "arma" la fila al pulsar para no romper la edición de inputs).
     El orden del array es el orden de render en el storefront.
     (Nota: la lista de categorías del admin sigue usando el campo numérico `order`)
+[x] /public sin imágenes de contenido: eliminadas las fotos/webp demo y las
+    carpetas /vestido-nina y /placeholder/*. Defaults del seed (products-data.ts)
+    y de config (heroBanners/featuredCategories) apuntan a /placeholder.svg neutro.
+    Se conservan solo placeholders genéricos (placeholder.svg/.jpg, -logo, -user).
+    (Nota: filas ya existentes en DB que apuntaban a esas rutas mostrarán el
+    placeholder; re-subir desde el admin o re-seed las normaliza)
 ```
 
 #### Pendiente / mejoras (para abordar luego)
@@ -568,8 +574,6 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 ```
 [ ] Biblioteca de medios: un selector que liste imágenes ya subidas para reutilizarlas
     sin volver a subir (modal "Elegir de la biblioteca | Subir nueva")
-[ ] Quitar de /public las imágenes demo y mover los defaults a seeds/placeholder neutro
-    para que el repo no contenga imágenes de contenido
 ```
 
 > **Nota**: el `ImageUploadField` muestra el dropzone solo cuando no hay imagen; si

@@ -1,6 +1,7 @@
 import { unstable_cache, revalidateTag } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { SETTINGS_KEYS } from "@/lib/settings-keys"
+import { collectUploadThingUrls, deleteUploadedImages } from "@/lib/media-cleanup"
 import {
   brand as defaultBrand,
   locale as defaultLocale,
@@ -72,11 +73,17 @@ export async function loadSetting<T>(key: string, fallback: T): Promise<T> {
  * Saves a setting section. Creates or updates.
  */
 export async function saveSetting(key: string, value: unknown) {
+  const prev = await prisma.setting.findUnique({ where: { key } })
   const saved = await prisma.setting.upsert({
     where: { key },
     create: { key, value: value as object },
     update: { value: value as object },
   })
+  // Delete UploadThing images that were present before but are no longer
+  // referenced after this save (replaced banner/category/logo images).
+  const next = new Set(collectUploadThingUrls(value))
+  const orphans = collectUploadThingUrls(prev?.value).filter((url) => !next.has(url))
+  await deleteUploadedImages(orphans)
   // Invalidate the cached storefront settings so ISR picks up the change.
   revalidateTag(SETTINGS_TAG)
   return saved

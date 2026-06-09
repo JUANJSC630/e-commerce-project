@@ -537,13 +537,17 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     el logo de "Marca" (brand-editor) se migró a ImageUploadField (endpoint settingsImage)
 [x] ImageUploadField vive ahora en components/admin/media/ (ubicación compartida);
     imports de productos/categorías/inicio/marca actualizados
+[x] Limpieza de huérfanas (src/lib/media-cleanup.ts con UTApi): al reemplazar o
+    eliminar una imagen se borra del CDN. Conectado en productos (PUT/PATCH/DELETE),
+    categorías (update/delete) y settings (saveSetting hace diff de URLs UploadThing
+    del valor previo vs el nuevo → borra las que dejaron de referenciarse: logo,
+    banners del hero, categorías destacadas). Best-effort: nunca rompe la mutación;
+    solo toca URLs de UploadThing (ignora /placeholder.svg, /public y terceros)
 ```
 
 #### Pendiente / mejoras (para abordar luego)
 
 ```
-[ ] Limpieza de huérfanas: al reemplazar/eliminar una imagen, borrarla de UploadThing
-    con UTApi (server action) para no acumular archivos sin usar
 [ ] Biblioteca de medios: un selector que liste imágenes ya subidas para reutilizarlas
     sin volver a subir (modal "Elegir de la biblioteca | Subir nueva")
 [ ] Alt text por imagen (campo en el editor) para accesibilidad y SEO; usarlo en

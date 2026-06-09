@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
+import { deleteReplacedImage, deleteUploadedImages } from "@/lib/media-cleanup"
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -32,7 +33,9 @@ export async function PUT(request: Request, { params }: Params) {
   const { id } = await params
   const body = await request.json()
 
+  const prev = await prisma.product.findUnique({ where: { id }, select: { image: true } })
   const product = await prisma.product.update({ where: { id }, data: body })
+  await deleteReplacedImage(prev?.image, product.image)
   return NextResponse.json(product)
 }
 
@@ -47,7 +50,9 @@ export async function PATCH(request: Request, { params }: Params) {
   const { id } = await params
   const body = await request.json()
 
+  const prev = await prisma.product.findUnique({ where: { id }, select: { image: true } })
   const product = await prisma.product.update({ where: { id }, data: body })
+  await deleteReplacedImage(prev?.image, product.image)
   return NextResponse.json(product)
 }
 
@@ -60,6 +65,7 @@ export async function DELETE(_: Request, { params }: Params) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const { id } = await params
-  await prisma.product.delete({ where: { id } })
+  const removed = await prisma.product.delete({ where: { id }, select: { image: true } })
+  await deleteUploadedImages([removed.image])
   return new NextResponse(null, { status: 204 })
 }

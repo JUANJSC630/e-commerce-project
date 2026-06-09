@@ -4,6 +4,7 @@ import { unstable_cache, revalidateTag } from "next/cache"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { specialNavItems } from "@/config/store.config"
+import { deleteReplacedImage, deleteUploadedImages } from "@/lib/media-cleanup"
 
 /**
  * Category data-access layer. Categories are admin-managed (DB), so the
@@ -162,7 +163,10 @@ export async function createCategory(input: CategoryInput): Promise<{ id: string
 
 export async function updateCategory(id: string, input: CategoryInput): Promise<void> {
   try {
-    await prisma.category.update({ where: { id }, data: normalize(input) })
+    const prev = await prisma.category.findUnique({ where: { id }, select: { image: true } })
+    const data = normalize(input)
+    await prisma.category.update({ where: { id }, data })
+    await deleteReplacedImage(prev?.image, data.image)
     revalidateCategories()
   } catch (err) {
     throw toCategoryError(err)
@@ -171,7 +175,11 @@ export async function updateCategory(id: string, input: CategoryInput): Promise<
 
 /** Deleting a category leaves its products uncategorized (FK is SET NULL). */
 export async function deleteCategory(id: string): Promise<void> {
-  await prisma.category.delete({ where: { id } })
+  const removed = await prisma.category.delete({
+    where: { id },
+    select: { image: true },
+  })
+  await deleteUploadedImages([removed.image])
   revalidateCategories()
 }
 

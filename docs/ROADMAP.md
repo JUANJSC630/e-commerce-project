@@ -519,6 +519,9 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     trust-bar ahora resuelve cualquier ícono por nombre (antes mapa fijo de 4 → Package)
 [x] Layout del uploader corregido en columnas angostas + labels del dropzone en
     español y compactas; sidebar del admin sticky para que se mantenga visible
+[x] Cabecera de SectionCard sticky (top-0) en TODAS las secciones de Configuración:
+    el botón "Guardar"/"Deshacer" queda siempre accesible en secciones largas sin
+    tener que subir hasta el tope
 ```
 
 > **Arquitectura de imágenes**: ninguna imagen del contenido administrable se gestiona

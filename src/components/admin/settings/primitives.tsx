@@ -22,8 +22,8 @@ export function SectionCard({
   isDirty: boolean
 }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+    <div className="bg-white rounded-xl border border-slate-200">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white/95 backdrop-blur rounded-t-xl">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-slate-100 text-slate-600">
             <Icon className="h-4 w-4" />

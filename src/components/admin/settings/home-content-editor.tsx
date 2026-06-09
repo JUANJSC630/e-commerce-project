@@ -86,15 +86,14 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
             <div className="w-44 shrink-0">
               <span className="block text-xs font-medium text-slate-600 mb-1">Imagen</span>
               <ImageUploadField
+                slot="hero"
                 value={banner.image}
                 onChange={(url) =>
                   patch({
                     heroBanners: heroBanners.map((b, j) => (j === i ? { ...b, image: url } : b)),
                   })
                 }
-                endpoint="settingsImage"
                 emptyValue=""
-                previewClassName="w-40 aspect-video"
               />
             </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -164,6 +163,8 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
             <div className="w-24 shrink-0">
               <span className="block text-xs font-medium text-slate-600 mb-1">Imagen</span>
               <ImageUploadField
+                slot="category"
+                endpoint="settingsImage"
                 value={cat.image}
                 onChange={(url) =>
                   patch({
@@ -172,7 +173,6 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
                     ),
                   })
                 }
-                endpoint="settingsImage"
                 emptyValue=""
                 previewClassName="w-24 aspect-square"
               />

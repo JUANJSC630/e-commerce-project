@@ -60,11 +60,10 @@ export function BrandEditor({ data }: { data: Record<string, unknown> }) {
             Logo (vacío = usar el nombre como texto)
           </span>
           <ImageUploadField
+            slot="logo"
             value={form.logoImage}
             onChange={(url) => setForm({ ...form, logoImage: url })}
-            endpoint="settingsImage"
             emptyValue=""
-            previewClassName="w-40 aspect-video"
           />
         </div>
       </div>

@@ -163,7 +163,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
           </div>
 
           <Field label="Imagen del producto">
-            <ImageUploadField value={form.image} onChange={(url) => set("image", url)} />
+            <ImageUploadField slot="product" value={form.image} onChange={(url) => set("image", url)} />
           </Field>
 
           <Field label="Descripción">

@@ -543,6 +543,14 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     del valor previo vs el nuevo → borra las que dejaron de referenciarse: logo,
     banners del hero, categorías destacadas). Best-effort: nunca rompe la mutación;
     solo toca URLs de UploadThing (ignora /placeholder.svg, /public y terceros)
+[x] Slots de medios (ImageUploadField prop `slot`: product/category/hero/logo):
+    centralizan endpoint, forma del preview, guía de dimensiones y validación.
+    Guía visible bajo el dropzone (ej. "Vertical 3:4 · mín. 600×800px") y aviso
+    (toast) si la imagen subida es más pequeña que el mínimo recomendado
+[x] `sizes` de next/image por slot: storefront ya afinado (hero 55vw, categoría
+    25vw, card responsivo, detalle 50vw) + preview del admin ahora también por slot
+[x] Barra de progreso real en la subida (onUploadProgress) con porcentaje; límite
+    de peso 4MB ya aplicado en el endpoint
 ```
 
 #### Pendiente / mejoras (para abordar luego)
@@ -552,13 +560,9 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     sin volver a subir (modal "Elegir de la biblioteca | Subir nueva")
 [ ] Alt text por imagen (campo en el editor) para accesibilidad y SEO; usarlo en
     next/image alt en hero/categorías/productos
-[ ] Guía por slot: dimensión/aspecto recomendado y validación (hero ~16:9 ancho,
-    categoría 1:1, producto 3:4); avisos si la imagen es muy pequeña
-[ ] `sizes` de next/image afinado por slot (hero full-bleed vs card) para performance
 [ ] Reordenar banners/categorías por drag & drop (afecta también al editor del inicio)
 [ ] Quitar de /public las imágenes demo y mover los defaults a seeds/placeholder neutro
     para que el repo no contenga imágenes de contenido
-[ ] Barra de progreso/scaling de imagen en la subida (UX) y límite/optimización de peso
 ```
 
 > **Nota**: el `ImageUploadField` muestra el dropzone solo cuando no hay imagen; si

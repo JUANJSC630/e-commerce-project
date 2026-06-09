@@ -128,9 +128,9 @@ export function CategoryForm({ category }: { category?: CategoryFormData }) {
 
           <Field label="Imagen">
             <ImageUploadField
+              slot="category"
               value={form.image}
               onChange={(url) => setField("image", url)}
-              endpoint="categoryImage"
             />
           </Field>
 

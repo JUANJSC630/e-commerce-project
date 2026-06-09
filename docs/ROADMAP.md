@@ -399,6 +399,10 @@ Ver historial al final del documento.
     Fonts y sobreescribe --font-display/--font-body en el scope .dulce-theme.
     Se superó la limitación de next/font cargando vía <link> validado (solo
     familias del catálogo, sin CSS arbitrario).
+[x] Fix: el <link> de Google Fonts se inyectaba en <body> (no gestionado) y la
+    fuente solo aplicaba tras limpiar caché. Ahora usa `precedence` (React 19) →
+    se hoistea al <head>, se carga antes del paint y se reemplaza al cambiar el
+    href; el <style> de vars lleva key por fuente. Aplica en recarga normal.
 ```
 
 #### Consideraciones (cumplidas)

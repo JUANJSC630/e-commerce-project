@@ -38,8 +38,18 @@ export async function FontStyle({ selector = ".dulce-theme" }: { selector?: stri
 
   return (
     <>
-      {href && <link rel="stylesheet" href={href} />}
-      <style id="dulce-font-vars" dangerouslySetInnerHTML={{ __html: css }} />
+      {/* `precedence` opts into React 19 stylesheet management: the link is
+          hoisted into <head>, loaded before paint and de-duped by href, so font
+          changes apply on a normal reload (a plain <link> left in <body> only
+          reliably updated after a hard cache-clearing reload). */}
+      {href && <link rel="stylesheet" href={href} precedence="high" />}
+      {/* Unique key per font choice so React re-inserts the vars when they
+          change instead of de-duping against the previous <style>. */}
+      <style
+        href={`dulce-font-vars-${display ?? "d"}-${body ?? "b"}`}
+        precedence="high"
+        dangerouslySetInnerHTML={{ __html: css }}
+      />
     </>
   )
 }

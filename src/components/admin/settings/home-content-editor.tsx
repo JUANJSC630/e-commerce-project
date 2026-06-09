@@ -3,11 +3,73 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { LayoutTemplate, Plus, Trash2 } from "lucide-react"
+import { LayoutTemplate, Plus, Trash2, GripVertical } from "lucide-react"
 import { SETTINGS_KEYS } from "@/lib/settings-keys"
 import type { HomeContent } from "@/config/store.config"
 import { SectionCard, Field, saveSection } from "./primitives"
 import { ImageUploadField } from "@/components/admin/media/image-upload-field"
+
+/** Moves an array item from one index to another (immutably). */
+function move<T>(arr: T[], from: number, to: number): T[] {
+  const next = [...arr]
+  const [item] = next.splice(from, 1)
+  next.splice(to, 0, item)
+  return next
+}
+
+/**
+ * Native HTML5 drag-and-drop reordering for an array row. The row is only
+ * `draggable` while the user holds the grip handle (armed on mousedown), so the
+ * text inputs inside each row stay normally selectable/editable.
+ */
+function useSortable<T>(items: T[], onReorder: (next: T[]) => void) {
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [armed, setArmed] = useState(false)
+
+  const rowProps = (index: number) => ({
+    draggable: armed,
+    onDragStart: (e: React.DragEvent) => {
+      setDragIndex(index)
+      e.dataTransfer.effectAllowed = "move"
+    },
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = "move"
+    },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault()
+      if (dragIndex !== null && dragIndex !== index) onReorder(move(items, dragIndex, index))
+      setDragIndex(null)
+      setArmed(false)
+    },
+    onDragEnd: () => {
+      setDragIndex(null)
+      setArmed(false)
+    },
+  })
+
+  const handleProps = {
+    onMouseDown: () => setArmed(true),
+    onMouseUp: () => setArmed(false),
+    onMouseLeave: () => setArmed(false),
+  }
+
+  return { rowProps, handleProps, dragIndex }
+}
+
+/** Grip handle that arms a row for dragging. */
+function DragHandle(props: React.HTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type="button"
+      aria-label="Arrastrar para reordenar"
+      className="mt-6 cursor-grab p-1 text-slate-300 hover:text-slate-500 active:cursor-grabbing shrink-0"
+      {...props}
+    >
+      <GripVertical className="h-4 w-4" />
+    </button>
+  )
+}
 
 /** Small heading that separates the sub-blocks inside the home content card. */
 function SubHeading({ children }: { children: React.ReactNode }) {
@@ -68,6 +130,10 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
   }
 
   const { heroBanners, featuredCategories, homeFeatures, copy } = form
+  const bannerSort = useSortable(heroBanners, (next) => patch({ heroBanners: next }))
+  const categorySort = useSortable(featuredCategories, (next) =>
+    patch({ featuredCategories: next }),
+  )
 
   return (
     <SectionCard
@@ -82,7 +148,14 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
       <SubHeading>Banners del hero ({heroBanners.length})</SubHeading>
       <div className="space-y-3">
         {heroBanners.map((banner, i) => (
-          <div key={i} className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
+          <div
+            key={i}
+            {...bannerSort.rowProps(i)}
+            className={`flex items-start gap-3 rounded-lg border border-slate-100 p-3 transition-opacity ${
+              bannerSort.dragIndex === i ? "opacity-40" : ""
+            }`}
+          >
+            <DragHandle {...bannerSort.handleProps} />
             <div className="w-44 shrink-0">
               <span className="block text-xs font-medium text-slate-600 mb-1">Imagen</span>
               <ImageUploadField
@@ -169,7 +242,14 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
       <SubHeading>Categorías destacadas ({featuredCategories.length})</SubHeading>
       <div className="space-y-3">
         {featuredCategories.map((cat, i) => (
-          <div key={i} className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
+          <div
+            key={i}
+            {...categorySort.rowProps(i)}
+            className={`flex items-start gap-3 rounded-lg border border-slate-100 p-3 transition-opacity ${
+              categorySort.dragIndex === i ? "opacity-40" : ""
+            }`}
+          >
+            <DragHandle {...categorySort.handleProps} />
             <div className="w-24 shrink-0">
               <span className="block text-xs font-medium text-slate-600 mb-1">Imagen</span>
               <ImageUploadField

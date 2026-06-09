@@ -556,6 +556,11 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     Campo en los 4 editores (producto, categoría, banner, categoría destacada);
     el storefront usa `imageAlt || name/title` en product-card, product-detail,
     hero-section y categories-section (antes alt="" en hero/categorías)
+[x] Drag & drop para reordenar banners del hero y categorías destacadas en el
+    editor del inicio (HTML5 nativo, sin dependencias; hook useSortable + handle
+    GripVertical que "arma" la fila al pulsar para no romper la edición de inputs).
+    El orden del array es el orden de render en el storefront.
+    (Nota: la lista de categorías del admin sigue usando el campo numérico `order`)
 ```
 
 #### Pendiente / mejoras (para abordar luego)
@@ -563,7 +568,6 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 ```
 [ ] Biblioteca de medios: un selector que liste imágenes ya subidas para reutilizarlas
     sin volver a subir (modal "Elegir de la biblioteca | Subir nueva")
-[ ] Reordenar banners/categorías por drag & drop (afecta también al editor del inicio)
 [ ] Quitar de /public las imágenes demo y mover los defaults a seeds/placeholder neutro
     para que el repo no contenga imágenes de contenido
 ```

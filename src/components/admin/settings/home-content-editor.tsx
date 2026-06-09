@@ -8,6 +8,7 @@ import { SETTINGS_KEYS } from "@/lib/settings-keys"
 import type { HomeContent } from "@/config/store.config"
 import { SectionCard, Field, saveSection } from "./primitives"
 import { ImageUploadField } from "@/components/admin/media/image-upload-field"
+import { IconPicker } from "./icon-picker"
 
 /** Moves an array item from one index to another (immutably). */
 function move<T>(arr: T[], from: number, to: number): T[] {
@@ -327,15 +328,14 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
         {homeFeatures.map((feat, i) => (
           <div key={i} className="flex items-start gap-2">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
-              <Field
-                label="Ícono (lucide)"
+              <IconPicker
+                label="Ícono"
                 value={feat.icon}
                 onChange={(v) =>
                   patch({
                     homeFeatures: homeFeatures.map((f, j) => (j === i ? { ...f, icon: v } : f)),
                   })
                 }
-                placeholder="Package"
               />
               <Field
                 label="Título"

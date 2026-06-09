@@ -1,12 +1,6 @@
-import { Package, Gift, ShieldCheck, Tag, type LucideIcon } from "lucide-react"
+import { Package } from "lucide-react"
 import type { FeatureItem } from "@/config/store.config"
-
-const iconMap: Record<string, LucideIcon> = {
-  Package,
-  Gift,
-  ShieldCheck,
-  Tag,
-}
+import { getLucideIcon } from "@/lib/lucide-icons"
 
 interface TrustBarProps {
   features: FeatureItem[]
@@ -21,7 +15,7 @@ export function TrustBar({ features }: TrustBarProps) {
     <section aria-label="Nuestras garantías" className="bg-brand-base overflow-hidden py-3">
       <div className="flex animate-marquee whitespace-nowrap hover:[animation-play-state:paused]">
         {items.map((item, i) => {
-          const Icon = iconMap[item.icon] ?? Package
+          const Icon = getLucideIcon(item.icon) ?? Package
           return (
             <span
               key={`${item.icon}-${i}`}

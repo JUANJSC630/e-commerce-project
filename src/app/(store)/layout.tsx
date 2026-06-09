@@ -14,6 +14,7 @@ import { getNavItems } from "@/lib/categories"
 import { loadAllSettings } from "@/lib/settings"
 import { SettingsProvider } from "@/components/providers/settings-provider"
 import { ThemeStyle } from "@/components/theme/theme-style"
+import { FontStyle } from "@/components/theme/font-style"
 
 const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
 
@@ -24,6 +25,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   return (
     <SettingsProvider settings={settings}>
       <ThemeStyle />
+      <FontStyle />
       <div className="dulce-theme bg-background text-foreground">
         <CartProvider>
           <FavoritesProvider>

@@ -392,7 +392,13 @@ Ver historial al final del documento.
 [ ] Esquema extendido: success/danger, estilo de botón (solid/outline), banner,
     toasts (posición, richColors) — mapear a CSS vars + props leídos de settings
 [x] Uploader UploadThing para imágenes del home (hecho en 9.8)
-[ ] (Mejora) tipografía dinámica (limitada por next/font)
+[x] Tipografía dinámica REAL: las fuentes elegidas se aplican en vivo al storefront.
+    FontPicker (combobox buscable con preview en la propia fuente, catálogo curado
+    de ~65 Google Fonts en src/lib/google-fonts.ts) en /admin → Configuración →
+    Tipografía. FontStyle (server, como ThemeStyle) carga la fuente desde Google
+    Fonts y sobreescribe --font-display/--font-body en el scope .dulce-theme.
+    Se superó la limitación de next/font cargando vía <link> validado (solo
+    familias del catálogo, sin CSS arbitrario).
 ```
 
 #### Consideraciones (cumplidas)

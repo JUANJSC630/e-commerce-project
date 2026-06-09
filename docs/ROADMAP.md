@@ -518,7 +518,7 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
 ---
 
-### ⏳ Bloque 9.9 — Gestión de medios (imágenes) unificada
+### ✅ Bloque 9.9 — Gestión de medios (imágenes) unificada
 
 > **Objetivo**: una experiencia de imágenes consistente, intuitiva y eficiente en
 > TODO el admin — subir, reemplazar, reutilizar y limpiar — sin imágenes dentro
@@ -567,19 +567,21 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     Se conservan solo placeholders genéricos (placeholder.svg/.jpg, -logo, -user).
     (Nota: filas ya existentes en DB que apuntaban a esas rutas mostrarán el
     placeholder; re-subir desde el admin o re-seed las normaliza)
+[x] Biblioteca de medios: lista las imágenes ya subidas al CDN para reutilizarlas
+    sin volver a subir. API GET /api/admin/media (protegida; UTApi.listFiles +
+    URL pública construida desde el appId del token) + src/lib/media-library.ts;
+    modal MediaLibraryModal (grid de miniaturas) abierto desde el botón "Elegir
+    de la biblioteca" en el dropzone del ImageUploadField → al elegir, set por onChange
 ```
 
-#### Pendiente / mejoras (para abordar luego)
-
-```
-[ ] Biblioteca de medios: un selector que liste imágenes ya subidas para reutilizarlas
-    sin volver a subir (modal "Elegir de la biblioteca | Subir nueva")
-```
-
-> **Nota**: el `ImageUploadField` muestra el dropzone solo cuando no hay imagen; si
-> ves campos "Imagen (URL)" de texto, es una vista previa al cambio de 9.8 — el editor
-> ya usa el uploader. La biblioteca de medios + limpieza de huérfanas son el mayor valor
-> pendiente aquí.
+> **Bloque 9.9 COMPLETO.** Experiencia de imágenes unificada en todo el admin:
+> subir (dropzone + progreso + validación por slot), reutilizar (biblioteca),
+> reemplazar/eliminar con limpieza de huérfanas en el CDN, alt text por imagen,
+> reordenar por drag & drop, y repo sin imágenes de contenido.
+>
+> **Mejoras opcionales futuras** (no bloqueantes): biblioteca con buscador/
+> paginación y borrado desde el propio modal; alt text también para el logo;
+> reorder con drag & drop en la lista de categorías del admin (hoy campo `order`).
 
 ---
 

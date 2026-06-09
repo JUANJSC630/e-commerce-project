@@ -2,10 +2,11 @@
 
 import Image from "next/image"
 import { useState } from "react"
-import { X } from "lucide-react"
+import { X, Images } from "lucide-react"
 import { toast } from "sonner"
 import { UploadDropzone } from "@/lib/uploadthing"
 import type { UploadRouter } from "@/app/api/uploadthing/core"
+import { MediaLibraryModal } from "@/components/admin/media/media-library-modal"
 
 const PLACEHOLDER = "/placeholder.svg"
 
@@ -117,6 +118,7 @@ export function ImageUploadField({
   const resolvedPreview = previewClassName ?? cfg.previewClassName
 
   const [progress, setProgress] = useState<number | null>(null)
+  const [libraryOpen, setLibraryOpen] = useState(false)
   const hasImage = Boolean(value) && value !== PLACEHOLDER && value !== emptyValue
 
   if (hasImage) {
@@ -182,8 +184,23 @@ export function ImageUploadField({
           <p className="text-xs text-slate-400">Subiendo… {progress}%</p>
         </div>
       ) : (
-        <p className="text-xs text-slate-400">{cfg.hint}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-slate-400">{cfg.hint}</p>
+          <button
+            type="button"
+            onClick={() => setLibraryOpen(true)}
+            className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+          >
+            <Images className="h-3.5 w-3.5" />
+            Elegir de la biblioteca
+          </button>
+        </div>
       )}
+      <MediaLibraryModal
+        open={libraryOpen}
+        onClose={() => setLibraryOpen(false)}
+        onSelect={(url) => onChange(url)}
+      />
     </div>
   )
 }

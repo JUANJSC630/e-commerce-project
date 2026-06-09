@@ -184,7 +184,7 @@ export function ImageUploadField({
           <p className="text-xs text-slate-400">Subiendo… {progress}%</p>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col items-start gap-1">
           <p className="text-xs text-slate-400">{cfg.hint}</p>
           <button
             type="button"

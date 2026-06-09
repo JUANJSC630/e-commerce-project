@@ -145,8 +145,8 @@ export function AdminSidebar() {
         <SidebarContent />
       </aside>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 bg-white border-r border-slate-200 min-h-screen">
+      {/* Desktop sidebar — sticky so it stays in view while content scrolls. */}
+      <aside className="hidden md:flex flex-col w-64 shrink-0 bg-white border-r border-slate-200 sticky top-0 h-screen overflow-y-auto">
         <SidebarContent />
       </aside>
     </>

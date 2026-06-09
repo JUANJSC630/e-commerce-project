@@ -250,7 +250,7 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
             }`}
           >
             <DragHandle {...categorySort.handleProps} />
-            <div className="w-24 shrink-0">
+            <div className="w-44 shrink-0">
               <span className="block text-xs font-medium text-slate-600 mb-1">Imagen</span>
               <ImageUploadField
                 slot="category"
@@ -264,7 +264,7 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
                   })
                 }
                 emptyValue=""
-                previewClassName="w-24 aspect-square"
+                previewClassName="w-28 aspect-square"
               />
             </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">

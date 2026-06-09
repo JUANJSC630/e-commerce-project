@@ -171,7 +171,12 @@ export function ImageUploadField({
           setProgress(null)
           toast.error(error.message || "Error al subir la imagen")
         }}
-        className="ut-button:bg-indigo-600 ut-button:ut-readying:bg-indigo-600/60 ut-label:text-indigo-600 ut-allowed-content:text-slate-400 border-slate-300 py-6"
+        content={{
+          label: "Arrastra o haz clic",
+          allowedContent: " ",
+          button: ({ ready }) => (ready ? "Subir" : "…"),
+        }}
+        className="ut-button:bg-indigo-600 ut-button:ut-readying:bg-indigo-600/60 ut-button:h-9 ut-button:px-4 ut-button:text-sm ut-label:text-indigo-600 ut-label:text-sm ut-label:text-center ut-allowed-content:hidden ut-upload-icon:w-10 border-slate-300 px-2 py-5"
       />
       {progress !== null ? (
         <div className="space-y-1">

@@ -551,6 +551,11 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     25vw, card responsivo, detalle 50vw) + preview del admin ahora también por slot
 [x] Barra de progreso real en la subida (onUploadProgress) con porcentaje; límite
     de peso 4MB ya aplicado en el endpoint
+[x] Alt text por imagen: columna imageAlt en Product y Category (migración
+    add_image_alt) + imageAlt opcional en HeroBanner/FeaturedCategory (JSON).
+    Campo en los 4 editores (producto, categoría, banner, categoría destacada);
+    el storefront usa `imageAlt || name/title` en product-card, product-detail,
+    hero-section y categories-section (antes alt="" en hero/categorías)
 ```
 
 #### Pendiente / mejoras (para abordar luego)
@@ -558,8 +563,6 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 ```
 [ ] Biblioteca de medios: un selector que liste imágenes ya subidas para reutilizarlas
     sin volver a subir (modal "Elegir de la biblioteca | Subir nueva")
-[ ] Alt text por imagen (campo en el editor) para accesibilidad y SEO; usarlo en
-    next/image alt en hero/categorías/productos
 [ ] Reordenar banners/categorías por drag & drop (afecta también al editor del inicio)
 [ ] Quitar de /public las imágenes demo y mover los defaults a seeds/placeholder neutro
     para que el repo no contenga imágenes de contenido

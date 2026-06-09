@@ -11,6 +11,7 @@ export interface CategoryFormData {
   slug: string
   description: string | null
   image: string | null
+  imageAlt: string | null
   metaTitle: string | null
   metaDescription: string | null
   order: number
@@ -35,6 +36,7 @@ export function CategoryForm({ category }: { category?: CategoryFormData }) {
     slug: category?.slug ?? "",
     description: category?.description ?? "",
     image: category?.image ?? "",
+    imageAlt: category?.imageAlt ?? "",
     metaTitle: category?.metaTitle ?? "",
     metaDescription: category?.metaDescription ?? "",
     order: category?.order?.toString() ?? "0",
@@ -63,6 +65,7 @@ export function CategoryForm({ category }: { category?: CategoryFormData }) {
       slug: form.slug.trim(),
       description: form.description.trim() || null,
       image: form.image.trim() || null,
+      imageAlt: form.imageAlt.trim() || null,
       metaTitle: form.metaTitle.trim() || null,
       metaDescription: form.metaDescription.trim() || null,
       order: parseInt(form.order, 10) || 0,
@@ -131,6 +134,16 @@ export function CategoryForm({ category }: { category?: CategoryFormData }) {
               slot="category"
               value={form.image}
               onChange={(url) => setField("image", url)}
+            />
+          </Field>
+
+          <Field label="Texto alternativo de la imagen (alt)">
+            <input
+              type="text"
+              value={form.imageAlt}
+              onChange={(e) => setField("imageAlt", e.target.value)}
+              placeholder="Descripción de la imagen (vacío = usar el nombre de la categoría)"
+              className={inputClass}
             />
           </Field>
 

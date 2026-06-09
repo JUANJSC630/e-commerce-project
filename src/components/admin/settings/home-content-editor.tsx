@@ -136,6 +136,16 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
                 }
                 placeholder="/products"
               />
+              <Field
+                label="Alt de la imagen"
+                value={banner.imageAlt ?? ""}
+                onChange={(v) =>
+                  patch({
+                    heroBanners: heroBanners.map((b, j) => (j === i ? { ...b, imageAlt: v } : b)),
+                  })
+                }
+                placeholder="Vacío = usar el título"
+              />
             </div>
             <RemoveButton
               onClick={() => patch({ heroBanners: heroBanners.filter((_, j) => j !== i) })}
@@ -200,6 +210,18 @@ export function HomeContentEditor({ data }: { data: HomeContent }) {
                   })
                 }
                 placeholder="/category/babies"
+              />
+              <Field
+                label="Alt de la imagen"
+                value={cat.imageAlt ?? ""}
+                onChange={(v) =>
+                  patch({
+                    featuredCategories: featuredCategories.map((c, j) =>
+                      j === i ? { ...c, imageAlt: v } : c,
+                    ),
+                  })
+                }
+                placeholder="Vacío = usar el nombre"
               />
             </div>
             <RemoveButton

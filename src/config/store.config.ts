@@ -17,6 +17,8 @@ export interface HeroBanner {
   title: string
   description: string
   image: string
+  /** Alt text for the banner image (a11y/SEO). Falls back to the title when empty. */
+  imageAlt?: string
   buttonText: string
   buttonLink: string
 }
@@ -24,6 +26,8 @@ export interface HeroBanner {
 export interface FeaturedCategory {
   name: string
   image: string
+  /** Alt text for the category image (a11y/SEO). Falls back to the name when empty. */
+  imageAlt?: string
   href: string
 }
 

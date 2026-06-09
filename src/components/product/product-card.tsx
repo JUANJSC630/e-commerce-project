@@ -43,7 +43,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         )}
         <Image
           src={product.image || "/placeholder.svg"}
-          alt={product.name}
+          alt={product.imageAlt || product.name}
           fill
           priority={priority}
           className={cn(

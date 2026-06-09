@@ -26,6 +26,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
     price: product?.price?.toString() ?? "",
     originalPrice: product?.originalPrice?.toString() ?? "",
     image: product?.image ?? "/placeholder.svg",
+    imageAlt: product?.imageAlt ?? "",
     categoryId: product?.categoryId ?? categories[0]?.id ?? "",
     description: product?.description ?? "",
     stock: product?.stock?.toString() ?? "0",
@@ -55,6 +56,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
       price: parseFloat(form.price),
       originalPrice: form.originalPrice ? parseFloat(form.originalPrice) : null,
       image: form.image.trim() || "/placeholder.svg",
+      imageAlt: form.imageAlt.trim() || null,
       categoryId: form.categoryId || null,
       // Legacy non-null string column, kept in sync with the chosen category.
       category: selectedCategory?.slug ?? "",
@@ -164,6 +166,16 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 
           <Field label="Imagen del producto">
             <ImageUploadField slot="product" value={form.image} onChange={(url) => set("image", url)} />
+          </Field>
+
+          <Field label="Texto alternativo de la imagen (alt)">
+            <input
+              type="text"
+              value={form.imageAlt}
+              onChange={(e) => set("imageAlt", e.target.value)}
+              placeholder="Descripción de la imagen (vacío = usar el nombre del producto)"
+              className={inputClass}
+            />
           </Field>
 
           <Field label="Descripción">

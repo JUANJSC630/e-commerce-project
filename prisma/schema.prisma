@@ -70,6 +70,7 @@ model Category {
   slug            String    @unique
   description     String?
   image           String?
+  imageAlt        String?
   metaTitle       String?
   metaDescription String?
   order           Int       @default(0)
@@ -85,6 +86,7 @@ model Product {
   price         Float
   originalPrice Float?
   image         String      @default("/placeholder.svg")
+  imageAlt      String?
   category      String
   categoryId    String?
   categoryRef   Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)

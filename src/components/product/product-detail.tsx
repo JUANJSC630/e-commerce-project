@@ -109,7 +109,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
             )}
             <Image
               src={product.image || "/placeholder.svg"}
-              alt={product.name}
+              alt={product.imageAlt || product.name}
               fill
               priority
               className="object-cover"

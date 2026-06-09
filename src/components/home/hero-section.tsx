@@ -38,7 +38,7 @@ export function HeroSection({ banners, eyebrow, viewAllHref, viewAllLabel }: Her
           >
             <Image
               src={b.image}
-              alt=""
+              alt={b.imageAlt || b.title}
               fill
               className="object-cover"
               priority={i === 0}

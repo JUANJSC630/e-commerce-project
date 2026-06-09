@@ -21,6 +21,7 @@ export interface Category {
   slug: string
   description: string | null
   image: string | null
+  imageAlt: string | null
   metaTitle: string | null
   metaDescription: string | null
 }
@@ -31,6 +32,7 @@ const SELECT = {
   slug: true,
   description: true,
   image: true,
+  imageAlt: true,
   metaTitle: true,
   metaDescription: true,
 } satisfies Prisma.CategorySelect
@@ -102,6 +104,7 @@ export interface CategoryInput {
   slug: string
   description?: string | null
   image?: string | null
+  imageAlt?: string | null
   metaTitle?: string | null
   metaDescription?: string | null
   order?: number
@@ -144,6 +147,7 @@ function normalize(input: CategoryInput) {
     slug,
     description: input.description?.trim() || null,
     image: input.image?.trim() || null,
+    imageAlt: input.imageAlt?.trim() || null,
     metaTitle: input.metaTitle?.trim() || null,
     metaDescription: input.metaDescription?.trim() || null,
     order: Number.isFinite(input.order) ? Number(input.order) : 0,

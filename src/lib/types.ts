@@ -3,6 +3,8 @@ export interface Product {
   name: string
   price: number
   image: string
+  /** Alt text for the image (a11y/SEO). Falls back to the product name when empty. */
+  imageAlt?: string
   originalPrice?: number
   rating?: number
   reviewCount?: number

@@ -508,6 +508,19 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 [x] (theme/typography se cubren en Bloque 9.7, no aquí)
 ```
 
+**Mejoras del editor de inicio (posteriores):** ✅
+
+```
+[x] Drag & drop para reordenar banners y categorías destacadas (ver Bloque 9.9)
+[x] Selector de íconos buscable para la "Tira de confianza": IconPicker (combobox
+    con buscador + grid de previews) sobre TODA la librería lucide (1594 íconos),
+    en vez de escribir el nombre a mano. src/lib/lucide-icons.ts es la fuente única
+    (registro `icons`, nombres PascalCase) usada por el picker y por el storefront;
+    trust-bar ahora resuelve cualquier ícono por nombre (antes mapa fijo de 4 → Package)
+[x] Layout del uploader corregido en columnas angostas + labels del dropzone en
+    español y compactas; sidebar del admin sticky para que se mantenga visible
+```
+
 > **Arquitectura de imágenes**: ninguna imagen del contenido administrable se gestiona
 > dentro del repo. El admin sube a UploadThing (CDN) y la DB guarda la URL `*.ufs.sh`.
 > Las imágenes demo en `/public` quedan solo como defaults iniciales y pueden borrarse

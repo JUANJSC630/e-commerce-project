@@ -10,7 +10,7 @@ import {
   recordPaymentInitiated,
 } from "@/lib/orders"
 import { getPaymentProvider, isOnsiteProvider } from "@/lib/payments"
-import { logPaymentEvent } from "@/lib/payments/audit"
+import { logPaymentEvent, paymentErrorPayload } from "@/lib/payments/audit"
 import type { PaymentResult } from "@/lib/payments"
 
 /**
@@ -254,7 +254,7 @@ export async function POST(request: Request) {
       provider: provider.name,
       event: `initiate.${body.method}.error`,
       status: "error",
-      rawPayload: { message: err instanceof Error ? err.message : String(err) },
+      rawPayload: paymentErrorPayload(err),
     })
     return NextResponse.json(
       { error: "No se pudo procesar el pago. Intenta de nuevo." },

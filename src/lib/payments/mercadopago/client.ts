@@ -17,9 +17,13 @@ export function mpAccessToken(): string {
   const token = process.env.MERCADOPAGO_ACCESS_TOKEN
   if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN no está configurado")
   // Never let production credentials charge real cards from a dev machine.
-  if (process.env.NODE_ENV !== "production" && token.startsWith("APP_USR-")) {
+  // Exception: apps created under a TEST seller account only issue APP_USR-
+  // tokens (their whole universe is sandbox) — required for PSE testing.
+  const allowProdToken = process.env.MERCADOPAGO_ALLOW_PROD_TOKEN_IN_DEV === "true"
+  if (process.env.NODE_ENV !== "production" && token.startsWith("APP_USR-") && !allowProdToken) {
     throw new Error(
-      "MERCADOPAGO_ACCESS_TOKEN es de PRODUCCIÓN — usa credenciales TEST- en desarrollo",
+      "MERCADOPAGO_ACCESS_TOKEN es de PRODUCCIÓN — usa credenciales TEST- en desarrollo, " +
+        "o MERCADOPAGO_ALLOW_PROD_TOKEN_IN_DEV=true si son de una cuenta VENDEDOR de prueba",
     )
   }
   return token

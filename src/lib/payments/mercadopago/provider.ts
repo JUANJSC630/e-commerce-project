@@ -16,8 +16,22 @@ function appUrl(): string {
   return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
 }
 
-function webhookUrl(): string {
-  return `${appUrl()}/api/payments/webhook/mercadopago`
+/**
+ * Per-payment notification_url, only when MP can actually reach it. MP
+ * rejects the whole payment (error 4020) if the URL isn't public https, so
+ * on localhost it's omitted — the panel-configured webhook and the PSE
+ * return re-verification still settle orders.
+ */
+function notificationUrl(): Record<string, string> {
+  let host: URL
+  try {
+    host = new URL(appUrl())
+  } catch {
+    return {}
+  }
+  const isLocal = host.hostname === "localhost" || host.hostname === "127.0.0.1"
+  if (host.protocol !== "https:" || isLocal) return {}
+  return { notification_url: `${appUrl()}/api/payments/webhook/mercadopago` }
 }
 
 interface MpPaymentMethod {
@@ -64,7 +78,7 @@ export const mercadoPagoProvider: OnsitePaymentProvider = {
           },
         },
         external_reference: input.orderId,
-        notification_url: webhookUrl(),
+        ...notificationUrl(),
       },
     })
     return toPaymentResult(payment)
@@ -98,7 +112,7 @@ export const mercadoPagoProvider: OnsitePaymentProvider = {
         transaction_details: { financial_institution: input.financialInstitution },
         callback_url: input.callbackUrl,
         external_reference: input.orderId,
-        notification_url: webhookUrl(),
+        ...notificationUrl(),
       },
     })
     return toPaymentResult(payment)

@@ -30,3 +30,19 @@ export async function logPaymentEvent(entry: {
     console.error("PaymentLog write failed:", err)
   }
 }
+
+/**
+ * Serializes a gateway error for the audit trail. Gateway API errors carry
+ * the HTTP status and response body — without them a logged failure is
+ * undiagnosable (a bare "MercadoPago API 400" says nothing).
+ */
+export function paymentErrorPayload(err: unknown): Record<string, unknown> {
+  if (err && typeof err === "object" && "status" in err && "body" in err) {
+    return {
+      message: err instanceof Error ? err.message : String(err),
+      gatewayStatus: (err as { status: unknown }).status,
+      gatewayBody: (err as { body: unknown }).body,
+    }
+  }
+  return { message: err instanceof Error ? err.message : String(err) }
+}

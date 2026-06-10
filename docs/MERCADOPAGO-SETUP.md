@@ -90,16 +90,22 @@ Para probar el flujo completo como lo vería un cliente:
 
 ## Fase 5 — Probar en sandbox
 
-**Antes de empezar:**
+**Qué funciona con qué credenciales** (verificado contra el API real):
 
-1. `yarn verify:payments` → 15/15 (sanity check sin tocar MP real)
-2. Arranca el túnel: `ngrok http 3000` → copia la URL `https://xxxx.ngrok-free.app`
-3. En `.env.local` pon `NEXT_PUBLIC_APP_URL=https://xxxx.ngrok-free.app`
-   (PSE y `notification_url` necesitan URL pública; para solo tarjetas basta localhost)
-4. En el panel MP → Webhooks → modo prueba: apunta a
-   `https://xxxx.ngrok-free.app/api/payments/webhook/mercadopago` y verifica que
-   `MERCADOPAGO_WEBHOOK_SECRET` sea la clave vigente del panel
-5. **Reinicia `yarn dev`** — las variables `NEXT_PUBLIC_*` se congelan al arrancar
+| Flujo    | Credenciales TEST- de tu cuenta real | Credenciales de la app del vendedor de prueba |
+| -------- | ------------------------------------ | --------------------------------------------- |
+| Tarjetas | ✅ Funciona directo en localhost     | ✅                                            |
+| PSE      | ❌ `Invalid users involved` (2034)   | ✅ Única forma de probarlo                    |
+
+> En localhost el código **omite `notification_url`** automáticamente (MP
+> rechaza URLs no públicas con error 4020 — rompería todos los pagos). El
+> resultado de tarjeta llega síncrono y PSE se verifica al volver del banco
+> (`pse-return` consulta el API), así que puedes probar sin ngrok. El webhook
+> solo hace falta para validar la entrega asíncrona (usa ngrok +
+> `NEXT_PUBLIC_APP_URL` con la URL del túnel + webhook del panel, y reinicia
+> `yarn dev`).
+
+### 5a — Tarjetas (con tus credenciales TEST-, sin ngrok)
 
 Haz una compra en `/checkout-flow`. En `/pago/[orderId]` usa las tarjetas
 oficiales de prueba:
@@ -124,24 +130,49 @@ El **resultado lo controla el nombre del titular**:
 | `LOCK`  | Tarjeta bloqueada           |
 | `DUPL`  | Pago duplicado              |
 
-Documento: `123456789` · Email: usa el del **comprador de prueba**
-(`TESTUSER...@testuser.com`) o cualquiera distinto al de tu cuenta MP — si
-coincide con el email del vendedor, MP rechaza el pago.
+Documento: `123456789` · Email: cualquiera que **no** sea el de tu cuenta MP
+(ej. `comprador_prueba@example.com`). No uses el email de una cuenta de prueba
+del panel con estas credenciales — MP lo rechaza (`Payer email forbidden`).
 
-**Para PSE**: selecciona cualquier banco; en sandbox MP muestra un banco
-ficticio donde eliges aprobar/rechazar. Al volver, el pedido queda "Pago en
-proceso" hasta que el webhook (vía ngrok) lo asiente — verifica en la terminal
-de ngrok que llegue el POST a `/api/payments/webhook/mercadopago`.
+### 5b — PSE (requiere credenciales del vendedor de prueba)
+
+PSE en sandbox **no funciona** con las credenciales TEST- de tu cuenta real
+(error 2034 `Invalid users involved`, sin importar el email). El camino:
+
+1. En incógnito, inicia sesión en
+   [mercadopago.com.co](https://www.mercadopago.com.co) con la cuenta
+   **vendedor de prueba** (usuario `TESTUSER...` + contraseña del panel)
+2. Entra a su panel de developers y **crea una aplicación** ahí
+3. Copia sus credenciales — son `APP_USR-...` (las cuentas de prueba no tienen
+   pestaña de credenciales TEST: todo su universo ya es sandbox)
+4. En `.env.local`:
+
+```bash
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-...del-vendedor-de-prueba
+NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=APP_USR-...del-vendedor-de-prueba
+# Sin esto el server rechaza tokens APP_USR- en dev (guard anti-cobros reales):
+MERCADOPAGO_ALLOW_PROD_TOKEN_IN_DEV=true
+```
+
+5. Reinicia `yarn dev`, compra y en PSE usa el email del **comprador de
+   prueba**; MP muestra un banco ficticio donde apruebas/rechazas
+6. Al volver, `pse-return` verifica contra el API y asienta el pedido (con
+   ngrok + webhook del panel del vendedor de prueba validas además la vía
+   asíncrona)
+
+> ⚠️ Al terminar, **revierte** a tus credenciales TEST- y elimina
+> `MERCADOPAGO_ALLOW_PROD_TOKEN_IN_DEV` del `.env.local`.
 
 **Qué verificar en cada prueba:**
 
 - [ ] `APRO` → redirige a `/order-success`, pedido **Pagado** en `/admin/pedidos`
 - [ ] `FUND` → mensaje "La tarjeta no tiene fondos suficientes", el pedido sigue
       pendiente y se puede reintentar
-- [ ] PSE → lleva al banco de prueba de MP; al volver el estado queda "Pago en
-      proceso" hasta que llegue el webhook
+- [ ] PSE (con credenciales del vendedor de prueba) → banco ficticio de MP; al
+      volver, `pse-return` asienta el pedido o queda "Pago en proceso"
 - [ ] El detalle del pedido en admin muestra el estado de pago correcto
-- [ ] La tabla `PaymentLog` registra cada evento (gateway y webhook)
+- [ ] La tabla `PaymentLog` registra cada evento (los errores de gateway
+      incluyen `gatewayStatus` y `gatewayBody` con la causa exacta)
 
 ---
 

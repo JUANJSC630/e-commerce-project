@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-06 | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-10 | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -611,25 +611,862 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
 ---
 
-### ⏳ Bloque 10 — Pagos reales con MercadoPago
+### ⏳ Bloque 10 — Pagos reales (MercadoPago + arquitectura multi-proveedor)
 
-> **Objetivo**: El cliente paga de verdad. El pedido se confirma solo cuando el pago es exitoso.
-> **Prerequisito**: Bloque 9 completado (pedidos reales guardados en DB).
+> **Objetivo**: El cliente paga de verdad. El pedido se confirma **solo** cuando el
+> pago es exitoso. La arquitectura soporta múltiples proveedores de pago (MP ahora,
+> Wompi y Stripe a futuro) y es trivialmente configurable por cliente/despliegue.
+>
+> **Contexto de mercado**: El proyecto está orientado a Colombia. MercadoPago es el
+> proveedor principal por penetración local y soporte de PSE + Efecty. Wompi se suma
+> como segundo proveedor colombiano (Nequi, Bancolombia, BNPL). Stripe se agrega para
+> clientes internacionales o replicaciones del repo fuera de Colombia.
+>
+> **Prerequisito**: Bloque 9 completo (pedidos reales en DB, `createOrder()` transaccional).
+>
+> **Referencia oficial**:
+> - MercadoPago Checkout API: https://www.mercadopago.com.co/developers/es/docs/checkout-api-payments/overview
+> - MercadoPago Webhooks: https://www.mercadopago.com.co/developers/es/docs/your-integrations/notifications/webhooks
+> - MercadoPago PSE: https://www.mercadopago.com.co/developers/es/docs/checkout-api-payments/integration-configuration/integrate-pse-avanza
+
+---
+
+#### Arquitectura multi-proveedor (DEBE hacerse antes de implementar cualquier proveedor)
+
+El objetivo es que cambiar de proveedor de pago (o activar múltiples) sea cuestión de
+variables de entorno, sin tocar lógica de negocio. Cada proveedor implementa la misma
+interfaz; el resto del sistema solo habla con la interfaz.
 
 ```
-[ ] Crear cuenta de MercadoPago y obtener credenciales
-[ ] Agregar MERCADOPAGO_ACCESS_TOKEN y NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY al .env.local
-[ ] POST /api/payments/create-preference → crea preferencia de pago en MercadoPago
-[ ] Webhook /api/payments/webhook → recibe notificación de pago exitoso/fallido
-    - Pago exitoso → actualiza orders.payment_status = 'paid', orders.status = 'confirmed'
-    - Pago fallido → actualiza orders.payment_status = 'failed'
-[ ] Implementar MercadoPago Checkout Bricks en payment-form.tsx (reemplaza form manual)
-[ ] Página de retorno de MercadoPago → /order-success/[id] o /payment-failed
+src/lib/payments/
+├── types.ts            ← IPaymentProvider, PaymentIntent, PaymentResult, WebhookEvent
+├── index.ts            ← getPaymentProvider() — factory que lee PAYMENT_PROVIDER del env
+├── mercadopago/
+│   ├── client.ts       ← inicializa MercadoPago con Access Token
+│   ├── provider.ts     ← implementa IPaymentProvider
+│   ├── webhook.ts      ← verifica firma HMAC-SHA256, parsea evento
+│   └── mapper.ts       ← mapea status MP → PaymentResult.status
+├── wompi/              ← estructura idéntica (Bloque 10.5)
+└── stripe/             ← estructura idéntica (Bloque 10.6)
+    ├── client.ts
+    ├── provider.ts
+    ├── webhook.ts
+    └── mapper.ts
+```
 
-[ ] Flujo protegido contra doble cobro:
-    - Verificar idempotency key en cada creación de preferencia
-    - El pedido se crea en estado 'pending' antes del pago
-    - Solo pasa a 'confirmed' con confirmación de MercadoPago
+**Interfaz `IPaymentProvider` (`src/lib/payments/types.ts`):**
+
+```typescript
+export type PaymentStatus = 'approved' | 'pending' | 'rejected' | 'error';
+
+export interface CreateCardPaymentInput {
+  orderId: string;
+  orderNumber: string;
+  amountCents: number;   // monto en centavos COP
+  token: string;         // token de tarjeta del SDK del proveedor
+  installments: number;
+  paymentMethodId: string;
+  issuerId?: string;
+  payer: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    identificationType: string;   // CC, CE, NIT, PAS
+    identificationNumber: string;
+  };
+  idempotencyKey: string; // UUID v4 generado en checkout, guardado en DB
+}
+
+export interface CreatePsePaymentInput {
+  orderId: string;
+  orderNumber: string;
+  amountCents: number;
+  callbackUrl: string;  // URL a la que regresa el usuario tras el banco
+  financialInstitution: string; // ID del banco (obtenido de /api/payments/banks)
+  entityType: 'individual' | 'association';
+  payer: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    identificationType: string;
+    identificationNumber: string;
+    phone: { areaCode: string; number: string };
+    address: { street: string; city: string; state: string; zipCode: string };
+  };
+  idempotencyKey: string;
+}
+
+export interface PaymentResult {
+  providerId: string;       // ID del pago en el sistema del proveedor
+  status: PaymentStatus;
+  statusDetail: string;     // razón de rechazo o estado detallado
+  redirectUrl?: string;     // PSE: URL del banco al que redirigir
+  rawResponse: unknown;     // respuesta completa del proveedor (para auditoría)
+}
+
+export interface WebhookEvent {
+  type: 'payment.approved' | 'payment.rejected' | 'payment.pending' | 'unknown';
+  paymentProviderId: string;
+  orderId?: string;
+  rawPayload: unknown;
+}
+
+export interface IPaymentProvider {
+  name: string;
+  createCardPayment(input: CreateCardPaymentInput): Promise<PaymentResult>;
+  createPsePayment(input: CreatePsePaymentInput): Promise<PaymentResult>;
+  getPaymentStatus(providerId: string): Promise<PaymentResult>;
+  parseWebhook(req: Request, rawBody: string): Promise<WebhookEvent>;
+  getBanks(): Promise<Array<{ id: string; name: string }>>;
+}
+```
+
+**Factory `src/lib/payments/index.ts`:**
+
+```typescript
+import { MercadoPagoProvider } from './mercadopago/provider';
+import { WompiProvider }      from './wompi/provider';
+import { StripeProvider }      from './stripe/provider';
+
+export function getPaymentProvider(): IPaymentProvider {
+  const provider = process.env.PAYMENT_PROVIDER ?? 'mercadopago';
+  switch (provider) {
+    case 'mercadopago': return new MercadoPagoProvider();
+    case 'wompi':       return new WompiProvider();
+    case 'stripe':      return new StripeProvider();
+    default: throw new Error(`Unknown payment provider: ${provider}`);
+  }
+}
+```
+
+---
+
+#### Variables de entorno — configuración por cliente
+
+Todas las variables de pago deben vivir en `.env.local` (nunca en el repo).
+El archivo `.env.local.example` documenta todas las necesarias con comentarios.
+
+```bash
+# ─── Selector de proveedor activo ───────────────────────────────────────────
+# Valores: 'mercadopago' | 'wompi' | 'stripe'
+PAYMENT_PROVIDER=mercadopago
+
+# ─── MercadoPago ────────────────────────────────────────────────────────────
+# Obtener en: https://www.mercadopago.com.co/developers/panel/app
+# Usar credenciales de TEST para sandbox, PROD para producción
+MERCADOPAGO_ACCESS_TOKEN=TEST-xxxx          # llave privada (solo servidor)
+NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=TEST-xxxx # llave pública (SDK frontend)
+MERCADOPAGO_WEBHOOK_SECRET=xxxx             # clave secreta del webhook (panel → Webhooks)
+
+# ─── Wompi (Bloque 10.5 — completar cuando se active) ───────────────────────
+# Obtener en: https://comercios.wompi.co
+# Sandbox: claves que empiezan con pub_test_ / prv_test_
+# Producción: claves que empiezan con pub_prod_ / prv_prod_
+WOMPI_PUBLIC_KEY=pub_test_xxxx              # llave pública (SDK frontend / widget)
+WOMPI_PRIVATE_KEY=prv_test_xxxx            # llave privada (solo servidor)
+WOMPI_EVENTS_SECRET=xxxx                   # secreto de integridad de eventos webhook
+# WOMPI_BASE_URL se infiere del prefijo de las llaves (test vs prod) en el client.ts
+
+# ─── Stripe (Bloque 10.6 — para clientes internacionales o fuera de Colombia) ─
+# Obtener en: https://dashboard.stripe.com/apikeys
+# Sandbox: llaves que empiezan con sk_test_ / pk_test_
+# Producción: llaves que empiezan con sk_live_ / pk_live_
+STRIPE_SECRET_KEY=sk_test_xxxx              # llave privada (solo servidor)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxxx # llave pública (Stripe.js frontend)
+STRIPE_WEBHOOK_SECRET=whsec_xxxx           # secreto del webhook (stripe listen → obtener)
+
+# ─── URLs de retorno (mismo para todos los proveedores) ─────────────────────
+NEXT_PUBLIC_APP_URL=https://tudominio.co    # usado para construir callback/return URLs
+```
+
+**Cómo cambiar de proveedor al replicar para otro cliente:**
+1. Copiar `.env.local.example` → `.env.local`
+2. Cambiar `PAYMENT_PROVIDER=wompi` | `stripe` | `mercadopago`
+3. Llenar solo las claves del proveedor elegido
+4. El resto del código no cambia
+
+---
+
+#### Cambios en el schema de Prisma
+
+```prisma
+model Order {
+  // ... campos existentes ...
+
+  // ── Pagos ────────────────────────────────────────────────────────────
+  paymentProvider   String?   // 'mercadopago' | 'wompi' | 'stripe'
+  paymentProviderId String?   // ID del pago en el sistema del proveedor
+  paymentMethod     String?   // 'card' | 'pse' | 'nequi' | 'bancolombia'
+  paymentStatus     PaymentStatus @default(PENDING)
+  idempotencyKey    String?   @unique // UUID v4 generado en checkout
+
+  // ── PSE (redirect async) ─────────────────────────────────────────────
+  pseRedirectUrl    String?   // URL del banco (MP: external_resource_url)
+}
+
+enum PaymentStatus {
+  PENDING     // pedido creado, pago no iniciado o en curso
+  PROCESSING  // cliente fue redirigido al banco (PSE)
+  PAID        // pago confirmado por webhook o polling
+  FAILED      // pago rechazado
+  REFUNDED    // devolución procesada
+}
+```
+
+**Migración nueva:** `add_payment_fields_to_orders`
+- Agregar: `paymentProvider`, `paymentProviderId`, `paymentMethod`, `paymentStatus`
+  (enum con default PENDING), `idempotencyKey` (unique nullable), `pseRedirectUrl`
+- Migración aditiva — no rompe el checkout existente
+
+---
+
+#### Máquina de estados del pedido (Order state machine)
+
+```
+PENDING ──[cliente inicia pago]──► PROCESSING (PSE) o ──► se queda PENDING (tarjeta)
+   │                                     │
+   │                                     │ webhook: transfer completado
+   ▼                                     ▼
+PENDING ──[webhook: approved]──────────► PAID ──[admin envía]──► SHIPPED ──► DELIVERED
+   │
+   └──[webhook: rejected]──────────────► FAILED
+```
+
+**Reglas:**
+- El pedido se crea siempre en `PENDING` (createOrder existente no cambia)
+- `PAID` solo lo escribe el webhook handler — nunca el frontend
+- Si el webhook llega duplicado, verificar que no esté ya en `PAID` antes de reprocessar
+- Si `idempotencyKey` ya existe en DB con otro pedido, retornar 409 al frontend
+
+---
+
+#### Fase 10-A: MercadoPago — Tarjetas (CardForm)
+
+**Principio clave**: La tarjeta nunca toca el servidor — MercadoPago.js corre en el
+cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
+
+```
+[ ] Instalar SDK: npm install @mercadopago/sdk-js
+[ ] Crear src/lib/payments/mercadopago/client.ts
+    - Inicializa con MERCADOPAGO_ACCESS_TOKEN (server-side, usando 'mercadopago' npm pkg)
+    - npm install mercadopago (SDK de Node.js oficial)
+    - new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN! })
+
+[ ] Implementar MercadoPagoProvider.createCardPayment():
+    - POST https://api.mercadopago.com/v1/payments
+    - Header X-Idempotency-Key: {idempotencyKey} (OBLIGATORIO para evitar doble cobro)
+    - Body:
+      {
+        transaction_amount: amountCents / 100,  // MP trabaja en pesos, no centavos
+        token,                                   // token del CardForm
+        description: `Pedido ${orderNumber}`,
+        installments,
+        payment_method_id,
+        issuer_id,
+        payer: {
+          email,
+          first_name,
+          last_name,
+          identification: { type, number }
+        },
+        external_reference: orderId,             // para cruzar con webhook
+        notification_url: `${APP_URL}/api/payments/webhook/mercadopago`
+      }
+    - Mapear respuesta: status "approved"→PAID, "pending"→PENDING, "rejected"→FAILED
+    - Guardar en Order: paymentProviderId, paymentStatus, paymentMethod='card'
+
+[ ] Implementar CardForm en payment-form.tsx (reemplaza el form manual actual):
+    - Cargar @mercadopago/sdk-js dinámicamente (import() en useEffect, no en build)
+    - Inicializar: new MercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!)
+    - Usar mp.cardForm() con callbacks: onFormMounted, onSubmit, onError
+    - onSubmit: llamar cardForm.getCardFormData() → obtiene token, paymentMethodId,
+      issuerId, installments — enviar a POST /api/payments/initiate
+    - Nunca loguear ni enviar datos de tarjeta raw — solo el token
+    - Manejar errores de CardForm: mostrar mensajes amigables (fondos insuficientes,
+      tarjeta rechazada, etc.) sin exponer status_detail raw al cliente
+
+[ ] Crear POST /api/payments/initiate (server action o route handler):
+    - Recibir: orderId, token, installments, paymentMethodId, issuerId, payerInfo
+    - Validar que el orderId pertenece al usuario en sesión y está en PENDING
+    - Generar idempotencyKey = randomUUID() y guardarlo en Order antes de llamar al proveedor
+    - Llamar getPaymentProvider().createCardPayment(...)
+    - Si status === PAID: retornar { success: true, redirectTo: '/order-success/[id]' }
+    - Si status === PENDING: retornar { success: true, redirectTo: '/order-success/[id]' }
+      (el webhook confirmará después)
+    - Si status === FAILED: retornar { success: false, error: mensajeAmigable }
+    - Nunca retornar status_detail de MP al cliente (puede exponer razones de fraude)
+```
+
+---
+
+#### Fase 10-B: MercadoPago — PSE
+
+```
+[ ] Agregar endpoint GET /api/payments/banks?provider=mercadopago
+    - Llama GET https://api.mercadopago.com/v1/payment_methods con Access Token
+    - Filtra payment_method_id === 'pse', extrae financial_institutions[]
+    - Cachear la respuesta (revalidate: 3600) — la lista de bancos no cambia frecuente
+    - Retorna [{ id: "1009", name: "Banco de Bogotá" }, ...]
+
+[ ] Agregar tab/opción PSE en payment-form.tsx:
+    - Dropdown de bancos (cargado desde /api/payments/banks)
+    - Selector de tipo de persona: natural (CC/CE/PAS) o jurídica (NIT)
+    - Formulario completo de datos del pagador (requerido por MP):
+      firstName, lastName, identificationType, identificationNumber,
+      email, phone (areaCode 3 dígitos + number máx 7 dígitos),
+      address (street, city, state, zipCode 5 dígitos)
+
+[ ] Implementar MercadoPagoProvider.createPsePayment():
+    - POST https://api.mercadopago.com/v1/payments
+    - Body:
+      {
+        transaction_amount: amountCents / 100,
+        payment_method_id: "pse",
+        payer: {
+          entity_type: entityType === 'individual' ? 'individual' : 'association',
+          identification: { type, number },
+          first_name, last_name, email,
+          phone: { area_code: areaCode, number: phoneNumber },
+          address: { street_name, city, federal_unit, zip_code }
+        },
+        transaction_details: { financial_institution: bankId },
+        callback_url: `${APP_URL}/api/payments/pse-return?orderId=${orderId}`,
+        notification_url: `${APP_URL}/api/payments/webhook/mercadopago`,
+        external_reference: orderId
+      }
+    - Respuesta siempre: status "pending", status_detail "pending_waiting_transfer"
+    - Retornar external_resource_url (URL del banco donde el usuario completa el pago)
+    - Guardar en Order: paymentStatus=PROCESSING, pseRedirectUrl, paymentProviderId
+
+[ ] En /api/payments/initiate: detectar método PSE, llamar createPsePayment(),
+    retornar { success: true, redirectUrl: external_resource_url } — el frontend
+    redirige al banco con window.location.href = redirectUrl
+
+[ ] Crear GET /api/payments/pse-return:
+    - MP redirige aquí después del banco con ?collection_status=approved|rejected|pending
+    - Buscar el Order por orderId del query param
+    - Consultar estado real: getPaymentProvider().getPaymentStatus(paymentProviderId)
+    - Actualizar Order según resultado
+    - Redirigir a /order-success/[id] o /payment-failed/[id]
+    - IMPORTANTE: no confiar solo en collection_status del query param — siempre
+      verificar con el API de MP (puede manipularse en la URL)
+```
+
+---
+
+#### Fase 10-C: Webhook handler — MercadoPago
+
+```
+[ ] Crear POST /api/payments/webhook/mercadopago (route handler, no server action):
+    export const runtime = 'edge'; // opcional, para latencia mínima
+
+    Algoritmo completo:
+    1. Leer body raw como string (ANTES de parsear JSON — necesario para HMAC)
+    2. Verificar firma HMAC-SHA256:
+       a. Extraer header x-signature: "ts=1704106600&v1=abc123..."
+       b. Extraer header x-request-id
+       c. Extraer data.id del body (el ID del pago)
+       d. Construir template: "id:{data.id};request-id:{x-request-id};ts:{ts};"
+       e. HMAC = createHmac('sha256', MERCADOPAGO_WEBHOOK_SECRET).update(template).digest('hex')
+       f. Si HMAC !== v1 del header → retornar 401, loguear el intento
+    3. Retornar 200 INMEDIATAMENTE (MP requiere < 22s o reintenta)
+    4. Procesar en background (setImmediate / sin await en la respuesta):
+       a. Si type !== 'payment' → ignorar (puede ser merchant_order u otro)
+       b. Consultar estado real: GET https://api.mercadopago.com/v1/payments/{data.id}
+          (el webhook solo trae el ID — el estado real viene del GET)
+       c. Buscar Order por external_reference (= orderId guardado al crear el pago)
+       d. Si Order no existe o ya está en PAID → ignorar (idempotencia)
+       e. Según payment.status:
+          - "approved" → Order.paymentStatus=PAID, Order.status=CONFIRMED
+          - "rejected" → Order.paymentStatus=FAILED
+          - "pending"  → Order.paymentStatus=PENDING (sin cambio visible)
+       f. Disparar email transaccional según evento (Bloque 11)
+       g. Loguear resultado en tabla PaymentLog (ver esquema abajo)
+
+[ ] Tabla de auditoría PaymentLog (nueva migración):
+    model PaymentLog {
+      id          String   @id @default(cuid())
+      orderId     String
+      provider    String                          // 'mercadopago' | 'wompi' | 'stripe'
+      event       String                          // 'webhook.payment.approved', etc.
+      providerId  String?                         // ID del pago en el proveedor
+      status      String                          // status recibido
+      rawPayload  Json                            // payload completo para auditoría
+      createdAt   DateTime @default(now())
+      order       Order    @relation(fields: [orderId], references: [id])
+    }
+```
+
+---
+
+#### Fase 10-D: Seguridad y resiliencia
+
+```
+[ ] Protección contra doble cobro:
+    - idempotencyKey guardado en Order ANTES de llamar al proveedor
+    - Si la llamada al proveedor falla (timeout/5xx), el idempotencyKey ya está en DB
+    - Al reintentar: enviar el mismo idempotencyKey → MP devuelve el mismo pago
+    - Columna idempotencyKey es @unique en DB → cualquier duplicado lanza error 409
+
+[ ] Rate limiting en /api/payments/initiate:
+    - Máximo 5 intentos por orderId (evitar brute-force de CVV)
+    - Usar tabla PaymentAttempt o campo attemptCount en Order
+
+[ ] Validación de monto en el servidor:
+    - NUNCA confiar en el monto que llega del frontend
+    - Recalcular total desde DB (items × precio + envío) antes de llamar al proveedor
+    - Si el monto del frontend ≠ monto calculado → rechazar con 400
+
+[ ] Webhook: evitar SSRF en la consulta al proveedor
+    - Usar solo el ID del pago del webhook payload para construir la URL
+    - No usar ninguna URL que venga del payload
+
+[ ] Variables de entorno: nunca usar claves de producción en desarrollo
+    - MERCADOPAGO_ACCESS_TOKEN debe empezar con "TEST-" en desarrollo
+    - Validar esto en client.ts al inicializar (process.env.NODE_ENV check)
+```
+
+---
+
+#### Fase 10-E: UI del checkout actualizada
+
+```
+[ ] Reemplazar payment-form.tsx actual:
+    - Paso 4 del checkout (actual: inputs manuales de tarjeta) →
+      TabSelector: "Tarjeta de crédito/débito" | "PSE"
+    - Tab Tarjeta: CardForm de MercadoPago.js (iframes seguros, PCI-compliant)
+      * El CardForm renderiza iframes nativos — NO se puede estilizar con Tailwind directo
+      * Usar las CSS variables del CardForm API para adaptar colores al tema
+      * Mostrar selector de cuotas (installments) si el monto > umbral configurable
+    - Tab PSE: formulario propio con dropdown de bancos + datos del pagador
+    - Estado de carga durante el pago: overlay + spinner (evitar doble submit)
+    - Resultado en línea: mensaje de error friendly sin exponer status_detail
+
+[ ] Página /payment-failed/[id] (nueva):
+    - Mostrar razón amigable del rechazo (traducción de status_detail)
+    - CTA: "Intentar con otra tarjeta" → vuelve al checkout con el mismo orderId
+    - CTA: "Pagar por PSE" → switch al tab PSE
+    - El pedido sigue en PENDING — el cliente puede reintentar
+
+[ ] /order-success/[id] — actualizar para mostrar paymentStatus:
+    - Si PAID: "¡Pago confirmado! Tu pedido está siendo procesado"
+    - Si PENDING: "Tu pedido está pendiente de confirmación de pago.
+      Te notificaremos por email cuando se confirme." (caso PSE)
+    - Si PROCESSING: "Completando pago en tu banco..."
+```
+
+---
+
+#### Fase 10-F: Testing
+
+```
+[ ] Tarjetas de prueba MercadoPago (ambiente TEST):
+    Mastercard crédito: 5254 1336 7440 3564 | CVV: 123 | Venc: 11/30
+    Visa crédito:       4013 5406 8274 6260 | CVV: 123 | Venc: 11/30
+    Visa débito:        4915 1120 5524 6507 | CVV: 123 | Venc: 11/30
+
+    Controlar resultado cambiando el NOMBRE del titular:
+    APRO = Aprobado      | FUND = Fondos insuficientes | SECU = CVV inválido
+    OTHE = Error general | EXPI = Tarjeta vencida       | CALL = Llamar al banco
+    CONT = Pendiente     | LOCK = Tarjeta bloqueada     | DUPL = Pago duplicado
+
+[ ] Verificar webhook localmente:
+    - Usar ngrok o similar para exponer localhost
+    - Configurar la URL de ngrok en el panel de MP como URL de prueba
+    - Simular webhook con: curl -X POST http://localhost:3000/api/payments/webhook/mercadopago
+      -H "x-signature: ts=1704106600&v1={hash}" -H "x-request-id: {uuid}" -d '{...}'
+
+[ ] E2E mínimo (scripts/verify-payments.mjs):
+    [ ] Flujo tarjeta aprobada: crear pedido → pagar → verificar Order.paymentStatus=PAID
+    [ ] Flujo tarjeta rechazada: pagar con FUND → verificar Order.paymentStatus=FAILED,
+        Order.status sigue PENDING
+    [ ] Flujo PSE: crear pago → verificar redirectUrl devuelta → simular webhook approved
+    [ ] Webhook duplicado: enviar mismo webhook dos veces → verificar idempotencia (sin error)
+    [ ] Monto manipulado: enviar monto diferente desde frontend → verificar rechazo 400
+```
+
+---
+
+### ⏳ Bloque 10.5 — Wompi (Colombia — fase futura)
+
+> **Objetivo**: Agregar Wompi como segundo proveedor de pago disponible.
+> Activable con solo cambiar `PAYMENT_PROVIDER=wompi` en `.env.local`.
+>
+> **Prerequisito**: Bloque 10 completo (la abstracción IPaymentProvider ya existe).
+>
+> **Referencia oficial**:
+> - Wompi Docs: https://docs.wompi.co/docs/colombia/inicio-rapido/
+> - Wompi Transacciones: https://docs.wompi.co/docs/colombia/transacciones/
+> - Wompi Métodos de pago: https://docs.wompi.co/docs/colombia/metodos-de-pago/
+
+**Ventaja de Wompi sobre MP para Colombia:**
+- Métodos nativos colombianos: Nequi, Bancolombia Transfer, Bancolombia QR,
+  BNPL Bancolombia (4 cuotas sin interés ≥ $100.000), Daviplata
+- API más simple y predecible
+- Llaves públicas/privadas con prefijo claro: `pub_test_` / `pub_prod_` / `prv_test_` / `prv_prod_`
+
+---
+
+#### Arquitectura Wompi
+
+```
+Wompi usa un modelo diferente al de MP:
+- El monto va en CENTAVOS (amount_in_cents), igual que la DB — sin conversión
+- Cada transacción requiere un acceptance_token (JWT de aceptación de T&C)
+- Todas las transacciones requieren una firma de integridad (integrity signature)
+- Las transacciones siempre arrancan en PENDING → polling o webhook para estado final
+
+URL base sandbox:  https://sandbox.wompi.co/v1/
+URL base producción: https://production.wompi.co/v1/
+(el client.ts de Wompi infiere cuál usar por el prefijo de las llaves)
+```
+
+---
+
+#### Fase 10.5-A: Firma de integridad (OBLIGATORIA en Wompi)
+
+```
+Wompi requiere una firma para validar que el monto y la referencia no fueron
+manipulados. Se genera en el servidor y se envía junto con la transacción.
+
+Algoritmo SHA-256 (en src/lib/payments/wompi/client.ts):
+
+function buildIntegritySignature(
+  reference: string,
+  amountInCents: number,
+  currency: string,  // "COP"
+  expirationTime: string | null,  // ISO 8601 o null
+  integritySecret: string
+): string {
+  // Concatenar en este orden EXACTO:
+  const chain = `${reference}${amountInCents}${currency}${expirationTime ?? ''}${integritySecret}`;
+  return crypto.createHash('sha256').update(chain).digest('hex');
+}
+
+// La firma va en el campo 'signature' del body de la transacción
+```
+
+---
+
+#### Fase 10.5-B: Acceptance Token (OBLIGATORIO antes de crear transacción)
+
+```
+[ ] Implementar getAcceptanceToken() en wompi/client.ts:
+    - GET /v1/merchants/{publicKey}
+    - Retorna presigned_acceptance.acceptance_token (JWT corto — expira)
+    - Cachear con TTL de 10 minutos (el token dura ~30 min pero es seguro renovar)
+    - El acceptance_token se envía en el body de cada transacción
+    - Representa que el cliente aceptó los T&C de Wompi
+```
+
+---
+
+#### Fase 10.5-C: Tarjetas con Wompi
+
+```
+[ ] Tokenización de tarjeta (frontend):
+    - Wompi provee Widget de pago (iFrame) o Widget de tokenización standalone
+    - Alternativa: POST /v1/tokens/cards directamente (requiere PCI scope propio — NO recomendado)
+    - Usar el Widget de Wompi o el WidgetCheckout embebido como iframe
+    - El widget retorna un token de tarjeta (tok_prod_xxx o tok_test_xxx)
+
+[ ] Implementar WompiProvider.createCardPayment():
+    - Obtener acceptance_token (getAcceptanceToken)
+    - Generar referencia única: ORDER-{orderNumber}-{timestamp}
+    - Generar firma de integridad (buildIntegritySignature)
+    - POST /v1/transactions con Bearer {WOMPI_PRIVATE_KEY}:
+      {
+        acceptance_token,
+        amount_in_cents: amountCents,      // centavos COP directamente (sin conversión)
+        currency: "COP",
+        customer_email: payer.email,
+        payment_method: {
+          type: "CARD",
+          token,                           // token del widget
+          installments
+        },
+        reference: uniqueRef,
+        signature,                         // SHA-256 de integridad
+        redirect_url: `${APP_URL}/api/payments/wompi-return?orderId=${orderId}`,
+        customer_data: {
+          phone_number: payer.phone,
+          full_name: `${payer.firstName} ${payer.lastName}`,
+          legal_id: payer.identificationNumber,
+          legal_id_type: payer.identificationType  // CC, CE, NIT, PAS, TI
+        }
+      }
+    - Estado inicial siempre PENDING — monitorear vía webhook o polling
+    - Guardar transaction.data.id como paymentProviderId en Order
+```
+
+---
+
+#### Fase 10.5-D: Métodos alternativos Wompi
+
+```
+[ ] PSE con Wompi:
+    - GET /v1/payment_sources (con llave pública) → lista de bancos PSE
+    - POST /v1/transactions con payment_method: { type: "PSE", user_type, financial_institution_code, payment_description }
+    - La transacción devuelve redirect_url → redirigir al usuario al banco
+    - Webhook confirma cuando el usuario completa la transferencia
+
+[ ] Nequi:
+    - POST /v1/transactions con payment_method: { type: "NEQUI", phone_number: "3001234567" }
+    - Wompi envía una notificación push a la app Nequi del cliente
+    - El cliente acepta en su app → webhook confirma
+    - No requiere redirect — flujo 100% asíncrono
+
+[ ] Bancolombia Transfer:
+    - POST /v1/transactions con payment_method: { type: "BANCOLOMBIA_TRANSFER", user_type, user_legal_id }
+    - Retorna redirect_url → cliente completa en su app/web Bancolombia
+    - Webhook confirma
+
+[ ] Bancolombia QR:
+    - POST /v1/transactions con payment_method: { type: "BANCOLOMBIA_QR" }
+    - Retorna QR image URL → mostrar en pantalla
+    - Cliente escanea con su app Bancolombia
+    - Webhook confirma (polling cada 5s como fallback)
+
+[ ] UI del selector de método de pago (cuando Wompi está activo):
+    Tabs: Tarjeta | PSE | Nequi | Bancolombia | QR Bancolombia
+    - Mostrar solo los métodos habilitados (configurable en store.config o Settings)
+    - Cada tab tiene su propio formulario/instrucciones
+```
+
+---
+
+#### Fase 10.5-E: Webhook Wompi
+
+```
+[ ] Crear POST /api/payments/webhook/wompi:
+    Algoritmo de verificación de firma:
+
+    1. Leer body raw como string
+    2. Extraer event.signature.checksum y event.signature.properties del body
+    3. Construir string a hashear concatenando los valores de cada property en orden:
+       Ejemplo si properties = ["transaction.id","transaction.status","transaction.amount_in_cents"]:
+       chain = `${tx.id}${tx.status}${tx.amount_in_cents}${WOMPI_EVENTS_SECRET}`
+    4. SHA-256(chain) debe coincidir con checksum
+    5. Si no coincide → 401, loguear
+    6. Retornar 200 inmediatamente
+    7. En background:
+       - Si event.event !== 'transaction.updated' → ignorar
+       - Buscar Order por reference (= uniqueRef guardado al crear la transacción)
+       - Mapear status: APPROVED→PAID, DECLINED→FAILED, VOIDED→FAILED, ERROR→FAILED
+       - Actualizar Order, disparar email, guardar PaymentLog
+
+[ ] Registrar URL del webhook en el panel de Wompi:
+    Sandbox: https://comercios.wompi.co (sección Desarrolladores → Webhooks)
+    URL: {NEXT_PUBLIC_APP_URL}/api/payments/webhook/wompi
+
+[ ] Tarjetas de prueba Wompi (ambiente sandbox):
+    VISA:       4242 4242 4242 4242 | CVV: 123 | Venc: 12/25 → Aprobada
+    MasterCard: 5204 7300 0000 1005 | CVV: 123 | Venc: 12/25 → Aprobada
+    Rechazo:    4111 1111 1111 1111 → Declinada
+    Nequi test: número 3991000000 (sandbox)
+```
+
+---
+
+#### Fase 10.5-F: Configuración multi-método en el admin
+
+```
+[ ] Extender Settings → "Métodos de pago" (ya existe en el admin):
+    Agregar toggles por método específico:
+    - [x] Tarjeta de crédito/débito
+    - [x] PSE
+    - [ ] Nequi (solo Wompi)
+    - [ ] Bancolombia Transfer (solo Wompi)
+    - [ ] Bancolombia QR (solo Wompi)
+    Los toggles de métodos exclusivos de un proveedor se muestran solo cuando
+    PAYMENT_PROVIDER=wompi (leer del env en el server component del settings editor)
+
+[ ] El payment-form.tsx lee los métodos habilitados vía useSettings() y solo
+    muestra los tabs activos — sin requerir deploy para cambiar métodos disponibles
+```
+
+---
+
+#### Checklist final Bloque 10 (MercadoPago) antes de ir a producción
+
+```
+[ ] Credenciales de PRODUCCIÓN configuradas (ACCESS_TOKEN empieza con "APP_USR-")
+[ ] Webhook URL registrada en panel de MP apuntando al dominio de producción
+[ ] MERCADOPAGO_WEBHOOK_SECRET generado y guardado (no regenerar después)
+[ ] Verificar que idempotencyKey es @unique en la DB de producción
+[ ] Testear con tarjeta real (monto mínimo) en producción antes de lanzar
+[ ] Confirmar que /api/payments/webhook/ NO requiere autenticación de NextAuth
+    (MP llama sin sesión — debe estar excluido del middleware)
+[ ] Confirmar que /api/payments/initiate SÍ requiere orderId válido del usuario en sesión
+[ ] Verificar logs en PaymentLog después de primera transacción real
+[ ] Activar notificaciones de contracargos (chargebacks) en el panel de MP
+```
+
+---
+
+### ⏳ Bloque 10.6 — Stripe (internacional — fase futura)
+
+> **Objetivo**: Agregar Stripe como tercer proveedor de pago para clientes
+> internacionales o cuando el repo se replica fuera de Colombia.
+> Activable con `PAYMENT_PROVIDER=stripe` en `.env.local`.
+>
+> **Prerequisito**: Bloque 10 completo (la abstracción `IPaymentProvider` ya existe).
+>
+> **Cuándo usar Stripe vs MercadoPago/Wompi**:
+> - Stripe: clientes fuera de Colombia, pagos en USD/EUR, tarjetas internacionales,
+>   suscripciones, marketplaces — la API más madura y documentada del mercado.
+> - MercadoPago: Colombia/LATAM, PSE, Efecty, billetera MP — mejor tasa de aprobación local.
+> - Wompi: Colombia, Nequi, Bancolombia, BNPL — métodos bancarios colombianos nativos.
+>
+> **Referencia oficial**:
+> - Stripe Docs: https://stripe.com/docs
+> - Stripe Elements: https://stripe.com/docs/stripe-js
+> - Stripe Webhooks: https://stripe.com/docs/webhooks
+
+---
+
+#### Diferencias clave de Stripe vs los otros proveedores
+
+```
+- Montos en centavos de la moneda destino (USD: cents, COP: centavos — igual que la DB)
+- No tiene PSE ni métodos locales colombianos — solo tarjetas, SEPA, etc.
+- PaymentIntent es el objeto central (equivalente al "pago" de MP)
+- 3DS es automático vía Payment Element — no requiere manejo manual
+- Webhook verificado con stripe.webhooks.constructEvent() (librería oficial)
+- SDK oficial: npm install stripe (server) + @stripe/stripe-js + @stripe/react-stripe-js (frontend)
+- Stripe CLI para testing local: stripe listen --forward-to localhost:3000/api/payments/webhook/stripe
+```
+
+---
+
+#### Fase 10.6-A: Setup del cliente Stripe
+
+```
+[ ] npm install stripe @stripe/stripe-js @stripe/react-stripe-js
+
+[ ] src/lib/payments/stripe/client.ts:
+    import Stripe from 'stripe';
+    export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2024-12-18.acacia', // fijar versión de API
+      typescript: true,
+    });
+
+[ ] Crear PaymentIntent desde el servidor (NO desde el cliente):
+    - POST /api/payments/initiate cuando PAYMENT_PROVIDER=stripe:
+      const intent = await stripe.paymentIntents.create({
+        amount: amountCents,            // centavos COP (o la moneda del cliente)
+        currency: 'cop',                // o 'usd', 'eur' según la config de locale
+        metadata: { orderId, orderNumber },
+        idempotency_key: idempotencyKey,
+      });
+      retornar { clientSecret: intent.client_secret }
+    - El frontend usa el clientSecret para montar el Payment Element
+    - NUNCA retornar la llave secreta de Stripe al frontend
+```
+
+---
+
+#### Fase 10.6-B: Payment Element (frontend)
+
+```
+[ ] StripePaymentForm — componente nuevo (solo se monta cuando PAYMENT_PROVIDER=stripe):
+    import { loadStripe } from '@stripe/stripe-js';
+    import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+    const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
+    // Flujo:
+    1. Al llegar al paso 4 del checkout → POST /api/payments/initiate → recibir clientSecret
+    2. Montar <Elements stripe={stripePromise} options={{ clientSecret }}>
+    3. Dentro: <PaymentElement /> — Stripe renderiza el formulario completo (tarjeta,
+       Apple Pay, Google Pay, Link) adaptado al navegador y país del cliente
+    4. onSubmit: stripe.confirmPayment({ elements, confirmParams: {
+         return_url: `${APP_URL}/api/payments/stripe-return?orderId=${orderId}`
+       }})
+    5. Stripe maneja 3DS automáticamente — no requiere código adicional
+
+[ ] Ventaja del Payment Element: soporta múltiples métodos de pago en un solo
+    componente (tarjeta, Apple Pay, Google Pay, Link) sin código extra.
+    Los métodos disponibles se configuran en el Dashboard de Stripe.
+```
+
+---
+
+#### Fase 10.6-C: Return URL y webhook Stripe
+
+```
+[ ] GET /api/payments/stripe-return:
+    - Stripe redirige aquí después de la autenticación 3DS o pago async
+    - Query params: payment_intent, payment_intent_client_secret, redirect_status
+    - Verificar con stripe.paymentIntents.retrieve(payment_intent)
+    - NO confiar en redirect_status del query param (puede manipularse)
+    - Buscar Order por metadata.orderId
+    - Actualizar estado según intent.status:
+      'succeeded'        → PAID + CONFIRMED
+      'processing'       → PENDING (pagos bancarios async)
+      'payment_failed'   → FAILED
+    - Redirigir a /order-success/[id] o /payment-failed/[id]
+
+[ ] POST /api/payments/webhook/stripe:
+    Verificación con librería oficial (NO manual):
+
+    const sig = request.headers.get('stripe-signature')!;
+    const rawBody = await request.text();
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    } catch {
+      return new Response('Webhook signature invalid', { status: 401 });
+    }
+
+    Eventos a manejar:
+    - 'payment_intent.succeeded'       → Order PAID + CONFIRMED
+    - 'payment_intent.payment_failed'  → Order FAILED
+    - 'charge.dispute.created'         → loguear (contracargo — notificar admin)
+    - Todos los demás → ignorar (retornar 200 igual)
+
+    Registrar URL en Dashboard de Stripe → Webhooks:
+    {NEXT_PUBLIC_APP_URL}/api/payments/webhook/stripe
+
+[ ] Testing local con Stripe CLI:
+    stripe listen --forward-to localhost:3000/api/payments/webhook/stripe
+    stripe trigger payment_intent.succeeded   # simular pago exitoso
+    stripe trigger payment_intent.payment_failed
+
+[ ] Tarjetas de prueba Stripe:
+    Aprobada:        4242 4242 4242 4242 | CVV: cualquiera | Venc: futura
+    3DS requerido:   4000 0025 0000 3155
+    Fondos insuf.:   4000 0000 0000 9995
+    Rechazada:       4000 0000 0000 0002
+```
+
+---
+
+#### Fase 10.6-D: Configuración multi-método en el admin (Stripe)
+
+```
+[ ] Los toggles de métodos de pago en Settings → "Métodos de pago" muestran
+    opciones relevantes según el proveedor activo:
+    - Stripe activo: mostrar toggle "Apple Pay / Google Pay" (se activa en Stripe Dashboard)
+    - MP activo: mostrar toggles PSE, Efecty
+    - Wompi activo: mostrar Nequi, Bancolombia, BNPL
+    El payment-form.tsx renderiza el componente correcto según PAYMENT_PROVIDER
+    (MercadoPagoCardForm | MercadoPagoPseForm | WompiWidget | StripePaymentElement)
+```
+
+---
+
+#### Checklist Stripe antes de producción
+
+```
+[ ] Cuenta Stripe en modo Live (verificada con documentos del negocio)
+[ ] Cambiar llaves a sk_live_ / pk_live_
+[ ] Webhook registrado en Dashboard con URL de producción
+[ ] STRIPE_WEBHOOK_SECRET actualizado con el secreto de producción
+[ ] Activar métodos de pago deseados en Dashboard → Settings → Payment methods
+[ ] Verificar que la moneda en stripe.paymentIntents.create() coincide con locale.currency
+[ ] Testear con tarjeta real (1 USD o equivalente) antes de lanzar
+[ ] Activar radar rules en Stripe Dashboard para antifraude automático
 ```
 
 ---

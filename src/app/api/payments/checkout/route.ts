@@ -32,7 +32,8 @@ export async function POST(request: Request) {
       amount: order.total,
       customerEmail: order.customerEmail,
     })
-    await setPaymentReference(order.id, checkout.reference)
+    // On-site providers (MercadoPago) have no gateway object yet at handoff.
+    if (checkout.reference) await setPaymentReference(order.id, checkout.reference)
     return NextResponse.json({ redirectUrl: checkout.redirectUrl })
   } catch (err) {
     console.error("Payment checkout failed:", err)

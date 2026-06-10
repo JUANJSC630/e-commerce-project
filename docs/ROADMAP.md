@@ -634,6 +634,10 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 >   intento muerto jamás cancela un pedido que el cliente está reintentando; el
 >   webhook solo cancela si el pago es el intento vigente del pedido.
 > - Webhook responde 200 al instante y procesa con `after()` (Next 15).
+> - UI del hub de pago pulida (2026-06-10): selector de método tipo tarjetas
+>   con estado activo (los tabs genéricos no tenían CSS y eran invisibles),
+>   panel de total, badge "Pago seguro", campos h-11 consistentes, selects
+>   nativos con chevron propio y franja de confianza al pie.
 >
 > **Setup manual (2026-06-10):** app creada en el panel de MP (API de Pagos),
 > credenciales TEST en `.env.local` (validadas contra el API real: 200, PSE con

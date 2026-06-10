@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, Lock } from "lucide-react"
+import { AlertCircle, ChevronDown, Loader2, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/use-cart"
+import { useFormatPrice } from "@/components/providers/settings-provider"
 
 /**
  * MercadoPago CardForm (Checkout API). Card number, expiry and CVV render
@@ -49,13 +50,30 @@ interface MpCardFormProps {
   amount: number
 }
 
-const FIELD_BOX = "h-10 rounded-md border border-input bg-background px-3 py-2 [&_iframe]:h-full"
+const FIELD_BOX =
+  "h-11 rounded-lg border border-input bg-transparent px-3.5 py-2.5 shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px] [&_iframe]:h-full"
 const INPUT_CLASS =
-  "h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  "h-11 w-full rounded-lg border border-input bg-transparent px-3.5 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+const SELECT_CLASS = `${INPUT_CLASS} appearance-none pr-10`
+
+/** Native select dressed to match the design system (custom chevron, h-11). */
+function SelectShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      {children}
+      <ChevronDown
+        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
+    </div>
+  )
+}
 
 export function MpCardForm({ orderId, amount }: MpCardFormProps) {
   const router = useRouter()
   const { clearCart } = useCart()
+  const formatPrice = useFormatPrice()
+  const formatPriceLabel = formatPrice(amount)
   const formRef = useRef<MpCardFormInstance | null>(null)
   const mountedRef = useRef(false)
   const [ready, setReady] = useState(false)
@@ -157,85 +175,105 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
   }
 
   return (
-    <form id="mp-card-form" className="space-y-4">
-      <div>
-        <label htmlFor="mp-card-holder" className="text-sm font-medium block mb-1.5">
+    <form id="mp-card-form" className="space-y-5">
+      <div className="space-y-1.5">
+        <label htmlFor="mp-card-holder" className="text-sm font-medium block">
           Titular de la tarjeta
         </label>
-        <input id="mp-card-holder" className={INPUT_CLASS} autoComplete="cc-name" />
+        <input
+          id="mp-card-holder"
+          className={INPUT_CLASS}
+          autoComplete="cc-name"
+          placeholder="Como aparece en la tarjeta"
+        />
       </div>
 
-      <div>
-        <span className="text-sm font-medium block mb-1.5">Número de tarjeta</span>
+      <div className="space-y-1.5">
+        <span className="text-sm font-medium block">Número de tarjeta</span>
         <div id="mp-card-number" className={FIELD_BOX} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <span className="text-sm font-medium block mb-1.5">Vencimiento</span>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <span className="text-sm font-medium block">Vencimiento</span>
           <div id="mp-card-expiration" className={FIELD_BOX} />
         </div>
-        <div>
-          <span className="text-sm font-medium block mb-1.5">CVV</span>
+        <div className="space-y-1.5">
+          <span className="text-sm font-medium block">CVV</span>
           <div id="mp-card-cvv" className={FIELD_BOX} />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="mp-card-doc-type" className="text-sm font-medium block mb-1.5">
+      <div className="grid grid-cols-[1.4fr_1fr] gap-3">
+        <div className="space-y-1.5 min-w-0">
+          <label htmlFor="mp-card-doc-type" className="text-sm font-medium block">
             Tipo de documento
           </label>
-          <select id="mp-card-doc-type" className={INPUT_CLASS} />
+          <SelectShell>
+            <select id="mp-card-doc-type" className={SELECT_CLASS} />
+          </SelectShell>
         </div>
-        <div>
-          <label htmlFor="mp-card-doc-number" className="text-sm font-medium block mb-1.5">
-            Documento
+        <div className="space-y-1.5 min-w-0">
+          <label htmlFor="mp-card-doc-number" className="text-sm font-medium block">
+            Número
           </label>
           <input id="mp-card-doc-number" className={INPUT_CLASS} inputMode="numeric" />
         </div>
       </div>
 
-      <div>
-        <label htmlFor="mp-card-email" className="text-sm font-medium block mb-1.5">
+      <div className="space-y-1.5">
+        <label htmlFor="mp-card-email" className="text-sm font-medium block">
           Email
         </label>
         <input id="mp-card-email" type="email" className={INPUT_CLASS} autoComplete="email" />
       </div>
 
-      <div>
-        <label htmlFor="mp-card-installments" className="text-sm font-medium block mb-1.5">
+      <div className="space-y-1.5">
+        <label htmlFor="mp-card-installments" className="text-sm font-medium block">
           Cuotas
         </label>
-        <select id="mp-card-installments" className={INPUT_CLASS} />
+        <SelectShell>
+          <select id="mp-card-installments" className={SELECT_CLASS} />
+        </SelectShell>
       </div>
 
       {/* MP resolves the issuer automatically; kept hidden but present for the SDK. */}
       <select id="mp-card-issuer" className="hidden" aria-hidden="true" tabIndex={-1} />
 
       {error && (
-        <p role="alert" className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">
-          {error}
-        </p>
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3"
+        >
+          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" aria-hidden="true" />
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
       )}
 
-      <Button type="submit" size="lg" className="w-full" disabled={!ready || submitting}>
-        {submitting ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
-            Procesando pago…
-          </>
-        ) : (
-          <>
-            <Lock className="w-4 h-4 mr-2" aria-hidden="true" />
-            Pagar ahora
-          </>
-        )}
-      </Button>
+      <div className="space-y-3 pt-1">
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full h-12 rounded-xl text-base font-semibold"
+          disabled={!ready || submitting}
+        >
+          {submitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+              Procesando pago…
+            </>
+          ) : (
+            <>
+              <Lock className="w-4 h-4 mr-2" aria-hidden="true" />
+              Pagar {formatPriceLabel}
+            </>
+          )}
+        </Button>
 
-      <p className="text-xs text-muted-foreground text-center">
-        Procesado de forma segura por MercadoPago. No almacenamos los datos de tu tarjeta.
-      </p>
+        <p className="text-xs text-muted-foreground text-center">
+          No almacenamos los datos de tu tarjeta.
+        </p>
+      </div>
     </form>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Landmark, Loader2 } from "lucide-react"
+import { AlertCircle, ChevronDown, Landmark, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,8 +22,40 @@ const DOC_TYPES: Record<"individual" | "association", Array<{ id: string; label:
   association: [{ id: "NIT", label: "NIT" }],
 }
 
+const FIELD_HEIGHT = "h-11 rounded-lg px-3.5 text-sm"
+
 const SELECT_CLASS =
-  "h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  "h-11 w-full appearance-none rounded-lg border border-input bg-transparent px-3.5 pr-10 text-sm text-foreground shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+
+/** Native select dressed to match the design system (custom chevron, h-11). */
+function StyledSelect({
+  id,
+  value,
+  onChange,
+  children,
+}: {
+  id: string
+  value: string
+  onChange: (value: string) => void
+  children: React.ReactNode
+}) {
+  return (
+    <div className="relative">
+      <select
+        id={id}
+        className={SELECT_CLASS}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
+    </div>
+  )
+}
 
 interface PseFormProps {
   orderId: string
@@ -109,63 +141,52 @@ export function PseForm({ orderId }: PseFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-1.5">
         <Label htmlFor="pse-bank">Tu banco</Label>
-        <div className="mt-1.5">
-          <Combobox
-            id="pse-bank"
-            options={banks}
-            value={bankId}
-            onChange={setBankId}
-            placeholder="Selecciona tu banco"
-            searchPlaceholder="Buscar banco…"
-            emptyText="No encontramos ese banco"
-            loading={banksLoading}
-            disabled={banksError}
-          />
-        </div>
+        <Combobox
+          id="pse-bank"
+          options={banks}
+          value={bankId}
+          onChange={setBankId}
+          placeholder="Selecciona tu banco"
+          searchPlaceholder="Buscar banco…"
+          emptyText="No encontramos ese banco"
+          loading={banksLoading}
+          disabled={banksError}
+          triggerClassName={FIELD_HEIGHT}
+        />
         {banksError && (
-          <p className="text-sm text-destructive mt-1">
+          <p className="text-sm text-destructive">
             No pudimos cargar la lista de bancos. Recarga la página o paga con tarjeta.
           </p>
         )}
       </div>
 
-      <div>
+      <div className="space-y-1.5">
         <Label htmlFor="pse-entity">Tipo de persona</Label>
-        <select
-          id="pse-entity"
-          className={`${SELECT_CLASS} mt-1.5`}
-          value={entityType}
-          onChange={(e) => handleEntityChange(e.target.value)}
-        >
+        <StyledSelect id="pse-entity" value={entityType} onChange={handleEntityChange}>
           <option value="individual">Persona natural</option>
           <option value="association">Persona jurídica</option>
-        </select>
+        </StyledSelect>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
+      <div className="grid grid-cols-[1.4fr_1fr] gap-3">
+        <div className="space-y-1.5 min-w-0">
           <Label htmlFor="pse-doc-type">Tipo de documento</Label>
-          <select
-            id="pse-doc-type"
-            className={`${SELECT_CLASS} mt-1.5`}
-            value={docType}
-            onChange={(e) => setDocType(e.target.value)}
-          >
+          <StyledSelect id="pse-doc-type" value={docType} onChange={setDocType}>
             {DOC_TYPES[entityType].map((doc) => (
               <option key={doc.id} value={doc.id}>
                 {doc.label}
               </option>
             ))}
-          </select>
+          </StyledSelect>
         </div>
-        <div>
-          <Label htmlFor="pse-doc-number">Número de documento</Label>
+        <div className="space-y-1.5 min-w-0">
+          <Label htmlFor="pse-doc-number">Número</Label>
           <Input
             id="pse-doc-number"
-            className="mt-1.5"
+            className={FIELD_HEIGHT}
             inputMode="numeric"
             value={docNumber}
             onChange={(e) => setDocNumber(e.target.value)}
@@ -175,28 +196,39 @@ export function PseForm({ orderId }: PseFormProps) {
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">
-          {error}
-        </p>
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3"
+        >
+          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" aria-hidden="true" />
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
       )}
 
-      <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-        {submitting ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
-            Conectando con tu banco…
-          </>
-        ) : (
-          <>
-            <Landmark className="w-4 h-4 mr-2" aria-hidden="true" />
-            Continuar al banco
-          </>
-        )}
-      </Button>
+      <div className="space-y-3 pt-1">
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full h-12 rounded-xl text-base font-semibold"
+          disabled={!canSubmit}
+        >
+          {submitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+              Conectando con tu banco…
+            </>
+          ) : (
+            <>
+              <Landmark className="w-4 h-4 mr-2" aria-hidden="true" />
+              Continuar al banco
+            </>
+          )}
+        </Button>
 
-      <p className="text-xs text-muted-foreground text-center">
-        Serás redirigido a tu banco para autorizar la transferencia.
-      </p>
+        <p className="text-xs text-muted-foreground text-center">
+          Serás redirigido a tu banco para autorizar la transferencia.
+        </p>
+      </div>
     </form>
   )
 }

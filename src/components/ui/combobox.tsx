@@ -34,6 +34,8 @@ interface ComboboxProps {
   disabled?: boolean
   id?: string
   className?: string
+  /** Extra classes for the trigger button (e.g. height overrides). */
+  triggerClassName?: string
   "aria-invalid"?: boolean
 }
 
@@ -55,6 +57,7 @@ export function Combobox({
   disabled = false,
   id,
   className,
+  triggerClassName,
   "aria-invalid": ariaInvalid,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
@@ -113,6 +116,7 @@ export function Combobox({
           "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
           "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
           "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
+          triggerClassName,
         )}
       >
         <span className={cn("truncate", !selected && "text-muted-foreground")}>

@@ -56,6 +56,22 @@ const INPUT_CLASS =
   "h-11 w-full rounded-lg border border-input bg-transparent px-3.5 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
 const SELECT_CLASS = `${INPUT_CLASS} appearance-none pr-10`
 
+/**
+ * The card iframes are cross-origin documents: they inherit nothing from our
+ * stylesheet, so whatever theme is active (including dark-mode extensions
+ * that rewrite the page's CSS) never reaches them. The current input colors
+ * are probed from a real themed input and handed to the SDK per field.
+ */
+function probeFieldStyle(): Record<string, string> {
+  const style: Record<string, string> = { "font-size": "14px" }
+  const probe = document.getElementById("mp-card-holder")
+  if (!probe) return style
+  style.color = getComputedStyle(probe).color
+  const placeholder = getComputedStyle(probe, "::placeholder").color
+  if (placeholder) style["placeholder-color"] = placeholder
+  return style
+}
+
 /** Native select dressed to match the design system (custom chevron, h-11). */
 function SelectShell({ children }: { children: React.ReactNode }) {
   return (
@@ -101,14 +117,15 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
       }
 
       const mp = new window.MercadoPago(publicKey, { locale: "es-CO" })
+      const fieldStyle = probeFieldStyle()
       formRef.current = mp.cardForm({
         amount: String(amount),
         iframe: true,
         form: {
           id: "mp-card-form",
-          cardNumber: { id: "mp-card-number", placeholder: "Número de tarjeta" },
-          expirationDate: { id: "mp-card-expiration", placeholder: "MM/AA" },
-          securityCode: { id: "mp-card-cvv", placeholder: "CVV" },
+          cardNumber: { id: "mp-card-number", placeholder: "Número de tarjeta", style: fieldStyle },
+          expirationDate: { id: "mp-card-expiration", placeholder: "MM/AA", style: fieldStyle },
+          securityCode: { id: "mp-card-cvv", placeholder: "CVV", style: fieldStyle },
           cardholderName: { id: "mp-card-holder", placeholder: "Como aparece en la tarjeta" },
           issuer: { id: "mp-card-issuer" },
           installments: { id: "mp-card-installments" },

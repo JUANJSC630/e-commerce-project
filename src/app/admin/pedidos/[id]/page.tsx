@@ -25,14 +25,18 @@ const STATUS_COLORS: Record<string, string> = {
 
 const PAYMENT_LABELS: Record<string, string> = {
   PENDING: "Pago pendiente",
+  PROCESSING: "Pago en proceso",
   PAID: "Pagado",
   FAILED: "Pago fallido",
+  REFUNDED: "Reembolsado",
 }
 
 const PAYMENT_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
+  PROCESSING: "bg-blue-100 text-blue-800",
   PAID: "bg-green-100 text-green-800",
   FAILED: "bg-red-100 text-red-800",
+  REFUNDED: "bg-slate-100 text-slate-700",
 }
 
 export default async function PedidoDetailPage({ params }: { params: Promise<{ id: string }> }) {

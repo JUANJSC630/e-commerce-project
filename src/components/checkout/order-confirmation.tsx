@@ -18,7 +18,6 @@ interface OrderConfirmationProps {
     }
     payment: {
       method: string
-      cardNumber?: string
     }
     items: {
       id: string | number
@@ -119,7 +118,7 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
       icon: CreditCard,
       title: "Método de pago",
       data: orderData.payment,
-      fields: ["method", "cardNumber"],
+      fields: ["method"],
       bgColor: "bg-brand-surface-alt/30",
     },
     {
@@ -157,12 +156,9 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
             <div className="text-sm space-y-1">
               {section.fields.map((field) => {
                 let value = (section.data as Record<string, string | number | undefined>)[field]
-                if (field === "cardNumber" && typeof value === "string")
-                  value = `Tarjeta terminada en ****${value.slice(-4)}`
                 if (field === "method" && typeof value === "string") {
-                  if (value === "card") value = "Tarjeta de Crédito/Débito"
-                  else if (value === "mercadopago") value = "MercadoPago"
-                  else if (value === "bank") value = "Transferencia Bancaria"
+                  if (value === "card") value = "Tarjeta de crédito o débito"
+                  else if (value === "pse") value = "PSE"
                 }
                 return value ? (
                   <p key={field}>

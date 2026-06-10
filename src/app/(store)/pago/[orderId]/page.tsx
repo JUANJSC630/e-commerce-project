@@ -1,12 +1,13 @@
 import type { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
 import { ShieldCheck } from "lucide-react"
-import { getOrderPaymentInfo } from "@/lib/orders"
-import { isMockPaymentsEnabled } from "@/lib/payments"
+import { MAX_PAYMENT_ATTEMPTS, getOrderPaymentInfo } from "@/lib/orders"
+import { getPaymentProvider, isMockPaymentsEnabled } from "@/lib/payments"
 import { formatPrice } from "@/lib/utils"
 import { loadAllSettings } from "@/lib/settings"
 import { privatePageMetadata } from "@/lib/seo"
 import { SimulatedPaymentActions } from "@/components/checkout/simulated-payment-actions"
+import { MercadoPagoCheckout } from "@/components/payment/mercadopago-checkout"
 
 interface PageProps {
   params: Promise<{ orderId: string }>
@@ -17,15 +18,44 @@ export function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PaymentPage({ params }: PageProps) {
-  // This simulated gateway only exists while the mock provider is active.
-  if (!isMockPaymentsEnabled()) notFound()
-
   const { orderId } = await params
   const [order, { locale }] = await Promise.all([getOrderPaymentInfo(orderId), loadAllSettings()])
 
   if (!order) notFound()
   if (order.paymentStatus === "PAID") redirect(`/order-success/${orderId}`)
   if (order.paymentStatus === "FAILED") redirect("/pago-fallido")
+  // PSE in flight: the success page shows the waiting state (webhook settles it).
+  if (order.paymentStatus === "PROCESSING") redirect(`/order-success/${orderId}`)
+
+  if (getPaymentProvider().name === "mercadopago") {
+    if (order.paymentAttempts >= MAX_PAYMENT_ATTEMPTS) {
+      return (
+        <div className="container mx-auto px-4 py-16 max-w-md text-center">
+          <h1 className="font-display font-bold text-2xl text-brand-ink">
+            Límite de intentos alcanzado
+          </h1>
+          <p className="text-brand-muted mt-2">
+            Este pedido alcanzó el máximo de intentos de pago. Escríbenos y te ayudamos a completar
+            tu compra.
+          </p>
+        </div>
+      )
+    }
+
+    return (
+      <div className="container mx-auto px-4 py-12 max-w-md">
+        <MercadoPagoCheckout
+          orderId={order.id}
+          orderNumber={order.orderNumber}
+          amount={order.total}
+          {...(order.paymentMethod ? { preferredMethod: order.paymentMethod } : {})}
+        />
+      </div>
+    )
+  }
+
+  // Simulated gateway — only exists while the mock provider is active.
+  if (!isMockPaymentsEnabled()) notFound()
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-md">

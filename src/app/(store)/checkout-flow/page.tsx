@@ -12,7 +12,7 @@ import { toast } from "sonner"
 import { useCart } from "@/hooks/use-cart"
 import { routes } from "@/config/store.config"
 import { useSettings } from "@/components/providers/settings-provider"
-import { validateShippingData, validatePaymentData } from "@/lib/validation"
+import { validateShippingData, validatePaymentData, type PaymentData } from "@/lib/validation"
 
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
 
@@ -32,19 +32,7 @@ export default function CheckoutPage() {
     zipCode: "",
     country: locale.defaultCountry,
   })
-  const [paymentData, setPaymentData] = useState<{
-    method: "card" | "mercadopago" | "bank"
-    cardNumber: string
-    expiryDate: string
-    cvv: string
-    cardName: string
-  }>({
-    method: "card",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardName: "",
-  })
+  const [paymentData, setPaymentData] = useState<PaymentData>({ method: "card" })
   // Declaración de errores de envío - Se usa en handleOrderConfirm y se pasa a ShippingForm
   const [shippingErrors, setShippingErrors] = useState<Record<string, string>>({})
   const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({})

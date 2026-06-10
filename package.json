@@ -17,10 +17,12 @@
     "verify:account": "node scripts/verify-account.mjs",
     "verify:favorites": "node scripts/verify-favorites.mjs",
     "verify:categories": "node scripts/verify-categories-admin.mjs",
-    "verify:admin-guard": "node scripts/verify-admin-guard.mjs"
+    "verify:admin-guard": "node scripts/verify-admin-guard.mjs",
+    "verify:payments": "node scripts/verify-payments.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
+    "@mercadopago/sdk-js": "^0.0.3",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@uploadthing/react": "^7.3.3",

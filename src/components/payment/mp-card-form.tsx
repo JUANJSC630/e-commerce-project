@@ -75,21 +75,19 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
   const formatPrice = useFormatPrice()
   const formatPriceLabel = formatPrice(amount)
   const formRef = useRef<MpCardFormInstance | null>(null)
-  const mountedRef = useRef(false)
   const [ready, setReady] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // StrictMode re-runs effects; the CardForm must only mount once.
-    if (mountedRef.current) return
-    mountedRef.current = true
-
-    let cancelled = false
+    // StrictMode runs mount→cleanup→mount: each run owns its `disposed` flag,
+    // so the first (cancelled) run never creates a form and the second one
+    // mounts normally. A shared "only once" ref would block the second run.
+    let disposed = false
 
     async function mount() {
       await loadSdk()
-      if (cancelled || !window.MercadoPago) return
+      if (disposed || !window.MercadoPago) return
 
       const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY
       if (!publicKey) {
@@ -129,8 +127,12 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
     void mount()
 
     return () => {
-      cancelled = true
-      formRef.current?.unmount()
+      disposed = true
+      try {
+        formRef.current?.unmount()
+      } catch {
+        /* the SDK throws if the iframes are already gone */
+      }
       formRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

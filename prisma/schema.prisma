@@ -22,8 +22,10 @@ enum OrderStatus {
 
 enum PaymentStatus {
   PENDING
+  PROCESSING
   PAID
   FAILED
+  REFUNDED
 }
 
 model Role {
@@ -116,7 +118,14 @@ model Order {
   user            User?       @relation(fields: [userId], references: [id])
   status          OrderStatus   @default(PENDING)
   paymentStatus   PaymentStatus @default(PENDING)
-  paymentRef      String?
+  // Gateway settlement trail: which provider charged, its payment id, the
+  // idempotency key sent with the charge (unique → a retry can never double-bill)
+  // and how many attempts the customer has made against this order.
+  paymentProvider   String?
+  paymentProviderId String?
+  idempotencyKey    String?     @unique
+  pseRedirectUrl    String?
+  paymentAttempts   Int         @default(0)
   total           Float
   subtotal        Float
   shippingCost    Float         @default(0)
@@ -126,9 +135,26 @@ model Order {
   notes           String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+  paymentLogs     PaymentLog[]
 
   @@index([createdAt])
   @@index([status])
+}
+
+/// Append-only audit trail of every payment event (gateway responses and
+/// webhook deliveries), kept verbatim for reconciliation and disputes.
+model PaymentLog {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider   String
+  event      String
+  providerId String?
+  status     String
+  rawPayload Json
+  createdAt  DateTime @default(now())
+
+  @@index([orderId])
 }
 
 model OrderItem {

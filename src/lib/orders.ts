@@ -168,6 +168,8 @@ export interface OrderConfirmationDTO {
   customerEmail: string | null
   status: string
   paymentStatus: PaymentStatus
+  /** A gateway attempt exists and hasn't settled — show "waiting", not "pay". */
+  paymentInFlight: boolean
   subtotal: number
   shippingCost: number
   total: number
@@ -182,6 +184,7 @@ const ORDER_DETAIL_SELECT = {
   customerEmail: true,
   status: true,
   paymentStatus: true,
+  paymentProviderId: true,
   subtotal: true,
   shippingCost: true,
   total: true,
@@ -208,6 +211,9 @@ function toConfirmationDTO(order: OrderDetailRow): OrderConfirmationDTO {
     customerEmail: order.customerEmail,
     status: order.status,
     paymentStatus: order.paymentStatus,
+    paymentInFlight:
+      order.paymentProviderId !== null &&
+      (order.paymentStatus === "PENDING" || order.paymentStatus === "PROCESSING"),
     subtotal: order.subtotal,
     shippingCost: order.shippingCost,
     total: order.total,
@@ -288,27 +294,90 @@ export interface OrderPaymentInfo {
   orderNumber: string
   total: number
   customerEmail: string | null
+  customerName: string | null
+  userId: string | null
   paymentStatus: PaymentStatus
+  paymentProviderId: string | null
+  paymentMethod: string | null
+  paymentAttempts: number
+  pseRedirectUrl: string | null
+  shippingAddress: ShippingData | null
 }
 
 /** Minimal read used by the payment flow (amount + current settlement state). */
-export function getOrderPaymentInfo(id: string): Promise<OrderPaymentInfo | null> {
-  return prisma.order.findUnique({
+export async function getOrderPaymentInfo(id: string): Promise<OrderPaymentInfo | null> {
+  const order = await prisma.order.findUnique({
     where: { id },
     select: {
       id: true,
       orderNumber: true,
       total: true,
       customerEmail: true,
+      customerName: true,
+      userId: true,
       paymentStatus: true,
+      paymentProviderId: true,
+      paymentMethod: true,
+      paymentAttempts: true,
+      pseRedirectUrl: true,
+      shippingAddress: true,
+    },
+  })
+  if (!order) return null
+  return { ...order, shippingAddress: (order.shippingAddress as ShippingData | null) ?? null }
+}
+
+/** Hard cap on charge attempts per order (brute-force / card-testing guard). */
+export const MAX_PAYMENT_ATTEMPTS = 5
+
+/**
+ * Atomically claims one payment attempt: only succeeds while the order can
+ * still settle and hasn't exhausted its attempts. The fresh idempotency key is
+ * stored BEFORE the gateway is called, so a crash mid-charge can never lead to
+ * a double bill — retrying reuses the stored key.
+ */
+export async function claimPaymentAttempt(
+  id: string,
+  data: { provider: string; method: string; idempotencyKey: string },
+): Promise<boolean> {
+  const { count } = await prisma.order.updateMany({
+    where: {
+      id,
+      paymentStatus: { in: SETTLEABLE },
+      paymentAttempts: { lt: MAX_PAYMENT_ATTEMPTS },
+    },
+    data: {
+      paymentProvider: data.provider,
+      paymentMethod: data.method,
+      idempotencyKey: data.idempotencyKey,
+      paymentAttempts: { increment: 1 },
+    },
+  })
+  return count > 0
+}
+
+/** Persists the gateway-side payment id (and PSE redirect state) after initiation. */
+export async function recordPaymentInitiated(
+  id: string,
+  data: { providerId: string; processing?: boolean; pseRedirectUrl?: string },
+): Promise<void> {
+  await prisma.order.update({
+    where: { id },
+    data: {
+      paymentProviderId: data.providerId,
+      ...(data.processing ? { paymentStatus: "PROCESSING" as PaymentStatus } : {}),
+      ...(data.pseRedirectUrl ? { pseRedirectUrl: data.pseRedirectUrl } : {}),
     },
   })
 }
 
 /** Stores the provider's reference (preference/session id) on the order. */
 export async function setPaymentReference(id: string, reference: string): Promise<void> {
-  await prisma.order.update({ where: { id }, data: { paymentRef: reference } })
+  await prisma.order.update({ where: { id }, data: { paymentProviderId: reference } })
 }
+
+/** States a payment can still settle from — PENDING (card) or PROCESSING (PSE at the bank). */
+const SETTLEABLE: PaymentStatus[] = ["PENDING", "PROCESSING"]
 
 /**
  * Idempotently settle a successful payment: paymentStatus → PAID, order →
@@ -317,7 +386,7 @@ export async function setPaymentReference(id: string, reference: string): Promis
  */
 export async function markOrderPaid(id: string): Promise<boolean> {
   const { count } = await prisma.order.updateMany({
-    where: { id, paymentStatus: "PENDING" },
+    where: { id, paymentStatus: { in: SETTLEABLE } },
     data: { paymentStatus: "PAID", status: "CONFIRMED" },
   })
   return count > 0
@@ -332,7 +401,7 @@ export async function markOrderFailed(id: string): Promise<boolean> {
   return prisma.$transaction(
     async (tx) => {
       const { count } = await tx.order.updateMany({
-        where: { id, paymentStatus: "PENDING" },
+        where: { id, paymentStatus: { in: SETTLEABLE } },
         data: { paymentStatus: "FAILED", status: "CANCELLED" },
       })
       if (count === 0) return false

@@ -78,6 +78,11 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
   const [ready, setReady] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [invalid, setInvalid] = useState<Record<string, boolean>>({})
+
+  /** Adds the error ring when the SDK reported the field as invalid. */
+  const fieldClass = (name: string, base: string) =>
+    invalid[name] ? `${base} border-destructive` : base
 
   useEffect(() => {
     // StrictMode runs mount→cleanup→mount: each run owns its `disposed` flag,
@@ -116,6 +121,11 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
             if (err) setError("No se pudo cargar el formulario de pago. Recarga la página.")
             else setReady(true)
           },
+          // Fires as the customer types: clears/sets the per-field error ring.
+          onValidityChange: (errors: unknown, field: string) => {
+            const hasError = Array.isArray(errors) && errors.length > 0
+            setInvalid((prev) => ({ ...prev, [field]: hasError }))
+          },
           onSubmit: (event: { preventDefault(): void }) => {
             event.preventDefault()
             void submit()
@@ -145,6 +155,15 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
 
     try {
       const data = formRef.current.getCardFormData()
+
+      // No token means the SDK's validation failed (empty/invalid fields):
+      // surface it here instead of sending a doomed request to the server.
+      if (!data.token) {
+        setError("Revisa los datos de la tarjeta: hay campos vacíos o inválidos.")
+        setSubmitting(false)
+        return
+      }
+
       const res = await fetch("/api/payments/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -184,7 +203,7 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
         </label>
         <input
           id="mp-card-holder"
-          className={INPUT_CLASS}
+          className={fieldClass("cardholderName", INPUT_CLASS)}
           autoComplete="cc-name"
           placeholder="Como aparece en la tarjeta"
         />
@@ -192,17 +211,17 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
 
       <div className="space-y-1.5">
         <span className="text-sm font-medium block">Número de tarjeta</span>
-        <div id="mp-card-number" className={FIELD_BOX} />
+        <div id="mp-card-number" className={fieldClass("cardNumber", FIELD_BOX)} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <span className="text-sm font-medium block">Vencimiento</span>
-          <div id="mp-card-expiration" className={FIELD_BOX} />
+          <div id="mp-card-expiration" className={fieldClass("expirationDate", FIELD_BOX)} />
         </div>
         <div className="space-y-1.5">
           <span className="text-sm font-medium block">CVV</span>
-          <div id="mp-card-cvv" className={FIELD_BOX} />
+          <div id="mp-card-cvv" className={fieldClass("securityCode", FIELD_BOX)} />
         </div>
       </div>
 
@@ -219,7 +238,11 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
           <label htmlFor="mp-card-doc-number" className="text-sm font-medium block">
             Número
           </label>
-          <input id="mp-card-doc-number" className={INPUT_CLASS} inputMode="numeric" />
+          <input
+            id="mp-card-doc-number"
+            className={fieldClass("identificationNumber", INPUT_CLASS)}
+            inputMode="numeric"
+          />
         </div>
       </div>
 
@@ -227,7 +250,12 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
         <label htmlFor="mp-card-email" className="text-sm font-medium block">
           Email
         </label>
-        <input id="mp-card-email" type="email" className={INPUT_CLASS} autoComplete="email" />
+        <input
+          id="mp-card-email"
+          type="email"
+          className={fieldClass("cardholderEmail", INPUT_CLASS)}
+          autoComplete="email"
+        />
       </div>
 
       <div className="space-y-1.5">

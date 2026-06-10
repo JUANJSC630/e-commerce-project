@@ -55,9 +55,7 @@ export async function listUploadedImages(limit = 100): Promise<MediaItem[]> {
     .filter((f) => f.status === "Uploaded")
     .map((f) => {
       const url = uploadThingUrlFromKey(f.key)
-      return url
-        ? { key: f.key, url, name: f.name, size: f.size, uploadedAt: f.uploadedAt }
-        : null
+      return url ? { key: f.key, url, name: f.name, size: f.size, uploadedAt: f.uploadedAt } : null
     })
     .filter((item): item is MediaItem => item !== null)
     .sort((a, b) => b.uploadedAt - a.uploadedAt)

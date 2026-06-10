@@ -61,9 +61,7 @@ export function collectUploadThingUrls(value: unknown): string[] {
  * Deletes the given image URLs from UploadThing. Non-UploadThing URLs are
  * skipped. Best-effort: never throws.
  */
-export async function deleteUploadedImages(
-  urls: Array<string | null | undefined>,
-): Promise<void> {
+export async function deleteUploadedImages(urls: Array<string | null | undefined>): Promise<void> {
   const keys = Array.from(
     new Set(urls.map(uploadThingKeyFromUrl).filter((k): k is string => Boolean(k))),
   )

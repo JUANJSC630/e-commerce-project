@@ -1,9 +1,5 @@
 import { loadAllSettings } from "@/lib/settings"
-import {
-  fontFamilyWithFallback,
-  googleFontsHref,
-  isGoogleFont,
-} from "@/lib/google-fonts"
+import { fontFamilyWithFallback, googleFontsHref, isGoogleFont } from "@/lib/google-fonts"
 
 /**
  * Loads the admin-selected fonts from Google Fonts and overrides the storefront

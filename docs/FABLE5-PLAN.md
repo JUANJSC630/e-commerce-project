@@ -678,6 +678,68 @@ CRITERIO DE COMPLETITUD:
 
 ---
 
+### 🔴 ÍTEM 14 — Vinculación de pedidos guest al iniciar sesión (login-claiming)
+
+**Prioridad**: Alta (bug confirmado — pedidos no aparecen en /cuenta/pedidos tras login)  
+**Archivos principales**: `src/lib/account.ts`, `src/lib/auth-options.ts`  
+**Estado**: [ ] Pendiente
+
+```
+CONTEXTO:
+Cuando un cliente hace checkout como guest (sin sesión), el pedido se guarda con
+userId=null y customerEmail=su@email.com.
+
+La función registerCustomer() en src/lib/account.ts (línea 68-71) ya tiene lógica
+para reclamar esos pedidos al momento de registrarse — hace un updateMany sobre
+Order.userId=null AND customerEmail=email.
+
+El problema: esa lógica NO existe en el authorize() de src/lib/auth-options.ts.
+Esto significa que si el cliente:
+  1. Tiene una cuenta existente y compra como guest → inicia sesión → pedidos perdidos
+  2. Se registra primero → después compra como guest → inicia sesión → pedidos perdidos
+  3. Compra como guest → se registra directamente → FUNCIONA (único caso cubierto)
+
+TAREA:
+1. Extraer una función reutilizable claimGuestOrders(email: string, userId: string): Promise<number>
+   en src/lib/account.ts.
+   - email debe normalizarse: .trim().toLowerCase() (consistente con registerCustomer)
+   - Retornar el count de pedidos reclamados (útil para logs y tests)
+   - La query debe ser idéntica a la actual: WHERE userId IS NULL AND customerEmail = email
+
+2. Refactorizar registerCustomer() para usar claimGuestOrders() en lugar del updateMany
+   embebido. Comportamiento idéntico — solo refactor de extracción.
+
+3. En src/lib/auth-options.ts, en el callback authorize(), luego de verificar la
+   contraseña y ANTES de hacer return, agregar:
+   await claimGuestOrders(user.email, user.id)
+   Importar claimGuestOrders desde "@/lib/account".
+
+NOTAS DE IMPLEMENTACIÓN:
+- El claiming es seguro de ejecutar siempre: si no hay pedidos guest, es un no-op
+  (0 rows updated)
+- El WHERE userId IS NULL protege pedidos ya reclamados (no se reasignan)
+- No usar transacción especial — el updateMany de Prisma es atómico
+- No mostrar nada al usuario (no hay toast ni redirect extra): el claiming es
+  transparente y los pedidos ya aparecerán en /cuenta/pedidos en la siguiente carga
+
+CRITERIO DE COMPLETITUD:
+1. Test manual completo:
+   a. Comprar como guest con email=test@ejemplo.com (sin sesión)
+   b. Iniciar sesión con una cuenta que tiene ese mismo email
+   c. Verificar en /cuenta/pedidos que el pedido guest aparece
+   d. Verificar en la DB: Order.userId ya no es null
+
+2. Test de registro (no romper el caso que ya funciona):
+   a. Comprar como guest con email=nuevo@ejemplo.com
+   b. Registrarse con ese email (sin pasar por el CTA de order-success)
+   c. Verificar que el pedido aparece en /cuenta/pedidos
+
+3. yarn validate pasa sin errores
+4. Actualizar scripts/verify-account.mjs para cubrir el caso de login-claiming
+```
+
+---
+
 ## Sección 4 — Prompt para auditoría completa de seguridad del admin
 
 > Usar este prompt cuando quieras que Fable 5 audite TODAS las rutas del admin de una vez.
@@ -811,6 +873,7 @@ Marca cada uno cuando esté completado:
 - [x] [ÍTEM 3] createOrder usa shipping de la DB
 - [ ] [ÍTEM 4] pago-fallido recibe orderId y ofrece reintento
 - [ ] [ÍTEM 6] Polling en order-success para PSE pendiente
+- [ ] [ÍTEM 14] Pedidos guest vinculados al iniciar sesión (login-claiming)
 
 ### Admin operativo
 

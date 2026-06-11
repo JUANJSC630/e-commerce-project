@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-11 (Bloque 9.10 — Media Manager + Bloque 14 — Plan Fable 5) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-11 (Bloque 13.5 — Login-claiming de pedidos guest) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -1894,6 +1894,91 @@ function buildIntegritySignature(
 [x] Favoritos persistidos en DB (modelo Favorite): FavoritesProvider sincroniza
     localStorage↔DB, merge del set guest al iniciar sesión, toggle reflejado en DB
     (verificado E2E, scripts/verify-favorites.mjs, 2/2)
+```
+
+---
+
+## 🐛 Bloque 13.5 — Vinculación de pedidos guest al iniciar sesión
+
+> **Estado**: pendiente — bug confirmado. El registro ya reclama pedidos, el login no.
+
+### Diagnóstico
+
+El flujo actual tiene una implementación parcial:
+
+| Escenario | Pedidos reclamados |
+|---|---|
+| Guest compra → **se registra** con ese email | ✅ Funciona (`registerCustomer` hace `updateMany`) |
+| Guest compra → **inicia sesión** con cuenta existente | ❌ No funciona — `authorize` no reclama nada |
+| Usuario registrado compra como guest → inicia sesión | ❌ No funciona — mismo gap en `authorize` |
+
+**Raíz del bug**: el claiming (`prisma.order.updateMany({ where: { userId: null, customerEmail: email } })`)
+está embebido en `registerCustomer()` (`src/lib/account.ts:70`) pero nunca se llama
+desde el callback `authorize` en `src/lib/auth-options.ts`.
+
+### Archivos clave
+
+```
+src/lib/account.ts          — registerCustomer() tiene el claiming embebido (línea 68-71)
+src/lib/auth-options.ts     — authorize() no llama a claiming tras login exitoso
+```
+
+### Plan de implementación
+
+**Paso 1 — Extraer utilidad `claimGuestOrders`** en `src/lib/account.ts`:
+
+```typescript
+// Mueve la lógica embebida a una función reutilizable:
+export async function claimGuestOrders(email: string, userId: string): Promise<number> {
+  const { count } = await prisma.order.updateMany({
+    where: { userId: null, customerEmail: email.trim().toLowerCase() },
+    data: { userId },
+  })
+  return count // útil para logging / tests
+}
+```
+
+**Paso 2 — Refactorizar `registerCustomer`** para usar la utilidad (sin cambiar comportamiento):
+
+```typescript
+// En registerCustomer(), reemplazar el updateMany embebido por:
+await claimGuestOrders(email, user.id)
+```
+
+**Paso 3 — Agregar claiming en el login** (`src/lib/auth-options.ts`):
+
+```typescript
+async authorize(credentials) {
+  // ... validación existente ...
+  const passwordValid = await bcrypt.compare(credentials.password, user.password)
+  if (!passwordValid) return null
+
+  // Reclamar pedidos guest con este email (no-op si no hay ninguno)
+  await claimGuestOrders(user.email, user.id)
+
+  return { id: user.id, email: user.email, name: user.name, role: { ... } }
+}
+```
+
+### Edge cases
+
+| Caso | Comportamiento esperado |
+|---|---|
+| No hay pedidos guest con ese email | `claimGuestOrders` hace 0 updates — no-op seguro |
+| Pedido ya reclamado (`userId ≠ null`) | Excluido por `WHERE userId IS NULL` — safe |
+| Admin inicia sesión | Claiming corre, no encuentra nada — no-op |
+| Email diferente al del checkout guest | No hay match — correcto (no reclamar pedidos ajenos) |
+| Registro concurrente mismo email | Prisma unique constraint en `email` previene duplicados |
+
+### Checklist
+
+```
+[ ] Extraer claimGuestOrders(email, userId) en src/lib/account.ts
+[ ] Refactorizar registerCustomer para usar claimGuestOrders (comportamiento idéntico)
+[ ] Agregar await claimGuestOrders(...) en authorize() de src/lib/auth-options.ts
+[ ] Test manual: guest compra con email X → inicia sesión con cuenta X → pedido aparece en /cuenta/pedidos
+[ ] Test: registro con email Y (sin CTA) → pedidos con ese email también se reclaman
+[ ] Actualizar scripts/verify-account.mjs con caso de login-claiming (caso 8)
 ```
 
 ---

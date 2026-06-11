@@ -2,7 +2,7 @@ import "server-only"
 
 import { Prisma, type PaymentStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { shipping } from "@/config/store.config"
+import { loadAllSettings } from "@/lib/settings"
 import type { ShippingData } from "@/lib/validation"
 
 /**
@@ -50,7 +50,10 @@ export interface CreateOrderResult {
 
 const MAX_ATTEMPTS = 3
 
-function shippingCostFor(subtotal: number): number {
+function shippingCostFor(
+  subtotal: number,
+  shipping: { freeThreshold: number; standardCost: number },
+): number {
   return subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
 }
 
@@ -64,6 +67,8 @@ async function nextOrderNumber(tx: Prisma.TransactionClient): Promise<string> {
 export async function createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {
   const { items, customer, paymentMethod, userId } = input
   if (items.length === 0) throw new OrderError("EMPTY_CART", "El carrito está vacío")
+
+  const { shipping } = await loadAllSettings()
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
@@ -116,7 +121,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           }))
 
           const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0)
-          const shippingCost = shippingCostFor(subtotal)
+          const shippingCost = shippingCostFor(subtotal, shipping)
 
           return tx.order.create({
             data: {

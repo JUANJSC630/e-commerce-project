@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-10 (Bloque 10 ✅) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-11 (Bloque 14 — Plan de Auditoría para Fable 5 agregado) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -1776,6 +1776,462 @@ src/
 │   └── migrations/                  ← Migraciones aplicadas
 └── middleware.ts                     ← Protege /admin/* (NextAuth JWT)
 ```
+
+---
+
+---
+
+## 🔍 Bloque 14 — Auditoría Profunda & Plan de Mejora para Fable 5
+
+> **Cómo usar este bloque**: cada sección tiene items accionables con rutas de archivo
+> exactas y descripciones del problema. Asignar a Fable 5 como contexto completo +
+> una sección por sesión. Prioridad A = bloqueante para producción; B = importante;
+> C = mejora de calidad.
+
+---
+
+### 14.1 — Seguridad (revisar antes de cualquier deploy a producción)
+
+#### 🔴 Prioridad A — Críticos
+
+**[A-1] Sin headers de seguridad HTTP**
+- Archivo: `next.config.ts`
+- Problema: el config no define `headers()`. Sin CSP, HSTS, X-Frame-Options,
+  X-Content-Type-Options ni Referrer-Policy. Un navegador moderno no tiene ninguna
+  protección declarativa.
+- Fix esperado: agregar `async headers()` en `next.config.ts` con al menos:
+  `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`,
+  `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` (solo producción).
+  CSP es complejo con MP iframes pero debe tener al menos `default-src 'self'` con
+  las excepciones mínimas necesarias (sdk.mercadopago.com, *.ufs.sh, fonts.googleapis.com).
+
+**[A-2] Sin rate limiting en login y registro**
+- Archivos: `src/app/api/cuenta/register/route.ts`,
+  `src/app/api/auth/[...nextauth]/route.ts`
+- Problema: un atacante puede registrar cuentas spam o hacer fuerza bruta de contraseñas
+  sin ningún límite. NextAuth v4 no tiene rate limiting integrado.
+- Fix esperado: implementar rate limiting con `@upstash/ratelimit` (Redis serverless)
+  o alternativa simple con Prisma (`LoginAttempt` tabla con ventana deslizante).
+  Límite sugerido: 5 intentos de login / 10 min por IP; 3 registros / hora por IP.
+
+**[A-3] Stock NO se restaura al fallar o cancelar un pedido**
+- Archivos: `src/lib/orders.ts`, `src/app/api/payments/initiate/route.ts`,
+  `src/app/api/payments/webhook/mercadopago/route.ts`
+- Problema crítico de negocio: el stock se descuenta cuando se CREA el pedido
+  (`createOrder` → `updateMany { decrement: qty }`). Si el pago falla (webhook rejected,
+  PSE rechazado, timeout), el pedido queda en `FAILED` pero el stock nunca se restaura.
+  El inventario queda incorrecto indefinidamente.
+- Fix esperado: en `markOrderFailed()` agregar `restoreOrderStock(orderId)` que haga
+  `updateMany { increment: qty }` por cada `OrderItem` del pedido, dentro de una
+  transacción. También aplicar en cancelaciones del admin.
+- Verificar: `src/lib/orders.ts` función `markOrderFailed` — confirmar que no
+  llama ninguna restauración de stock.
+
+**[A-4] `order-success/[id]` no verifica propiedad del pedido**
+- Archivo: `src/app/(store)/order-success/[id]/page.tsx`,
+  `src/lib/orders.ts::getOrderForConfirmation`
+- Problema: cualquier usuario (o guest) puede ver la página de confirmación de
+  CUALQUIER pedido simplemente conociendo el ID (un CUID predecible si se intercepta
+  el redirect). La función `getOrderForConfirmation` busca por ID sin verificar
+  `userId` ni si es el guest que creó el pedido.
+- Fix esperado: agregar validación de propiedad — si hay sesión, verificar
+  `order.userId === session.user.id`; si es guest, verificar por cookie/token de sesión
+  temporal o al menos limitar la información expuesta (no mostrar dirección completa).
+
+**[A-5] Fuga de rol en JWT — cambios de rol no se propagan**
+- Archivos: `src/lib/auth-options.ts`, `middleware.ts`
+- Problema: NextAuth con estrategia JWT guarda el rol en el token (cookie cifrada).
+  Si un admin cambia el rol de un usuario activo, ese usuario sigue con el rol viejo
+  hasta que su JWT expire o reinicie sesión. Un usuario "degradado" puede seguir
+  accediendo al admin durante ese período.
+- Fix esperado: en el callback `session` de authOptions, verificar el rol contra la DB
+  en cada request O reducir el `maxAge` del JWT a 1 hora (hoy probablemente es 30 días
+  por defecto). Alternativamente, mantener un `Set` de JWTs revocados en Redis.
+
+#### 🟠 Prioridad B — Importantes
+
+**[B-1] `/api/payments/simulate` — ¿está gateado a dev?**
+- Archivo: `src/app/api/payments/simulate/route.ts`
+- Revisar: si la ruta de simulación existe en producción, un atacante podría simular
+  pagos aprobados sin pasar por el proveedor real. Debe retornar 404 en `NODE_ENV=production`.
+- Acción: leer el archivo y confirmar que tiene la guarda de entorno.
+
+**[B-2] Password sin límite de longitud máxima (bcrypt trunca a 72 bytes)**
+- Archivo: `src/lib/account.ts::registerCustomer`
+- Problema: bcrypt trunca silenciosamente contraseñas > 72 bytes. Una contraseña de
+  100 caracteres y una de 72 (con el mismo prefijo) producen el mismo hash. No es
+  explotable fácilmente pero es un comportamiento sorpresivo.
+- Fix esperado: agregar `if (password.length > 72) throw new AccountError(...)` o
+  pre-hashear con SHA-256 antes de bcrypt (patrón seguro documentado).
+  También verificar: `newPassword` en `changePassword` tiene la misma validación.
+
+**[B-3] `customer_role_id` cacheado a nivel de módulo en serverless**
+- Archivo: `src/lib/account.ts` (variable `customerRoleId`)
+- Problema: el cache de módulo vive por instancia Lambda/worker. En un deploy fresh
+  o tras un cold start de Vercel, la caché está vacía y hace una query. No es un bug
+  de seguridad grave, pero si el rol customer se elimina y recrea con otro ID, el
+  caché queda obsoleto en instancias calientes.
+- Acción: verificar si `ensureCustomerRole` es idempotente y su `upsert` correctamente
+  maneja el caso de reconexión.
+
+**[B-4] Sin validación del `orderId` en `/api/payments/initiate` para PSE**
+- Archivo: `src/app/api/payments/initiate/route.ts`
+- Revisar: la ruta verifica que el pedido pertenece al usuario en sesión (`getOrderPaymentInfo`
+  con `userId`). Confirmar que esto también aplica para guests (que no tienen sesión) y
+  que no hay forma de iniciar pago en un pedido ajeno enviando un `orderId` arbitrario.
+
+**[B-5] Admin APIs — verificar que TODAS validan sesión + permiso**
+- Archivos: `src/app/api/admin/*/route.ts` (todos)
+- Acción: auditar cada route handler del admin para confirmar que el primer bloque
+  verifica `getServerSession(authOptions)` + `hasPermission(...)`. Buscar cualquier
+  ruta que solo verifique sesión pero no el permiso específico.
+- Pattern esperado al inicio de cada handler:
+  ```typescript
+  const session = await getServerSession(authOptions)
+  if (!session || !hasPermission(session.user.permissions, "products", "update")) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 })
+  }
+  ```
+
+#### 🟡 Prioridad C — Menores
+
+**[C-1] Contraseña sin requisitos de complejidad**
+- Archivo: `src/lib/account.ts`
+- Solo verifica longitud ≥ 8. Sin mayúscula, número ni símbolo. Para una tienda
+  de producción es insuficiente. Considerar `zxcvbn` para score de fortaleza.
+
+**[C-2] Emails no verificados**
+- Archivo: `src/app/api/cuenta/register/route.ts`
+- El registro acepta cualquier email sin verificación. Riesgo: cuentas spam con
+  emails de terceros. Fix: enviar email de verificación (se alinea con Bloque 11).
+
+---
+
+### 14.2 — Bugs confirmados
+
+**[BUG-1] Shipping cost en pedidos NO usa la config del admin**
+- Archivos: `src/lib/orders.ts` línea ~10:
+  ```typescript
+  import { shipping } from "@/config/store.config"
+  ```
+- Problema: el costo y umbral de envío que se aplican al crear pedidos vienen del
+  archivo de config estático, NO de `loadAllSettings()`. Si el admin cambia el costo
+  de envío en Settings → Envíos, los nuevos pedidos siguen usando el valor hardcodeado.
+- Fix: en `createOrder()`, llamar `loadAllSettings()` para leer `shipping` desde la DB.
+  Ojo: `loadAllSettings` es async — la función `shippingCostFor` debe recibir los valores
+  como parámetro en vez de leerlos del módulo.
+- Verificar también: `cart-summary` y `mini-cart` — ¿usan `useSettings()` o el config estático?
+
+**[BUG-2] `pago-fallido` no sabe cuál pedido falló → stock y carrito inconsistentes**
+- Archivo: `src/app/(store)/pago-fallido/page.tsx`
+- Problema: la página no recibe `orderId`, así que:
+  1. No puede mostrar los detalles del pedido que falló
+  2. No puede ofrecer "Intentar de nuevo" con el mismo orderId
+  3. Dice "tus productos siguen en el carrito" pero si el stock ya fue decrementado
+     al crear el pedido, agregar de nuevo al carrito y reintentar causará un segundo
+     decremento (doble descuento de stock)
+- Fix: pasar `orderId` como query param desde los redirects que llevan a esta página.
+  La página debe leer `?orderId=` y mostrar el pedido + CTA "Reintentar pago" →
+  `/pago/[orderId]`. La inconsistencia de stock se resuelve con [A-3].
+
+**[BUG-3] `order-success` sin polling para PSE pendiente**
+- Archivo: `src/app/(store)/order-success/[id]/page.tsx`
+- Problema: si el usuario llega a order-success con `paymentStatus=PENDING` (PSE en
+  tránsito), la página es estática — muestra "Tu pago está en proceso" pero nunca
+  se actualiza. El webhook puede confirmar el pago segundos después, pero el usuario
+  sigue viendo "pendiente" hasta que refresca manualmente.
+- Fix: convertir el componente de estado a un Client Component que haga polling a
+  `GET /api/orders/[id]` (solo el campo `paymentStatus`) cada 5s cuando
+  `paymentStatus === 'PENDING'`, y muestre el estado de "confirmado" en vivo.
+  Límite de polling: 5 minutos o hasta recibir `PAID`/`FAILED`.
+
+**[BUG-4] Hot-reload de Next.js HMR orphana los iframes de MP**
+- Archivo: `src/components/payment/mp-card-form.tsx`
+- Problema conocido y documentado: cuando HMR reemplaza el componente en dev, el SDK
+  de MP mantiene los iframes ligados al DOM antiguo. El componente remontado crea
+  nuevos iframes pero los del SDK siguen apuntando a los elementos eliminados → campos
+  silenciosos que no responden.
+- Fix pendiente: detectar en `mount()` si ya existen iframes del SDK en los
+  contenedores (`document.getElementById('mp-card-number')?.querySelector('iframe')`)
+  y forzar un `unmount()` previo antes de remontar. O bien: agregar un aviso en dev
+  `"Recarga completa necesaria (Cmd+Shift+R) después de cambios en este componente"`.
+
+**[BUG-5] `nextOrderNumber()` puede generar colisiones bajo carga alta (edge case)**
+- Archivo: `src/lib/orders.ts::nextOrderNumber`
+- Problema: cuenta pedidos del año (`count`) dentro de la transacción y hace `count + 1`.
+  Bajo dos transacciones simultáneas con el mismo count, ambas intentan crear el mismo
+  número. El retry a nivel de `createOrder` captura la violación única y reintenta,
+  pero el gap en la numeración queda (DI-2026-003 se salta si hubo colisión).
+  No es un bug grave en bajo volumen, pero documentar el comportamiento esperado.
+- Revisar: confirmar que el campo `orderNumber` tiene `@unique` en el schema de Prisma.
+
+**[BUG-6] Admin sidebar — permisos no reflejados en tiempo real**
+- Archivo: `src/components/admin/sidebar.tsx`
+- Revisar: si el sidebar filtra items por los permisos del JWT (snapshot en login),
+  un cambio de permisos por otro admin no se refleja hasta que el usuario cierra sesión.
+  Documentar o agregar un "refresh permisos" en el sidebar.
+
+---
+
+### 14.3 — Review de flujos (verificar E2E con Fable 5)
+
+Cada flujo debe verificarse con Playwright o manualmente. Los pasos marcados `[RIESGO]`
+son los que más frecuentemente fallan en producción.
+
+#### Flujo 1: Compra con tarjeta (happy path)
+```
+[ ] 1. Agregar producto al carrito — verificar que StockBadge refleja stock real
+[ ] 2. Ir a carrito → ¿precio y envío usan settings de la DB?    [RIESGO: BUG-1]
+[ ] 3. Checkout paso 1–3 → crear pedido → redirige a /pago/[orderId]
+[ ] 4. /pago: CardForm monta iframes en < 3s (verificar en red lenta)
+[ ] 5. Llenar: tarjeta APRO (5254...) → Titular: APRO → CVV: 123 → Exp: 11/30
+[ ] 6. Submit → spinner → "Procesando pago…"
+[ ] 7. Respuesta aprobada → /order-success → ¿carrito limpiado?
+[ ] 8. Verificar en DB: Order.paymentStatus = PAID, stock decrementado
+[ ] 9. Verificar PaymentLog: evento "initiate.card" + "webhook.payment.approved"
+```
+
+#### Flujo 2: Rechazo de tarjeta y reintento
+```
+[ ] 1. Pagar con nombre FUND (fondos insuficientes)
+[ ] 2. Respuesta rejected → mensaje de error en la página de pago
+[ ] 3. Verificar: Order sigue en PENDING (no FAILED)    [RIESGO: debe poder reintentar]
+[ ] 4. Verificar: paymentProviderId NO guardado (para que el webhook muerto no cancele)
+[ ] 5. Cambiar nombre a APRO → pagar de nuevo → aprobado
+[ ] 6. Verificar: stock decrementado UNA sola vez (no dos)    [RIESGO crítico]
+```
+
+#### Flujo 3: PSE completo
+```
+[ ] 1. Crear pedido → /pago → seleccionar PSE
+[ ] 2. Llenar banco, tipo persona, CC, número
+[ ] 3. Submit → verificar redirect a banco    [necesita credenciales test-seller]
+[ ] 4. Simular retorno desde banco vía /api/payments/pse-return?orderId=X
+[ ] 5. Verificar: si webhook llegó antes del return → route a /order-success correctamente
+[ ] 6. Verificar: si payment rejected → /pago-fallido con orderId    [RIESGO: BUG-2]
+[ ] 7. Verificar: stock restaurado si PSE falla    [RIESGO: A-3]
+```
+
+#### Flujo 4: Webhook idempotente (entrega duplicada)
+```
+[ ] 1. Enviar mismo webhook approved dos veces
+[ ] 2. Verificar: segunda entrega es no-op (Order ya en PAID → guarda no ejecuta)
+[ ] 3. Verificar: PaymentLog tiene dos registros (correcto — es auditoría, no operación)
+[ ] 4. No debe haber error 500 en la segunda entrega
+```
+
+#### Flujo 5: Gestión de stock en admin
+```
+[ ] 1. Admin edita stock de producto → verificar storefront actualiza
+[ ] 2. Producto llega a stock=0 → StockBadge dice "Agotado" → botón deshabilitado
+[ ] 3. Crear pedido con producto stock=1 → verificar stock llega a 0 tras pago
+[ ] 4. Pago falla → verificar stock se restaura a 1    [RIESGO: A-3 no implementado]
+[ ] 5. Admin cancela pedido PAID → verificar stock NO se restaura (ya enviado)
+```
+
+#### Flujo 6: Cuenta de cliente y reclamación de pedidos
+```
+[ ] 1. Comprar como guest con email X
+[ ] 2. En order-success → click "Crear cuenta" → registro con email X
+[ ] 3. Verificar: en /cuenta/pedidos aparece el pedido guest reclamado
+[ ] 4. Verificar: favoritos de localStorage se mergearon a DB
+[ ] 5. Login con cuenta existente → favoritos DB sobrescriben o mergeán los de localStorage
+```
+
+#### Flujo 7: Admin — ciclo completo de pedido
+```
+[ ] 1. Pedido llega en estado PENDING → admin ve en lista
+[ ] 2. Admin actualiza a CONFIRMED → ¿email disparado?    [Bloque 11 pendiente]
+[ ] 3. Admin actualiza a SHIPPED → ¿aparece campo de guía?
+[ ] 4. Admin intenta cancelar pedido PAID → ¿sistema lo permite? ¿restaura stock?
+[ ] 5. Admin ve PaymentLog en detalle de pedido    [posiblemente no existe aún en UI]
+```
+
+#### Flujo 8: Theming en vivo
+```
+[ ] 1. Admin cambia color primario → guardar → verificar storefront actualiza (ISR tag)
+[ ] 2. Cambiar fuente → verificar que los iframes de MP NO pierden sus colores
+       (probeFieldStyle usa el color al momento del mount, no después)    [BUG potencial]
+[ ] 3. Admin cambia costo de envío → verificar que NUEVO pedido usa costo nuevo
+       [RIESGO: BUG-1 — órdenes usan store.config, no settings]
+```
+
+---
+
+### 14.4 — Performance & Caché
+
+**[PERF-1] `loadAllSettings` no se usa en la capa de pedidos**
+- Impacto: `createOrder` usa `shipping` del config estático. Fix = usar settings de DB.
+- También revisar: `src/app/(store)/checkout-flow/page.tsx` — ¿el subtotal de envío
+  mostrado en el checkout usa el mismo cálculo que `createOrder`?
+
+**[PERF-2] Admin dashboard — múltiples queries sin batching**
+- Archivo: `src/app/admin/page.tsx`
+- Revisar si las stats (total pedidos, total ventas, total usuarios, etc.) se hacen
+  con `Promise.all()` o secuencialmente. Si son secuenciales, paralelizarlas.
+
+**[PERF-3] Sin paginación en listas del admin**
+- Archivos: `src/app/admin/productos/page.tsx`, `src/app/admin/pedidos/page.tsx`
+- Problema: si hay 500+ productos o pedidos, la query carga todos. Agregar
+  `take`/`skip` con cursor-based pagination y controles en la UI.
+
+**[PERF-4] `lucide-icons.ts` registra 1594 íconos en bundle**
+- Archivo: `src/lib/lucide-icons.ts`
+- Se usa en `icon-picker.tsx` (admin) y en el storefront para resolver íconos del
+  trust-bar por nombre. Si este módulo llega al bundle del cliente, es pesado.
+- Verificar: ¿tiene `"server-only"`? ¿El trust-bar resuelve íconos en el servidor?
+
+**[PERF-5] Caché de settings — verificar que `revalidateTag("settings")` funciona E2E**
+- Archivos: `src/lib/settings.ts`, `src/app/api/admin/settings/route.ts`
+- Flujo: `saveSetting()` llama `revalidateTag("settings")` → la próxima request
+  al storefront debe generar una respuesta fresca. Verificar con un test: cambiar un
+  setting en admin → esperar < 1s → hacer fetch al storefront → confirmar nuevo valor.
+
+**[PERF-6] Imágenes — verificar `sizes` en ProductCard para LCP**
+- Archivo: `src/components/product/product-card.tsx`
+- Confirmar que el `sizes` prop de `next/image` es preciso para evitar que el navegador
+  descargue imágenes más grandes de lo necesario. Revisar en DevTools → Network.
+
+---
+
+### 14.5 — UX & Experiencia del Cliente
+
+**[UX-1] `/pago-fallido` sin contexto del pedido**
+- Problema: la página es genérica, sin número de pedido ni "Intentar de nuevo".
+- Fix: aceptar `?orderId=` y mostrar botón "Reintentar" → `/pago/[orderId]`.
+
+**[UX-2] `order-success` en PSE pendiente no tiene auto-refresh**
+- Problema: el usuario no sabe si el pago fue confirmado sin refrescar manualmente.
+- Fix: polling client-side de `paymentStatus` cada 5s (ver BUG-3).
+
+**[UX-3] Búsqueda (`/search`) sin paginación ni estado vacío claro**
+- Archivo: `src/app/(store)/search/page.tsx`
+- Revisar: ¿qué pasa con `?q=` vacío? ¿Hay manejo de "sin resultados" con sugerencias?
+
+**[UX-4] Sin feedback visual en admin al cambiar estado de pedido**
+- Archivo: `src/components/admin/orders/order-status-updater.tsx`
+- Revisar: ¿hay toast de confirmación? ¿El botón tiene loading state?
+
+**[UX-5] Carrito sin guardar al refrescar en checkout**
+- El checkout de 4 pasos usa estado local. Si el usuario refresca en el paso 3,
+  pierde la información de envío. Considerar `sessionStorage` como backup de borrador.
+
+**[UX-6] Admin pedidos — sin acción masiva de estado**
+- No hay forma de marcar 10 pedidos como "Enviados" a la vez. Para operar a escala
+  es necesario. Agregar checkbox + acción masiva en la tabla de pedidos.
+
+**[UX-7] Sin indicador de "stock bajo" en el admin de productos**
+- Archivo: `src/app/admin/productos/page.tsx`
+- Si un producto tiene stock ≤ `inventory.lowStockThreshold`, debería aparecer un badge
+  de advertencia en la tabla del admin (ya existe la lógica en `src/lib/inventory.ts`).
+
+**[UX-8] Admin — PaymentLog no visible en detalle del pedido**
+- Archivo: `src/app/admin/pedidos/[id]/page.tsx`
+- La tabla `PaymentLog` existe y se llena, pero no aparece en la UI del admin.
+  Agregar sección de historial de pagos en el detalle del pedido (orderId, evento,
+  providerId, status, timestamp) — útil para diagnóstico sin ir a la DB.
+
+---
+
+### 14.6 — Deuda Técnica & Arquitectura
+
+**[ARCH-1] `shipping` hardcoded en `orders.ts` — desacoplarlo de settings**
+- Ver BUG-1. Es la deuda técnica más impactante en el flujo de negocio.
+
+**[ARCH-2] JWT sessions — considerar rotación automática de rol**
+- Ver A-5. El riesgo es bajo en producción temprana pero debe estar en el radar.
+
+**[ARCH-3] `mock-provider.ts` — confirmar que no puede activarse en producción**
+- Archivo: `src/lib/payments/mock-provider.ts`
+- Leer el archivo: verificar que retorna error o que el factory (`index.ts`) solo lo
+  instancia cuando `PAYMENT_PROVIDER=mock` AND `NODE_ENV !== 'production'`.
+
+**[ARCH-4] Error boundaries — auditar cobertura en Server Components**
+- Next.js App Router: un Server Component async que lanza puede burbujear al
+  `error.tsx` más cercano. Verificar que las páginas del storefront con datos de Prisma
+  tienen error boundaries apropiados (`loading.tsx` + `error.tsx` en las carpetas necesarias).
+
+**[ARCH-5] `src/app/(store)/essentials/page.tsx` — verificar si es redundante**
+- Desde Bloque 9.6, Esenciales es una categoría dinámica. Esta página estática puede
+  estar duplicando o contraddiciendo la ruta `/category/[slug]`. Revisar si se puede
+  eliminar o si tiene casos de uso propios.
+
+**[ARCH-6] `use-toast.ts` — shadcn toast legacy vs Sonner**
+- Archivo: `src/hooks/use-toast.ts`
+- El proyecto migró a Sonner en Bloque 2, pero `use-toast.ts` sigue existiendo.
+  ¿Algún componente todavía lo importa? Verificar con grep y eliminar si es dead code.
+
+**[ARCH-7] Tipos de pago en `types.ts` del SDK vs tipos internos**
+- Archivo: `src/lib/payments/types.ts`
+- El tipo `CreateCardPaymentInput` tiene `amountCents: number` pero el comentario dice
+  "centavos" mientras que el proveedor de MP trabaja en pesos (no centavos).
+  El campo está mal documentado — puede confundir a quien implemente Wompi/Stripe.
+  Renombrar a `amount` y clarificar la unidad en el tipo (o usar un branded type).
+
+---
+
+### 14.7 — Features de Alto Valor Pendientes (ordenados por impacto)
+
+| # | Feature | Impacto | Bloque |
+|---|---------|---------|--------|
+| 1 | **Email transaccional** (pedido confirmado, enviado) | ⭐⭐⭐⭐⭐ | 11 |
+| 2 | **Restauración de stock en fallo de pago** | ⭐⭐⭐⭐⭐ | 14 (A-3) |
+| 3 | **Rate limiting en auth** | ⭐⭐⭐⭐ | 14 (A-2) |
+| 4 | **Headers de seguridad HTTP** | ⭐⭐⭐⭐ | 14 (A-1) |
+| 5 | **PSE sandbox E2E** (con credenciales test-seller) | ⭐⭐⭐⭐ | 10 |
+| 6 | **Polling en order-success para PSE** | ⭐⭐⭐ | 14 (UX-2) |
+| 7 | **PaymentLog en UI del admin** | ⭐⭐⭐ | 14 (UX-8) |
+| 8 | **Paginación en admin** | ⭐⭐⭐ | 14 (PERF-3) |
+| 9 | **Google Analytics 4 + Meta Pixel** | ⭐⭐⭐ | 12 |
+| 10 | **Wompi** (Nequi, Bancolombia, PSE nativo) | ⭐⭐⭐ | 10.5 |
+| 11 | **Cancelación de pedido con restauración de stock** | ⭐⭐⭐ | — |
+| 12 | **Imágenes reales de productos** (migrar de placeholder) | ⭐⭐ | 9 (pendiente) |
+| 13 | **Stock bajo en admin** | ⭐⭐ | 14 (UX-7) |
+| 14 | **Stripe** (clientes internacionales) | ⭐⭐ | 10.6 |
+
+---
+
+### 14.8 — Cómo sacarle el máximo a Fable 5
+
+Fable 5 es especialmente bueno en razonamiento multi-archivo y detección de
+inconsistencias sutiles entre capas. Prompt recomendado por tipo de tarea:
+
+**Para búsqueda de bugs:**
+```
+Contexto: e-commerce Next.js 15, Prisma, MercadoPago.
+Archivos relevantes: [listar los de la sección].
+Tarea específica: [nombre del bug].
+Confirma si el bug existe, muestra la línea exacta del problema y propone el fix
+con el código completo del cambio. Si no existe, explica por qué.
+```
+
+**Para review de seguridad:**
+```
+Haz un security review de [archivo/ruta]. Busca específicamente:
+injection, auth bypass, información sensible expuesta, inputs sin validar.
+Retorna solo hallazgos reales con línea de código, severidad (crítico/importante/menor)
+y fix propuesto.
+```
+
+**Para implementación de features:**
+```
+Implementa [feature] en este proyecto.
+Stack: Next.js 15 App Router, TypeScript strict, Tailwind v4, Prisma v7, PostgreSQL.
+Restricciones: no comentarios innecesarios, no abstracciones prematuras,
+el monto siempre viene de la DB, nunca del cliente.
+Archivos existentes relacionados: [listar].
+```
+
+**Orden de ejecución recomendado (prioridad para producción):**
+1. [A-3] Restaurar stock en fallo → `src/lib/orders.ts`
+2. [A-1] Headers HTTP → `next.config.ts`
+3. [BUG-1] Shipping desde DB → `src/lib/orders.ts`
+4. [BUG-2] pago-fallido con orderId → `src/app/(store)/pago-fallido/`
+5. [A-2] Rate limiting → `src/app/api/cuenta/register/`, `src/app/api/auth/`
+6. [BUG-3] Polling PSE → `src/app/(store)/order-success/[id]/`
+7. [A-4] Ownership check en order-success
+8. Bloque 11 (emails) — prerequisito para producción real
 
 ---
 

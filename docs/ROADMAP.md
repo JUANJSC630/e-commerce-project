@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-11 (Bloque 14 — Plan de Auditoría para Fable 5 agregado) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-11 (Bloque 9.10 — Media Manager + Bloque 14 — Plan Fable 5) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -1121,6 +1121,326 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
 
 ---
 
+### ⏳ Bloque 9.10 — Media Manager (gestor completo de archivos del CDN)
+
+> **Objetivo**: una página dedicada en el admin (`/admin/media`) que muestra TODOS
+> los archivos subidos al CDN de UploadThing, indica cuáles están siendo usados y
+> dónde, detecta huérfanos, y permite limpiarlos individualmente o en lote — todo
+> integrado con las entidades reales de la DB (productos, categorías, settings).
+>
+> **Por qué es necesario**: hoy el admin puede subir imágenes desde cualquier editor
+> pero nunca tiene una vista global. Archivos de prueba, versiones antiguas de logos,
+> banners reemplazados y fotos de categorías eliminadas acumulan espacio en el CDN
+> sin saberlo. El limpiador automático (`media-cleanup.ts`) borra huérfanos al
+> reemplazar/eliminar entidades, pero no detecta los que quedaron de antes.
+
+---
+
+#### Lo que la UTApi de UploadThing permite (confirmado en la documentación oficial)
+
+| Método UTApi                          | Qué hace                                     | Parámetros clave                                      |
+| ------------------------------------- | -------------------------------------------- | ----------------------------------------------------- |
+| `listFiles({ limit, offset })`        | Lista paginada de todos los archivos del app | `limit` (máx 500, default 500), `offset` para paginar |
+| `deleteFiles(keys[])`                 | Elimina archivos por key; soporta batch      | Array de fileKeys; máx 25 simultáneos                 |
+| `renameFiles([{ fileKey, newName }])` | Renombra uno o varios archivos               | Array de objetos fileKey + newName                    |
+| `uploadFilesFromUrl(urls[])`          | Sube desde URL externa al CDN                | Para migraciones futuras                              |
+| `updateACL(keys, { acl })`            | Cambia acceso a público o privado            | `"public-read"` o `"private"`                         |
+
+**Campos disponibles por archivo** (response de `listFiles`):
+
+```typescript
+{
+  key: string // ej: "2e0fdb64-9957-4262-8e45-f372ba903ac8_imagen.jpg"
+  name: string // nombre original del archivo
+  size: number // bytes
+  uploadedAt: number // timestamp unix
+  status: "Uploaded" | "Uploading" | "Failed" | "Deletion Pending"
+}
+```
+
+**URL pública** (determinística, ya calculada en `media-library.ts`):
+
+```
+https://{appId}.ufs.sh/f/{key}
+```
+
+El `appId` se extrae del `UPLOADTHING_TOKEN` (base64 JSON).
+
+**Límites relevantes**:
+
+- No hay método `getUsageInfo()` para cuota de almacenamiento total
+- No hay metadata custom por archivo (no podemos guardar en UT a qué entidad pertenece)
+- Borrado concurrente: máx 25 archivos por llamada — batching necesario para lotes grandes
+
+---
+
+#### Campos de imagen en la DB que deben escanearse
+
+El scanner de uso debe cruzar TODAS estas fuentes para saber si un archivo está "en uso":
+
+| Tabla / Fuente                 | Campo                              | Tipo                      | Notas                               |
+| ------------------------------ | ---------------------------------- | ------------------------- | ----------------------------------- |
+| `Product`                      | `image`                            | `String`                  | URL directa o `/placeholder.svg`    |
+| `Category`                     | `image`                            | `String?`                 | URL directa o null                  |
+| `User`                         | `image`                            | `String?`                 | Generalmente null o avatar externo  |
+| `Setting` (key `brand`)        | `value.logoUrl`                    | `String?` dentro de JSON  | Logo de la tienda                   |
+| `Setting` (key `home_content`) | `value.heroBanners[].image`        | `String[]` dentro de JSON | Banners del hero                    |
+| `Setting` (key `home_content`) | `value.featuredCategories[].image` | `String[]` dentro de JSON | Categorías destacadas               |
+| `Setting` (cualquier otra)     | `value`                            | `Json` recursivo          | Cualquier campo futuro con imágenes |
+
+La función `collectUploadThingUrls(value)` de `media-cleanup.ts` ya hace el
+escaneo recursivo de JSON — **reutilizar sin modificar**.
+
+---
+
+#### Arquitectura del módulo
+
+```
+src/
+├── lib/
+│   └── media-manager.ts          ← nuevo: scan de uso + build del índice de referencias
+│
+├── app/api/admin/
+│   └── media/
+│       ├── route.ts              ← extender: añadir DELETE + paginación + ?scan=true
+│       └── scan/route.ts         ← nuevo: GET — devuelve el informe de uso completo
+│
+├── app/admin/
+│   └── media/
+│       └── page.tsx              ← nuevo: página completa del gestor
+│
+└── components/admin/media/
+    ├── image-upload-field.tsx    ← existente, sin cambios
+    ├── media-library-modal.tsx   ← existente, sin cambios
+    └── media-manager-page.tsx    ← nuevo: Client Component principal del gestor
+```
+
+---
+
+#### Fase 1 — Scanner de uso (`src/lib/media-manager.ts`)
+
+```typescript
+// Tipos de retorno del scanner
+export interface FileReference {
+  entity: "product" | "category" | "setting" | "user"
+  entityId: string
+  entityName: string // nombre legible: "Vestido Rosa" / "Bebés" / "brand.logoUrl"
+  field: string // "image" / "value.heroBanners[0].image"
+}
+
+export interface ScannedFile {
+  key: string
+  url: string
+  name: string
+  size: number // bytes
+  uploadedAt: number // timestamp
+  usedBy: FileReference[] // vacío = huérfano
+  isOrphan: boolean // shortcut: usedBy.length === 0
+}
+
+export interface ScanResult {
+  files: ScannedFile[]
+  totalFiles: number
+  totalSize: number // bytes sumados
+  orphanCount: number
+  orphanSize: number // bytes que se pueden liberar
+  scannedAt: number // timestamp del scan
+}
+```
+
+**Algoritmo del scan** (en `media-manager.ts`):
+
+```
+1. listFiles() de UTApi — paginar con limit=500 hasta hasMore=false
+   → construir Map<key, FileInfo>
+
+2. Escanear la DB en paralelo (Promise.all):
+   a. prisma.product.findMany({ select: { id, name, image, imageAlt } })
+   b. prisma.category.findMany({ select: { id, name, image } })
+   c. prisma.user.findMany({ select: { id, name, image } })
+   d. prisma.setting.findMany({ select: { key, value } })
+
+3. Por cada URL encontrada en la DB:
+   - Extraer key con uploadThingKeyFromUrl() (ya existe en media-cleanup.ts)
+   - Si el key está en el Map del paso 1: agregar la referencia a FileReference[]
+
+4. Construir ScannedFile[] cruzando los resultados:
+   - archivos con referencias → isOrphan: false
+   - archivos sin referencias → isOrphan: true
+
+5. Ordenar: huérfanos primero, luego por fecha de subida desc
+```
+
+**Caché del scan**: el scan puede tardar 1-3 segundos (2 llamadas: UTApi + DB).
+Cachear el resultado 5 minutos con `unstable_cache` y un tag `"media-scan"`.
+La acción de borrar un archivo debe llamar `revalidateTag("media-scan")`.
+
+---
+
+#### Fase 2 — API routes
+
+**`GET /api/admin/media`** (extender el existente):
+
+```
+Parámetros:
+  ?page=1         → paginación en el cliente (25 por página)
+  ?filter=all|used|orphan  → filtro de estado
+
+Respuesta actual:
+  { items: MediaItem[] }
+
+Respuesta nueva:
+  {
+    items: ScannedFile[],
+    total: number,
+    orphanCount: number,
+    orphanSize: number,
+    page: number,
+    hasMore: boolean
+  }
+```
+
+**`DELETE /api/admin/media`** (nuevo):
+
+```typescript
+// Body: { keys: string[] }
+// Validar: máximo 100 keys por request (protección contra abusos)
+// Proceso:
+//   1. Verificar que ninguna key está siendo usada en la DB (re-verificar antes de borrar)
+//   2. Batching: deletar en chunks de 25 (límite UTApi)
+//   3. revalidateTag("media-scan")
+//   4. Retornar: { deleted: number, failed: string[] }
+// Permisos: misma lógica que el GET actual (products|categories|settings create/update)
+```
+
+**`GET /api/admin/media/scan`** (nuevo):
+
+```
+Dispara un scan fresco (ignora caché) y retorna ScanResult completo.
+Solo accesible por admins con permiso settings.
+Útil para el botón "Actualizar" de la UI.
+```
+
+---
+
+#### Fase 3 — UI: página `/admin/media`
+
+**Layout general**:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Gestor de Medios                    [Actualizar ↻]  │
+│                                                      │
+│  📦 47 archivos · 12.4 MB · ⚠️ 8 huérfanos (2.1 MB) │
+│                                                      │
+│  [Todos (47)] [En uso (39)] [Huérfanos (8)]         │
+│                                                      │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐      │
+│  │ img  │ │ img  │ │ img  │ │ img  │ │ img  │      │
+│  │      │ │      │ │ ⚠️    │ │      │ │ ⚠️    │      │
+│  │ 245KB│ │ 180KB│ │ 312KB│ │ 95KB │ │ 428KB│      │
+│  │ ✅x3 │ │ ✅x1 │ │ Huér │ │ ✅x2 │ │ Huér │      │
+│  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘      │
+│                                                      │
+│  [☐ Seleccionar todo]  [🗑 Eliminar seleccionados]   │
+│                                                      │
+│  ← Anterior  Página 1 de 2  Siguiente →             │
+└─────────────────────────────────────────────────────┘
+```
+
+**Tarjeta de archivo (detalle al hover/click)**:
+
+```
+┌────────────────────────────────┐
+│  [✓]  [imagen thumbnail]       │
+│                                │
+│  banner-hero-verano.jpg        │
+│  312 KB · Hace 3 días          │
+│                                │
+│  ⚠️ Sin referencias            │
+│     (o)                        │
+│  ✅ Usado en:                  │
+│    · Producto "Vestido Rosa"   │
+│    · Setting home_content[0]   │
+│                                │
+│  [🗑 Eliminar]                 │
+└────────────────────────────────┘
+```
+
+**Acciones masivas**:
+
+- Checkbox por tarjeta + "Seleccionar todo los huérfanos"
+- Botón "Eliminar seleccionados (N)" con AlertDialog de confirmación
+- "Eliminar todos los huérfanos" — acción en lote con confirmación explícita
+  mostrando el espacio que se liberará: "¿Eliminar 8 archivos y liberar 2.1 MB?"
+
+**Flujo de eliminación segura**:
+
+```
+1. Admin selecciona archivos y hace click en "Eliminar"
+2. AlertDialog: "¿Eliminar N archivos? Esta acción no se puede deshacer."
+   Si hay archivos EN USO en la selección: warning extra
+   "⚠️ X archivos seleccionados están siendo usados. Eliminarlos romperá
+   las imágenes donde aparecen."
+3. Confirmación → DELETE /api/admin/media con { keys: [...] }
+4. API re-verifica uso antes de borrar (protección de último momento)
+5. Resultado: toast "N archivos eliminados, X MB liberados"
+6. Grid se actualiza sin reload completo
+```
+
+---
+
+#### Fase 4 — Integración con el sistema existente
+
+```
+[x] (ya existe) media-cleanup.ts → borra huérfanos al reemplazar imágenes en entities
+[ ] Agregar revalidateTag("media-scan") en media-cleanup.ts cuando borra
+[ ] Agregar link "Gestor de medios →" en la MediaLibraryModal (acceso rápido desde editores)
+[ ] Sidebar del admin → agregar entrada "Medios" bajo Settings o como sección propia
+    (solo visible para users con settings o products read+)
+[ ] Mostrar badge de "X huérfanos" en el link del sidebar si orphanCount > 0
+    (leído del caché del scan, no bloquea el render del sidebar)
+```
+
+---
+
+#### Consideraciones técnicas
+
+**Consistencia eventual**: un archivo puede aparecer como "usado" en el scan
+pero ya no estarlo si el admin eliminó la entidad entre el scan y el render.
+La re-verificación en el DELETE handler es la guardia final.
+
+**Performance**: el scan hace `listFiles` (HTTP a UTApi) + 4 queries de Prisma en paralelo.
+En una tienda con 500 archivos y 200 productos + 20 categorías + 10 settings, el scan
+tarda ~1-2 segundos en cold y es instantáneo desde caché. El TTL de 5 min es adecuado.
+
+**Paginación en el cliente**: el scan trae todos los archivos de una vez (para poder
+calcular el total de huérfanos y el tamaño). La paginación de 25 por página es UI-only.
+
+**Sin rename en la UI inicial**: `renameFiles` está disponible en UTApi pero el nombre
+del archivo no es crítico para el funcionamiento. Puede agregarse como mejora V2.
+
+---
+
+#### Checklist de tareas
+
+```
+[ ] src/lib/media-manager.ts — scanner con ScanResult, FileReference, caché 5 min
+[ ] GET /api/admin/media — extender con paginación, ?filter, stats
+[ ] DELETE /api/admin/media — borrado con re-verificación + batch de 25 + revalidate
+[ ] GET /api/admin/media/scan — scan fresco forzado
+[ ] src/app/admin/media/page.tsx — Server Component con datos iniciales del scan
+[ ] src/components/admin/media/media-manager-page.tsx — Client Component:
+    tabs, grid, checkboxes, AlertDialog, paginación, toast
+[ ] Sidebar del admin → link "Medios" + badge de huérfanos
+[ ] MediaLibraryModal → link "Abrir gestor completo →"
+[ ] media-cleanup.ts → revalidateTag("media-scan") cuando borra archivos
+[ ] E2E: subir archivo de prueba → verificar aparece en gestor como huérfano →
+    eliminar → verificar desaparece de UTApi (listar de nuevo)
+```
+
+---
+
 ### ⏳ Bloque 10.5 — Wompi (Colombia — fase futura)
 
 > **Objetivo**: Agregar Wompi como segundo proveedor de pago disponible.
@@ -1794,7 +2114,13 @@ src/
 
 #### 🔴 Prioridad A — Críticos
 
-**[A-1] Sin headers de seguridad HTTP**
+**[A-1] Sin headers de seguridad HTTP** ✅ Resuelto 2026-06-11
+
+- Resolución: `next.config.ts` define `async headers()` con X-Frame-Options DENY,
+  X-Content-Type-Options nosniff, Referrer-Policy, Permissions-Policy, CSP completa
+  (MP secure fields, UploadThing, Google Fonts) y HSTS condicionado a producción.
+  Verificado con curl contra `next start` (HSTS presente) y `next dev` (HSTS ausente).
+
 - Archivo: `next.config.ts`
 - Problema: el config no define `headers()`. Sin CSP, HSTS, X-Frame-Options,
   X-Content-Type-Options ni Referrer-Policy. Un navegador moderno no tiene ninguna
@@ -1804,9 +2130,10 @@ src/
   `Referrer-Policy: strict-origin-when-cross-origin`,
   `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` (solo producción).
   CSP es complejo con MP iframes pero debe tener al menos `default-src 'self'` con
-  las excepciones mínimas necesarias (sdk.mercadopago.com, *.ufs.sh, fonts.googleapis.com).
+  las excepciones mínimas necesarias (sdk.mercadopago.com, \*.ufs.sh, fonts.googleapis.com).
 
 **[A-2] Sin rate limiting en login y registro**
+
 - Archivos: `src/app/api/cuenta/register/route.ts`,
   `src/app/api/auth/[...nextauth]/route.ts`
 - Problema: un atacante puede registrar cuentas spam o hacer fuerza bruta de contraseñas
@@ -1815,7 +2142,14 @@ src/
   o alternativa simple con Prisma (`LoginAttempt` tabla con ventana deslizante).
   Límite sugerido: 5 intentos de login / 10 min por IP; 3 registros / hora por IP.
 
-**[A-3] Stock NO se restaura al fallar o cancelar un pedido**
+**[A-3] Stock NO se restaura al fallar o cancelar un pedido** ✅ Resuelto 2026-06-11
+
+- Resolución: `markOrderFailed()` ya restauraba stock en transacción guardada e
+  idempotente (verificado). Faltaba la cancelación desde el admin: el PATCH de
+  `/api/admin/orders/[id]` ahora pasa por `markOrderFailed()` cuando el status
+  destino es CANCELLED, restaurando stock solo si el pago no había settleado.
+  Pedidos PAID solo cambian de status (el restock en refunds se decide aparte).
+
 - Archivos: `src/lib/orders.ts`, `src/app/api/payments/initiate/route.ts`,
   `src/app/api/payments/webhook/mercadopago/route.ts`
 - Problema crítico de negocio: el stock se descuenta cuando se CREA el pedido
@@ -1829,6 +2163,7 @@ src/
   llama ninguna restauración de stock.
 
 **[A-4] `order-success/[id]` no verifica propiedad del pedido**
+
 - Archivo: `src/app/(store)/order-success/[id]/page.tsx`,
   `src/lib/orders.ts::getOrderForConfirmation`
 - Problema: cualquier usuario (o guest) puede ver la página de confirmación de
@@ -1840,6 +2175,7 @@ src/
   temporal o al menos limitar la información expuesta (no mostrar dirección completa).
 
 **[A-5] Fuga de rol en JWT — cambios de rol no se propagan**
+
 - Archivos: `src/lib/auth-options.ts`, `middleware.ts`
 - Problema: NextAuth con estrategia JWT guarda el rol en el token (cookie cifrada).
   Si un admin cambia el rol de un usuario activo, ese usuario sigue con el rol viejo
@@ -1852,12 +2188,14 @@ src/
 #### 🟠 Prioridad B — Importantes
 
 **[B-1] `/api/payments/simulate` — ¿está gateado a dev?**
+
 - Archivo: `src/app/api/payments/simulate/route.ts`
 - Revisar: si la ruta de simulación existe en producción, un atacante podría simular
   pagos aprobados sin pasar por el proveedor real. Debe retornar 404 en `NODE_ENV=production`.
 - Acción: leer el archivo y confirmar que tiene la guarda de entorno.
 
 **[B-2] Password sin límite de longitud máxima (bcrypt trunca a 72 bytes)**
+
 - Archivo: `src/lib/account.ts::registerCustomer`
 - Problema: bcrypt trunca silenciosamente contraseñas > 72 bytes. Una contraseña de
   100 caracteres y una de 72 (con el mismo prefijo) producen el mismo hash. No es
@@ -1867,6 +2205,7 @@ src/
   También verificar: `newPassword` en `changePassword` tiene la misma validación.
 
 **[B-3] `customer_role_id` cacheado a nivel de módulo en serverless**
+
 - Archivo: `src/lib/account.ts` (variable `customerRoleId`)
 - Problema: el cache de módulo vive por instancia Lambda/worker. En un deploy fresh
   o tras un cold start de Vercel, la caché está vacía y hace una query. No es un bug
@@ -1876,12 +2215,14 @@ src/
   maneja el caso de reconexión.
 
 **[B-4] Sin validación del `orderId` en `/api/payments/initiate` para PSE**
+
 - Archivo: `src/app/api/payments/initiate/route.ts`
 - Revisar: la ruta verifica que el pedido pertenece al usuario en sesión (`getOrderPaymentInfo`
   con `userId`). Confirmar que esto también aplica para guests (que no tienen sesión) y
   que no hay forma de iniciar pago en un pedido ajeno enviando un `orderId` arbitrario.
 
 **[B-5] Admin APIs — verificar que TODAS validan sesión + permiso**
+
 - Archivos: `src/app/api/admin/*/route.ts` (todos)
 - Acción: auditar cada route handler del admin para confirmar que el primer bloque
   verifica `getServerSession(authOptions)` + `hasPermission(...)`. Buscar cualquier
@@ -1897,11 +2238,13 @@ src/
 #### 🟡 Prioridad C — Menores
 
 **[C-1] Contraseña sin requisitos de complejidad**
+
 - Archivo: `src/lib/account.ts`
 - Solo verifica longitud ≥ 8. Sin mayúscula, número ni símbolo. Para una tienda
   de producción es insuficiente. Considerar `zxcvbn` para score de fortaleza.
 
 **[C-2] Emails no verificados**
+
 - Archivo: `src/app/api/cuenta/register/route.ts`
 - El registro acepta cualquier email sin verificación. Riesgo: cuentas spam con
   emails de terceros. Fix: enviar email de verificación (se alinea con Bloque 11).
@@ -1910,7 +2253,14 @@ src/
 
 ### 14.2 — Bugs confirmados
 
-**[BUG-1] Shipping cost en pedidos NO usa la config del admin**
+**[BUG-1] Shipping cost en pedidos NO usa la config del admin** ✅ Resuelto 2026-06-11
+
+- Resolución: `createOrder()` llama `loadAllSettings()` y `shippingCostFor()` recibe
+  `{ freeThreshold, standardCost }` como parámetro. Verificado E2E: con
+  `standardCost=12000` en la tabla Setting, el pedido cobró 12000 de envío.
+  `cart-summary` y `order-confirmation` ya usaban `useSettings()`; `mini-cart`
+  no muestra costo de envío.
+
 - Archivos: `src/lib/orders.ts` línea ~10:
   ```typescript
   import { shipping } from "@/config/store.config"
@@ -1924,6 +2274,7 @@ src/
 - Verificar también: `cart-summary` y `mini-cart` — ¿usan `useSettings()` o el config estático?
 
 **[BUG-2] `pago-fallido` no sabe cuál pedido falló → stock y carrito inconsistentes**
+
 - Archivo: `src/app/(store)/pago-fallido/page.tsx`
 - Problema: la página no recibe `orderId`, así que:
   1. No puede mostrar los detalles del pedido que falló
@@ -1936,6 +2287,7 @@ src/
   `/pago/[orderId]`. La inconsistencia de stock se resuelve con [A-3].
 
 **[BUG-3] `order-success` sin polling para PSE pendiente**
+
 - Archivo: `src/app/(store)/order-success/[id]/page.tsx`
 - Problema: si el usuario llega a order-success con `paymentStatus=PENDING` (PSE en
   tránsito), la página es estática — muestra "Tu pago está en proceso" pero nunca
@@ -1947,6 +2299,7 @@ src/
   Límite de polling: 5 minutos o hasta recibir `PAID`/`FAILED`.
 
 **[BUG-4] Hot-reload de Next.js HMR orphana los iframes de MP**
+
 - Archivo: `src/components/payment/mp-card-form.tsx`
 - Problema conocido y documentado: cuando HMR reemplaza el componente en dev, el SDK
   de MP mantiene los iframes ligados al DOM antiguo. El componente remontado crea
@@ -1958,6 +2311,7 @@ src/
   `"Recarga completa necesaria (Cmd+Shift+R) después de cambios en este componente"`.
 
 **[BUG-5] `nextOrderNumber()` puede generar colisiones bajo carga alta (edge case)**
+
 - Archivo: `src/lib/orders.ts::nextOrderNumber`
 - Problema: cuenta pedidos del año (`count`) dentro de la transacción y hace `count + 1`.
   Bajo dos transacciones simultáneas con el mismo count, ambas intentan crear el mismo
@@ -1967,6 +2321,7 @@ src/
 - Revisar: confirmar que el campo `orderNumber` tiene `@unique` en el schema de Prisma.
 
 **[BUG-6] Admin sidebar — permisos no reflejados en tiempo real**
+
 - Archivo: `src/components/admin/sidebar.tsx`
 - Revisar: si el sidebar filtra items por los permisos del JWT (snapshot en login),
   un cambio de permisos por otro admin no se refleja hasta que el usuario cierra sesión.
@@ -1980,6 +2335,7 @@ Cada flujo debe verificarse con Playwright o manualmente. Los pasos marcados `[R
 son los que más frecuentemente fallan en producción.
 
 #### Flujo 1: Compra con tarjeta (happy path)
+
 ```
 [ ] 1. Agregar producto al carrito — verificar que StockBadge refleja stock real
 [ ] 2. Ir a carrito → ¿precio y envío usan settings de la DB?    [RIESGO: BUG-1]
@@ -1993,6 +2349,7 @@ son los que más frecuentemente fallan en producción.
 ```
 
 #### Flujo 2: Rechazo de tarjeta y reintento
+
 ```
 [ ] 1. Pagar con nombre FUND (fondos insuficientes)
 [ ] 2. Respuesta rejected → mensaje de error en la página de pago
@@ -2003,6 +2360,7 @@ son los que más frecuentemente fallan en producción.
 ```
 
 #### Flujo 3: PSE completo
+
 ```
 [ ] 1. Crear pedido → /pago → seleccionar PSE
 [ ] 2. Llenar banco, tipo persona, CC, número
@@ -2014,6 +2372,7 @@ son los que más frecuentemente fallan en producción.
 ```
 
 #### Flujo 4: Webhook idempotente (entrega duplicada)
+
 ```
 [ ] 1. Enviar mismo webhook approved dos veces
 [ ] 2. Verificar: segunda entrega es no-op (Order ya en PAID → guarda no ejecuta)
@@ -2022,6 +2381,7 @@ son los que más frecuentemente fallan en producción.
 ```
 
 #### Flujo 5: Gestión de stock en admin
+
 ```
 [ ] 1. Admin edita stock de producto → verificar storefront actualiza
 [ ] 2. Producto llega a stock=0 → StockBadge dice "Agotado" → botón deshabilitado
@@ -2031,6 +2391,7 @@ son los que más frecuentemente fallan en producción.
 ```
 
 #### Flujo 6: Cuenta de cliente y reclamación de pedidos
+
 ```
 [ ] 1. Comprar como guest con email X
 [ ] 2. En order-success → click "Crear cuenta" → registro con email X
@@ -2040,6 +2401,7 @@ son los que más frecuentemente fallan en producción.
 ```
 
 #### Flujo 7: Admin — ciclo completo de pedido
+
 ```
 [ ] 1. Pedido llega en estado PENDING → admin ve en lista
 [ ] 2. Admin actualiza a CONFIRMED → ¿email disparado?    [Bloque 11 pendiente]
@@ -2049,6 +2411,7 @@ son los que más frecuentemente fallan en producción.
 ```
 
 #### Flujo 8: Theming en vivo
+
 ```
 [ ] 1. Admin cambia color primario → guardar → verificar storefront actualiza (ISR tag)
 [ ] 2. Cambiar fuente → verificar que los iframes de MP NO pierden sus colores
@@ -2062,33 +2425,39 @@ son los que más frecuentemente fallan en producción.
 ### 14.4 — Performance & Caché
 
 **[PERF-1] `loadAllSettings` no se usa en la capa de pedidos**
+
 - Impacto: `createOrder` usa `shipping` del config estático. Fix = usar settings de DB.
 - También revisar: `src/app/(store)/checkout-flow/page.tsx` — ¿el subtotal de envío
   mostrado en el checkout usa el mismo cálculo que `createOrder`?
 
 **[PERF-2] Admin dashboard — múltiples queries sin batching**
+
 - Archivo: `src/app/admin/page.tsx`
 - Revisar si las stats (total pedidos, total ventas, total usuarios, etc.) se hacen
   con `Promise.all()` o secuencialmente. Si son secuenciales, paralelizarlas.
 
 **[PERF-3] Sin paginación en listas del admin**
+
 - Archivos: `src/app/admin/productos/page.tsx`, `src/app/admin/pedidos/page.tsx`
 - Problema: si hay 500+ productos o pedidos, la query carga todos. Agregar
   `take`/`skip` con cursor-based pagination y controles en la UI.
 
 **[PERF-4] `lucide-icons.ts` registra 1594 íconos en bundle**
+
 - Archivo: `src/lib/lucide-icons.ts`
 - Se usa en `icon-picker.tsx` (admin) y en el storefront para resolver íconos del
   trust-bar por nombre. Si este módulo llega al bundle del cliente, es pesado.
 - Verificar: ¿tiene `"server-only"`? ¿El trust-bar resuelve íconos en el servidor?
 
 **[PERF-5] Caché de settings — verificar que `revalidateTag("settings")` funciona E2E**
+
 - Archivos: `src/lib/settings.ts`, `src/app/api/admin/settings/route.ts`
 - Flujo: `saveSetting()` llama `revalidateTag("settings")` → la próxima request
   al storefront debe generar una respuesta fresca. Verificar con un test: cambiar un
   setting en admin → esperar < 1s → hacer fetch al storefront → confirmar nuevo valor.
 
 **[PERF-6] Imágenes — verificar `sizes` en ProductCard para LCP**
+
 - Archivo: `src/components/product/product-card.tsx`
 - Confirmar que el `sizes` prop de `next/image` es preciso para evitar que el navegador
   descargue imágenes más grandes de lo necesario. Revisar en DevTools → Network.
@@ -2098,35 +2467,43 @@ son los que más frecuentemente fallan en producción.
 ### 14.5 — UX & Experiencia del Cliente
 
 **[UX-1] `/pago-fallido` sin contexto del pedido**
+
 - Problema: la página es genérica, sin número de pedido ni "Intentar de nuevo".
 - Fix: aceptar `?orderId=` y mostrar botón "Reintentar" → `/pago/[orderId]`.
 
 **[UX-2] `order-success` en PSE pendiente no tiene auto-refresh**
+
 - Problema: el usuario no sabe si el pago fue confirmado sin refrescar manualmente.
 - Fix: polling client-side de `paymentStatus` cada 5s (ver BUG-3).
 
 **[UX-3] Búsqueda (`/search`) sin paginación ni estado vacío claro**
+
 - Archivo: `src/app/(store)/search/page.tsx`
 - Revisar: ¿qué pasa con `?q=` vacío? ¿Hay manejo de "sin resultados" con sugerencias?
 
 **[UX-4] Sin feedback visual en admin al cambiar estado de pedido**
+
 - Archivo: `src/components/admin/orders/order-status-updater.tsx`
 - Revisar: ¿hay toast de confirmación? ¿El botón tiene loading state?
 
 **[UX-5] Carrito sin guardar al refrescar en checkout**
+
 - El checkout de 4 pasos usa estado local. Si el usuario refresca en el paso 3,
   pierde la información de envío. Considerar `sessionStorage` como backup de borrador.
 
 **[UX-6] Admin pedidos — sin acción masiva de estado**
+
 - No hay forma de marcar 10 pedidos como "Enviados" a la vez. Para operar a escala
   es necesario. Agregar checkbox + acción masiva en la tabla de pedidos.
 
 **[UX-7] Sin indicador de "stock bajo" en el admin de productos**
+
 - Archivo: `src/app/admin/productos/page.tsx`
 - Si un producto tiene stock ≤ `inventory.lowStockThreshold`, debería aparecer un badge
   de advertencia en la tabla del admin (ya existe la lógica en `src/lib/inventory.ts`).
 
 **[UX-8] Admin — PaymentLog no visible en detalle del pedido**
+
 - Archivo: `src/app/admin/pedidos/[id]/page.tsx`
 - La tabla `PaymentLog` existe y se llena, pero no aparece en la UI del admin.
   Agregar sección de historial de pagos en el detalle del pedido (orderId, evento,
@@ -2137,32 +2514,39 @@ son los que más frecuentemente fallan en producción.
 ### 14.6 — Deuda Técnica & Arquitectura
 
 **[ARCH-1] `shipping` hardcoded en `orders.ts` — desacoplarlo de settings**
+
 - Ver BUG-1. Es la deuda técnica más impactante en el flujo de negocio.
 
 **[ARCH-2] JWT sessions — considerar rotación automática de rol**
+
 - Ver A-5. El riesgo es bajo en producción temprana pero debe estar en el radar.
 
 **[ARCH-3] `mock-provider.ts` — confirmar que no puede activarse en producción**
+
 - Archivo: `src/lib/payments/mock-provider.ts`
 - Leer el archivo: verificar que retorna error o que el factory (`index.ts`) solo lo
   instancia cuando `PAYMENT_PROVIDER=mock` AND `NODE_ENV !== 'production'`.
 
 **[ARCH-4] Error boundaries — auditar cobertura en Server Components**
+
 - Next.js App Router: un Server Component async que lanza puede burbujear al
   `error.tsx` más cercano. Verificar que las páginas del storefront con datos de Prisma
   tienen error boundaries apropiados (`loading.tsx` + `error.tsx` en las carpetas necesarias).
 
 **[ARCH-5] `src/app/(store)/essentials/page.tsx` — verificar si es redundante**
+
 - Desde Bloque 9.6, Esenciales es una categoría dinámica. Esta página estática puede
   estar duplicando o contraddiciendo la ruta `/category/[slug]`. Revisar si se puede
   eliminar o si tiene casos de uso propios.
 
 **[ARCH-6] `use-toast.ts` — shadcn toast legacy vs Sonner**
+
 - Archivo: `src/hooks/use-toast.ts`
 - El proyecto migró a Sonner en Bloque 2, pero `use-toast.ts` sigue existiendo.
   ¿Algún componente todavía lo importa? Verificar con grep y eliminar si es dead code.
 
 **[ARCH-7] Tipos de pago en `types.ts` del SDK vs tipos internos**
+
 - Archivo: `src/lib/payments/types.ts`
 - El tipo `CreateCardPaymentInput` tiene `amountCents: number` pero el comentario dice
   "centavos" mientras que el proveedor de MP trabaja en pesos (no centavos).
@@ -2173,22 +2557,22 @@ son los que más frecuentemente fallan en producción.
 
 ### 14.7 — Features de Alto Valor Pendientes (ordenados por impacto)
 
-| # | Feature | Impacto | Bloque |
-|---|---------|---------|--------|
-| 1 | **Email transaccional** (pedido confirmado, enviado) | ⭐⭐⭐⭐⭐ | 11 |
-| 2 | **Restauración de stock en fallo de pago** | ⭐⭐⭐⭐⭐ | 14 (A-3) |
-| 3 | **Rate limiting en auth** | ⭐⭐⭐⭐ | 14 (A-2) |
-| 4 | **Headers de seguridad HTTP** | ⭐⭐⭐⭐ | 14 (A-1) |
-| 5 | **PSE sandbox E2E** (con credenciales test-seller) | ⭐⭐⭐⭐ | 10 |
-| 6 | **Polling en order-success para PSE** | ⭐⭐⭐ | 14 (UX-2) |
-| 7 | **PaymentLog en UI del admin** | ⭐⭐⭐ | 14 (UX-8) |
-| 8 | **Paginación en admin** | ⭐⭐⭐ | 14 (PERF-3) |
-| 9 | **Google Analytics 4 + Meta Pixel** | ⭐⭐⭐ | 12 |
-| 10 | **Wompi** (Nequi, Bancolombia, PSE nativo) | ⭐⭐⭐ | 10.5 |
-| 11 | **Cancelación de pedido con restauración de stock** | ⭐⭐⭐ | — |
-| 12 | **Imágenes reales de productos** (migrar de placeholder) | ⭐⭐ | 9 (pendiente) |
-| 13 | **Stock bajo en admin** | ⭐⭐ | 14 (UX-7) |
-| 14 | **Stripe** (clientes internacionales) | ⭐⭐ | 10.6 |
+| #   | Feature                                                  | Impacto    | Bloque        |
+| --- | -------------------------------------------------------- | ---------- | ------------- |
+| 1   | **Email transaccional** (pedido confirmado, enviado)     | ⭐⭐⭐⭐⭐ | 11            |
+| 2   | **Restauración de stock en fallo de pago**               | ⭐⭐⭐⭐⭐ | 14 (A-3)      |
+| 3   | **Rate limiting en auth**                                | ⭐⭐⭐⭐   | 14 (A-2)      |
+| 4   | **Headers de seguridad HTTP**                            | ⭐⭐⭐⭐   | 14 (A-1)      |
+| 5   | **PSE sandbox E2E** (con credenciales test-seller)       | ⭐⭐⭐⭐   | 10            |
+| 6   | **Polling en order-success para PSE**                    | ⭐⭐⭐     | 14 (UX-2)     |
+| 7   | **PaymentLog en UI del admin**                           | ⭐⭐⭐     | 14 (UX-8)     |
+| 8   | **Paginación en admin**                                  | ⭐⭐⭐     | 14 (PERF-3)   |
+| 9   | **Google Analytics 4 + Meta Pixel**                      | ⭐⭐⭐     | 12            |
+| 10  | **Wompi** (Nequi, Bancolombia, PSE nativo)               | ⭐⭐⭐     | 10.5          |
+| 11  | **Cancelación de pedido con restauración de stock**      | ⭐⭐⭐     | —             |
+| 12  | **Imágenes reales de productos** (migrar de placeholder) | ⭐⭐       | 9 (pendiente) |
+| 13  | **Stock bajo en admin**                                  | ⭐⭐       | 14 (UX-7)     |
+| 14  | **Stripe** (clientes internacionales)                    | ⭐⭐       | 10.6          |
 
 ---
 
@@ -2198,6 +2582,7 @@ Fable 5 es especialmente bueno en razonamiento multi-archivo y detección de
 inconsistencias sutiles entre capas. Prompt recomendado por tipo de tarea:
 
 **Para búsqueda de bugs:**
+
 ```
 Contexto: e-commerce Next.js 15, Prisma, MercadoPago.
 Archivos relevantes: [listar los de la sección].
@@ -2207,6 +2592,7 @@ con el código completo del cambio. Si no existe, explica por qué.
 ```
 
 **Para review de seguridad:**
+
 ```
 Haz un security review de [archivo/ruta]. Busca específicamente:
 injection, auth bypass, información sensible expuesta, inputs sin validar.
@@ -2215,6 +2601,7 @@ y fix propuesto.
 ```
 
 **Para implementación de features:**
+
 ```
 Implementa [feature] en este proyecto.
 Stack: Next.js 15 App Router, TypeScript strict, Tailwind v4, Prisma v7, PostgreSQL.
@@ -2224,6 +2611,7 @@ Archivos existentes relacionados: [listar].
 ```
 
 **Orden de ejecución recomendado (prioridad para producción):**
+
 1. [A-3] Restaurar stock en fallo → `src/lib/orders.ts`
 2. [A-1] Headers HTTP → `next.config.ts`
 3. [BUG-1] Shipping desde DB → `src/lib/orders.ts`

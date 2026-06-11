@@ -98,9 +98,10 @@ Estructura de archivos clave:
 ---
 
 ### 🔴 ÍTEM 1 — Restaurar stock cuando un pago falla
+
 **Prioridad**: Crítica para producción  
 **Archivos principales**: `src/lib/orders.ts`, `src/app/api/payments/webhook/mercadopago/route.ts`, `src/app/api/payments/pse-return/route.ts`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-11 — ya estaba implementado en `markOrderFailed()` (transacción guardada + restock idempotente); solo se verificó
 
 ```
 CONTEXTO:
@@ -135,9 +136,10 @@ no agregar logs innecesarios más allá de los que ya existen.
 ---
 
 ### 🔴 ÍTEM 2 — Headers HTTP de seguridad
+
 **Prioridad**: Crítica para producción  
 **Archivos principales**: `next.config.ts`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-11 — headers + CSP verificados con curl en prod (HSTS presente) y dev (HSTS ausente, 'unsafe-eval' + ws: para HMR)
 
 ```
 CONTEXTO:
@@ -177,9 +179,10 @@ CRITERIO:
 ---
 
 ### 🔴 ÍTEM 3 — Shipping desde la DB en createOrder
+
 **Prioridad**: Alta — bug de negocio  
 **Archivos principales**: `src/lib/orders.ts`, `src/lib/settings.ts`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-11 — createOrder lee shipping de loadAllSettings(); verificado E2E con standardCost=12000 en DB (pedido DI-2026-022: shipping=12000)
 
 ```
 CONTEXTO:
@@ -223,6 +226,7 @@ CRITERIO:
 ---
 
 ### 🟠 ÍTEM 4 — pago-fallido con contexto del pedido
+
 **Prioridad**: Alta — UX crítica  
 **Archivos principales**: `src/app/(store)/pago-fallido/page.tsx`, `src/app/api/payments/pse-return/route.ts`, `src/app/(store)/order-success/[id]/page.tsx`  
 **Estado**: [ ] Pendiente
@@ -264,6 +268,7 @@ RESTRICCIONES:
 ---
 
 ### 🟠 ÍTEM 5 — Rate limiting en login y registro
+
 **Prioridad**: Alta — seguridad  
 **Archivos principales**: `src/app/api/cuenta/register/route.ts`, `src/lib/auth-options.ts`  
 **Estado**: [ ] Pendiente
@@ -306,6 +311,7 @@ RESTRICCIONES:
 ---
 
 ### 🟠 ÍTEM 6 — Polling en order-success para PSE pendiente
+
 **Prioridad**: Alta — UX  
 **Archivos principales**: `src/app/(store)/order-success/[id]/page.tsx`, `src/app/api/orders/[id]/route.ts`  
 **Estado**: [ ] Pendiente
@@ -350,6 +356,7 @@ RESTRICCIONES:
 ---
 
 ### 🟠 ÍTEM 7 — Verificar ownership en order-success
+
 **Prioridad**: Media-Alta — seguridad  
 **Archivos principales**: `src/lib/orders.ts`, `src/app/(store)/order-success/[id]/page.tsx`  
 **Estado**: [ ] Pendiente
@@ -387,6 +394,7 @@ RESTRICCIONES:
 ---
 
 ### 🟡 ÍTEM 8 — PaymentLog en UI del admin
+
 **Prioridad**: Media  
 **Archivos principales**: `src/app/admin/pedidos/[id]/page.tsx`, `prisma/schema.prisma`  
 **Estado**: [ ] Pendiente
@@ -430,6 +438,7 @@ mantener consistencia visual. No crear componentes nuevos si hay uno reutilizabl
 ---
 
 ### 🟡 ÍTEM 9 — Paginación en listas del admin
+
 **Prioridad**: Media  
 **Archivos principales**: `src/app/admin/pedidos/page.tsx`, `src/app/admin/productos/page.tsx`  
 **Estado**: [ ] Pendiente
@@ -469,6 +478,7 @@ RESTRICCIONES:
 ---
 
 ### 🟡 ÍTEM 10 — Stock bajo en admin de productos
+
 **Prioridad**: Media  
 **Archivos principales**: `src/app/admin/productos/page.tsx`, `src/lib/inventory.ts`  
 **Estado**: [ ] Pendiente
@@ -506,6 +516,7 @@ RESTRICCIONES:
 ---
 
 ### 🟡 ÍTEM 11 — Verificar /api/payments/simulate gateado a dev
+
 **Prioridad**: Media — seguridad  
 **Archivos principales**: `src/app/api/payments/simulate/route.ts`  
 **Estado**: [ ] Pendiente
@@ -534,6 +545,7 @@ src/lib/payments/mock-provider.ts y reporta si puede ser instanciado en producci
 ---
 
 ### 🟡 ÍTEM 12 — Dead code: use-toast.ts y otros
+
 **Prioridad**: Baja  
 **Estado**: [ ] Pendiente
 
@@ -558,6 +570,110 @@ GOAL:
    (verificar si tiene lógica propia o es simplemente un redirect).
 
 Reportar exactamente qué se eliminó y confirmar que yarn validate sigue pasando.
+```
+
+---
+
+---
+
+### 🟢 ÍTEM 13 — Media Manager: gestor completo de archivos del CDN
+
+**Prioridad**: Alta (limpieza de CDN, ahorro de costos)  
+**Archivos principales**: `src/lib/media-manager.ts` (nuevo), `src/app/api/admin/media/route.ts`, `src/app/admin/media/page.tsx` (nuevo), `src/components/admin/media/media-manager-page.tsx` (nuevo)  
+**Estado**: [ ] Pendiente
+
+```
+CONTEXTO:
+El admin puede subir imágenes desde cualquier editor de productos, categorías y
+configuración, pero no existe una vista global de qué hay en el CDN de UploadThing.
+Archivos de prueba, logos reemplazados y banners antiguos se acumulan indefinidamente.
+
+Infraestructura existente (reutilizar sin modificar):
+- src/lib/media-cleanup.ts → función uploadThingKeyFromUrl(), collectUploadThingUrls()
+  (escaneo recursivo de JSON), deleteUploadedImages()
+- src/lib/media-library.ts → listUploadedImages() con UTApi.listFiles()
+- src/app/api/admin/media/route.ts → GET existente, retorna { items: MediaItem[] }
+- src/components/admin/media/media-library-modal.tsx → modal de reutilización existente
+
+UTApi disponible (confirmado en docs oficiales):
+- listFiles({ limit, offset }) → { files: [{ key, name, size, uploadedAt, status }] }
+- deleteFiles(keys[]) → borrado batch; máx 25 simultáneos → hacer chunks
+- La URL pública es determinística: https://{appId}.ufs.sh/f/{key}
+- El appId se extrae del UPLOADTHING_TOKEN (ya lo hace media-library.ts)
+
+Campos de imagen en la DB a escanear:
+- Product.image (String, todos los productos)
+- Category.image (String?, todas las categorías)
+- User.image (String?, todos los usuarios)
+- Setting.value (Json) — TODOS los settings, escaneo recursivo con collectUploadThingUrls
+
+GOAL:
+Implementar el Media Manager completo en estas fases:
+
+FASE 1 — src/lib/media-manager.ts (nuevo):
+Función scanMediaUsage(): Promise<ScanResult>
+  1. Llamar utapi.listFiles({ limit: 500 }) — paginar si hasMore hasta tener todos
+  2. En paralelo (Promise.all): query Product.image, Category.image, User.image,
+     todas las Setting.value
+  3. Para cada URL de DB: extraer key con uploadThingKeyFromUrl(), registrar qué
+     entidad la usa (id, nombre, campo)
+  4. Cruzar con la lista de UT: archivos sin referencias = huérfanos
+  5. Cachear resultado 5 min con unstable_cache, tag "media-scan"
+
+Tipos:
+  FileReference { entity, entityId, entityName, field }
+  ScannedFile { key, url, name, size, uploadedAt, usedBy: FileReference[], isOrphan }
+  ScanResult { files, totalFiles, totalSize, orphanCount, orphanSize, scannedAt }
+
+FASE 2 — Extender src/app/api/admin/media/route.ts:
+  GET: agregar ?filter=all|used|orphan + paginación ?page (25 por página, client-side)
+       retornar ScanResult completo con stats
+  DELETE (nuevo): body { keys: string[] }
+    - Verificar permiso (misma lógica que GET)
+    - Re-verificar en DB que los keys no están en uso (protección de último momento)
+    - Batch delete en chunks de 25: await utapi.deleteFiles(chunk)
+    - revalidateTag("media-scan")
+    - Retornar { deleted: number, skipped: string[] }
+
+Nuevo GET /api/admin/media/scan → scan fresco forzado (revalidate antes de devolver)
+
+FASE 3 — src/app/admin/media/page.tsx (Server Component):
+  Carga el ScanResult del caché y pasa props iniciales al Client Component
+
+FASE 4 — src/components/admin/media/media-manager-page.tsx (Client Component):
+  - Stats bar: "47 archivos · 12.4 MB · ⚠️ 8 huérfanos (2.1 MB)"
+  - Tabs: Todos | En uso | Huérfanos (filtra el array en cliente)
+  - Grid de thumbnails 5 columnas desktop, 2 mobile
+  - Cada tarjeta: thumbnail (next/image), nombre, tamaño, fecha relativa,
+    badge "Huérfano" o lista de "Usado en: X producto, Y setting"
+  - Checkbox por tarjeta + "Seleccionar todo los huérfanos"
+  - Botón "Eliminar seleccionados (N)" con AlertDialog que muestra:
+    · espacio a liberar
+    · si hay archivos en uso en la selección: warning explícito
+  - "Eliminar todos los huérfanos" en un solo click
+  - Botón "Actualizar" → GET /api/admin/media/scan (scan fresco)
+  - Paginación: 25 por página, estado local
+
+FASE 5 — Integraciones:
+  - Sidebar del admin: agregar link "Medios" (icono ImageIcon o GalleryHorizontal)
+    con badge rojo de orphanCount > 0 (leído del caché, no bloquea sidebar)
+  - MediaLibraryModal: agregar link "Abrir gestor completo →" en el footer del modal
+  - media-cleanup.ts: agregar revalidateTag("media-scan") en deleteUploadedImages()
+
+RESTRICCIONES:
+- No instalar nuevas dependencias
+- La eliminación NUNCA debe proceder sin re-verificar uso en la DB justo antes de borrar
+- Archivos con status !== "Uploaded" no se muestran ni eliminan
+- Reutilizar el design system del admin (mismas cards, badges, AlertDialog que ya existen)
+- El scan no bloquea el render inicial — si el caché está frío, mostrar skeleton y
+  lanzar el scan en segundo plano (o hacer el Server Component async con Suspense)
+
+CRITERIO DE COMPLETITUD:
+- Subir un archivo de prueba desde cualquier editor → aparece en Huérfanos
+- Asignarlo a un producto → aparece en "En uso" con referencia al producto
+- Eliminar el producto → vuelve a aparecer como Huérfano en el próximo scan
+- "Eliminar todos los huérfanos" → archivos desaparecen de UTApi (confirmar con listFiles)
+- yarn validate pasa
 ```
 
 ---
@@ -682,24 +798,29 @@ Claude Code ya configura los timeouts automáticamente. Lo que sí puedes contro
 Marca cada uno cuando esté completado:
 
 ### Seguridad
-- [ ] [ÍTEM 1] Stock se restaura cuando falla el pago
-- [ ] [ÍTEM 2] Headers HTTP configurados en next.config.ts
+
+- [x] [ÍTEM 1] Stock se restaura cuando falla el pago
+- [x] [ÍTEM 2] Headers HTTP configurados en next.config.ts
 - [ ] [ÍTEM 5] Rate limiting en login y registro
 - [ ] [ÍTEM 7] Ownership check en order-success
 - [ ] [ÍTEM 11] /api/payments/simulate gateado a dev
 - [ ] [Sec.5] Auditoría del flujo de pagos completada
 
 ### UX crítica
-- [ ] [ÍTEM 3] createOrder usa shipping de la DB
+
+- [x] [ÍTEM 3] createOrder usa shipping de la DB
 - [ ] [ÍTEM 4] pago-fallido recibe orderId y ofrece reintento
 - [ ] [ÍTEM 6] Polling en order-success para PSE pendiente
 
 ### Admin operativo
+
 - [ ] [ÍTEM 8] PaymentLog visible en detalle de pedido
 - [ ] [ÍTEM 9] Paginación en listas de pedidos y productos
 - [ ] [ÍTEM 10] Indicador de stock bajo en tabla de productos
+- [ ] [ÍTEM 13] Media Manager: gestor completo con detección de huérfanos y borrado en lote
 
 ### Calidad
+
 - [ ] [ÍTEM 12] Dead code eliminado (use-toast, essentials duplicado)
 - [ ] [Sec.4] Auditoría de seguridad de todas las admin APIs
 - [ ] yarn validate pasa en verde

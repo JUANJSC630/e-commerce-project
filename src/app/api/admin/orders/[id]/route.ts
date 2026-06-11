@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
+import { markOrderFailed } from "@/lib/orders"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 
@@ -39,6 +40,11 @@ export async function PATCH(request: Request, { params }: Params) {
   if (!VALID_STATUSES.includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 })
   }
+
+  // Cancelling an unsettled order goes through markOrderFailed so the reserved
+  // stock is returned exactly once; PAID orders only change status (refund flow
+  // decides restock separately).
+  if (status === "CANCELLED") await markOrderFailed(id)
 
   const order = await prisma.order.update({ where: { id }, data: { status } })
   return NextResponse.json(order)

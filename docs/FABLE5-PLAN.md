@@ -866,7 +866,7 @@ Marca cada uno cuando esté completado:
 - [x] [ÍTEM 5] Rate limiting en login y registro
 - [x] [ÍTEM 7] Ownership check en order-success
 - [x] [ÍTEM 11] /api/payments/simulate gateado a dev
-- [ ] [Sec.5] Auditoría del flujo de pagos completada
+- [x] [Sec.5] Auditoría del flujo de pagos completada — sin hallazgos (ver nota abajo)
 
 ### UX crítica
 
@@ -885,11 +885,26 @@ Marca cada uno cuando esté completado:
 ### Calidad
 
 - [x] [ÍTEM 12] Dead code eliminado (use-toast + toaster; essentials es redirect, se conserva)
-- [ ] [Sec.4] Auditoría de seguridad de todas las admin APIs
+- [x] [Sec.4] Auditoría de seguridad de todas las admin APIs — completada (ver nota abajo)
 - [x] yarn validate pasa en verde (type-check + lint + format de fuentes)
 - [ ] Prueba E2E: tarjeta APRO → pago exitoso → stock decrementado
 - [ ] Prueba E2E: tarjeta FUND → pago fallido → stock restaurado
-- [ ] Bloque 11 (emails transaccionales) iniciado
+- [x] Bloque 11 (emails transaccionales) iniciado — 4/5 emails (falta abandono de carrito)
+
+### Resultado de auditorías (2026-06-13)
+
+**Sec.4 — Admin APIs**: los 12 route handlers verifican sesión + permiso granular
+correcto. Hallazgo corregido: mass-assignment en products (ahora `pickProductInput`
+whitelist). Endurecido users POST (valida roleId + longitud de contraseña).
+Recomendación abierta: `roles:update` permite auto-escalada de permisos (mitigar a
+futuro). Detalle en ROADMAP [B-5].
+
+**Sec.5 — Flujo de pagos**: sin hallazgos. Se confirmaron todas las invariantes:
+monto siempre desde la DB; firma del webhook con `timingSafeEqual` y fail-closed sin
+secret; webhook responde 200 al instante y procesa en `after()` con estado
+autoritativo del GET (no del body); `idempotencyKey` persistido antes del gateway;
+`markOrderPaid` idempotente (webhook duplicado = no-op); el rechazo no cancela un
+reintento vigente (compara `paymentProviderId`); PSE-return re-verifica contra MP.
 
 ---
 

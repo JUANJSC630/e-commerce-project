@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
+import { PASSWORD_MIN_LENGTH } from "@/lib/account"
 import bcrypt from "bcryptjs"
 
 export async function GET() {
@@ -34,6 +35,17 @@ export async function POST(request: Request) {
   if (!email || !password || !roleId) {
     return NextResponse.json({ error: "Email, contraseña y rol son requeridos" }, { status: 400 })
   }
+  if (typeof password !== "string" || password.length < PASSWORD_MIN_LENGTH) {
+    return NextResponse.json(
+      { error: `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres` },
+      { status: 400 },
+    )
+  }
+
+  // Validate the role exists up front — a bad roleId would otherwise surface as a
+  // 500 from the foreign-key constraint instead of a clean 400.
+  const role = await prisma.role.findUnique({ where: { id: roleId }, select: { id: true } })
+  if (!role) return NextResponse.json({ error: "El rol indicado no existe" }, { status: 400 })
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) return NextResponse.json({ error: "El email ya está registrado" }, { status: 409 })

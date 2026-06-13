@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
+import { pickProductInput } from "@/lib/product-input"
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -31,6 +32,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nombre y precio son requeridos" }, { status: 400 })
   }
 
-  const product = await prisma.product.create({ data: body })
+  const product = await prisma.product.create({ data: pickProductInput(body) })
   return NextResponse.json(product, { status: 201 })
 }

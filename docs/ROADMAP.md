@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-13 (Bloque 14 — ejecución Fable 5: ítems 4-14 salvo headers/stock-restore ya hechos) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-13 (Bloque 14 completo salvo E2E; auditorías Sec.4/5 hechas; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -2331,19 +2331,22 @@ src/
   con `userId`). Confirmar que esto también aplica para guests (que no tienen sesión) y
   que no hay forma de iniciar pago en un pedido ajeno enviando un `orderId` arbitrario.
 
-**[B-5] Admin APIs — verificar que TODAS validan sesión + permiso**
+**[B-5] Admin APIs — verificar que TODAS validan sesión + permiso** ✅ Auditado 2026-06-13
 
-- Archivos: `src/app/api/admin/*/route.ts` (todos)
-- Acción: auditar cada route handler del admin para confirmar que el primer bloque
-  verifica `getServerSession(authOptions)` + `hasPermission(...)`. Buscar cualquier
-  ruta que solo verifique sesión pero no el permiso específico.
-- Pattern esperado al inicio de cada handler:
-  ```typescript
-  const session = await getServerSession(authOptions)
-  if (!session || !hasPermission(session.user.permissions, "products", "update")) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 })
-  }
-  ```
+- Resultado: los 12 route handlers admin (categories, products, orders, users,
+  roles, settings, media, media/scan — GET/POST/PUT/PATCH/DELETE) verifican
+  `getServerSession` + `hasPermission(resource, action)` con el recurso/acción
+  correctos. Sin rutas que solo validen sesión. Protecciones extra correctas:
+  users PATCH/DELETE bloquean auto-modificación; roles DELETE protege isSystem y
+  roles en uso; settings PUT valida la key contra whitelist.
+- Hallazgo corregido — **mass-assignment en products**: POST/PUT/PATCH hacían
+  `data: body` (sin whitelist, a diferencia de users/roles que ya filtraban
+  campos). Ahora usan `pickProductInput()` (whitelist en `src/lib/product-input.ts`).
+- Endurecido — **users POST**: valida que `roleId` exista (evita 500 por FK → 400)
+  y longitud mínima de contraseña.
+- Recomendación pendiente (no bloqueante): un titular de `roles:update` puede
+  editar los permisos de cualquier rol, incluido el suyo → auto-escalada. Mitigación
+  futura: impedir editar permisos del rol propio o de roles `isSystem` vía PATCH.
 
 #### 🟡 Prioridad C — Menores
 
@@ -2725,14 +2728,47 @@ Archivos existentes relacionados: [listar].
 
 **Orden de ejecución recomendado (prioridad para producción):**
 
-1. [A-3] Restaurar stock en fallo → `src/lib/orders.ts`
-2. [A-1] Headers HTTP → `next.config.ts`
-3. [BUG-1] Shipping desde DB → `src/lib/orders.ts`
-4. [BUG-2] pago-fallido con orderId → `src/app/(store)/pago-fallido/`
-5. [A-2] Rate limiting → `src/app/api/cuenta/register/`, `src/app/api/auth/`
-6. [BUG-3] Polling PSE → `src/app/(store)/order-success/[id]/`
-7. [A-4] Ownership check en order-success
-8. Bloque 11 (emails) — prerequisito para producción real
+1. [A-3] Restaurar stock en fallo → `src/lib/orders.ts` ✅
+2. [A-1] Headers HTTP → `next.config.ts` ✅
+3. [BUG-1] Shipping desde DB → `src/lib/orders.ts` ✅
+4. [BUG-2] pago-fallido con orderId → `src/app/(store)/pago-fallido/` ✅
+5. [A-2] Rate limiting → `src/app/api/cuenta/register/`, `src/lib/auth-options.ts` ✅
+6. [BUG-3] Polling PSE → `src/app/(store)/order-success/[id]/` ✅
+7. [A-4] Ownership check en order-success ✅
+8. Bloque 11 (emails) — 🟡 4/5 (falta abandono de carrito + key real)
+
+---
+
+## ✅ Estado del Bloque 14 y pendientes para producción
+
+> Actualizado 2026-06-13. Casi todo el Bloque 14 quedó resuelto en las sesiones de
+> Fable 5/Opus. Lo que falta para cerrar producción:
+
+**Bloqueante (antes de cobrar de verdad):**
+
+- [ ] Prueba sandbox E2E de MercadoPago con ngrok: tarjeta APRO (pago + stock−),
+      tarjeta FUND (fallo + stock restaurado), PSE, webhook firmado. (Bloque 10)
+- [ ] `RESEND_API_KEY` real + verificar entrega de los 4 emails. (Bloque 11)
+
+**Importante (no bloqueante):**
+
+- [ ] [A-5] Propagación de cambios de rol en JWT (hoy persiste hasta expirar el token)
+- [ ] [B-2] Password: límite máximo de 72 bytes (bcrypt) en registro/cambio
+- [ ] Recomendación auditoría: `roles:update` permite auto-escalada de permisos
+- [ ] Abandono de carrito (email 24h) — requiere cron/scheduled job
+
+**Mejoras de calidad (cuando haya tiempo):**
+
+- [ ] [C-1] Requisitos de complejidad de contraseña (zxcvbn)
+- [ ] [C-2] Verificación de email en el registro
+- [ ] Número de guía/tracking en el email de "pedido enviado" (falta campo en schema)
+- [ ] Imágenes reales de productos (migrar de placeholder)
+
+**Resuelto en estas sesiones:** ítems 1-14 del plan Fable 5 (stock-restore, headers,
+shipping-DB, pago-fallido, rate-limit, polling PSE, ownership, login-claiming,
+PaymentLog UI, stock bajo, simulate gate, dead code, Media Manager, paginación),
+auditorías Sec.4 (admin APIs + fix mass-assignment) y Sec.5 (flujo de pagos, sin
+hallazgos), e infraestructura de emails transaccionales (4/5).
 
 ---
 

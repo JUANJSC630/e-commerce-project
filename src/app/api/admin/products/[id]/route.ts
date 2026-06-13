@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 import { deleteReplacedImage, deleteUploadedImages } from "@/lib/media-cleanup"
+import { pickProductInput } from "@/lib/product-input"
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -34,7 +35,7 @@ export async function PUT(request: Request, { params }: Params) {
   const body = await request.json()
 
   const prev = await prisma.product.findUnique({ where: { id }, select: { image: true } })
-  const product = await prisma.product.update({ where: { id }, data: body })
+  const product = await prisma.product.update({ where: { id }, data: pickProductInput(body) })
   await deleteReplacedImage(prev?.image, product.image)
   return NextResponse.json(product)
 }
@@ -51,7 +52,7 @@ export async function PATCH(request: Request, { params }: Params) {
   const body = await request.json()
 
   const prev = await prisma.product.findUnique({ where: { id }, select: { image: true } })
-  const product = await prisma.product.update({ where: { id }, data: body })
+  const product = await prisma.product.update({ where: { id }, data: pickProductInput(body) })
   await deleteReplacedImage(prev?.image, product.image)
   return NextResponse.json(product)
 }

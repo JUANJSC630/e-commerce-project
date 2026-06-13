@@ -1,8 +1,9 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { useEffect, useState } from "react"
-import { X, ImageOff, Loader2 } from "lucide-react"
+import { X, ImageOff, Loader2, ArrowRight } from "lucide-react"
 
 interface MediaItem {
   key: string
@@ -112,6 +113,16 @@ export function MediaLibraryModal({ open, onClose, onSelect }: MediaLibraryModal
               ))}
             </div>
           )}
+        </div>
+
+        <div className="border-t border-slate-100 px-5 py-3 text-right">
+          <Link
+            href="/admin/media"
+            className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+          >
+            Abrir gestor completo
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
     </div>

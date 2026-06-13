@@ -1,6 +1,11 @@
 import "server-only"
 
+import { revalidateTag } from "next/cache"
 import { UTApi } from "uploadthing/server"
+
+// Keep in sync with MEDIA_SCAN_TAG in media-manager.ts. Inlined (not imported) to
+// avoid a circular import — media-manager already depends on this module.
+const MEDIA_SCAN_TAG = "media-scan"
 
 /**
  * Orphan-media cleanup for UploadThing.
@@ -68,6 +73,7 @@ export async function deleteUploadedImages(urls: Array<string | null | undefined
   if (keys.length === 0) return
   try {
     await utapi.deleteFiles(keys)
+    revalidateTag(MEDIA_SCAN_TAG)
   } catch (err) {
     console.error("[media-cleanup] Failed to delete UploadThing files", keys, err)
   }

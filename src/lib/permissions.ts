@@ -41,6 +41,16 @@ export function hasPermission(
   return permissions[resource]?.includes(action) ?? false
 }
 
+/** Resources whose editors upload images — any grants shared media access. */
+const IMAGE_RESOURCES: Resource[] = ["products", "categories", "settings"]
+
+/** True when these permissions may browse and manage the shared media library. */
+export function canManageMedia(permissions: Permissions | null | undefined): boolean {
+  return IMAGE_RESOURCES.some(
+    (r) => hasPermission(permissions, r, "create") || hasPermission(permissions, r, "update"),
+  )
+}
+
 export function getResourceLabel(resource: Resource): string {
   const labels: Record<Resource, string> = {
     dashboard: "Dashboard",

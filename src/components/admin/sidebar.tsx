@@ -11,6 +11,7 @@ import {
   Users,
   Shield,
   Settings,
+  Images,
   LogOut,
   Menu,
   X,
@@ -19,7 +20,7 @@ import {
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import type { Resource } from "@/lib/permissions"
-import { hasPermission } from "@/lib/permissions"
+import { canManageMedia, hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 
 interface NavItem {
@@ -39,6 +40,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Configuración", href: "/admin/settings", icon: Settings, resource: "settings" },
 ]
 
+const MEDIA_ITEM = { label: "Medios", href: "/admin/media", icon: Images }
+
 export function AdminSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
@@ -46,7 +49,11 @@ export function AdminSidebar() {
 
   const permissions = session?.user?.role?.permissions as Permissions | undefined
 
-  const visibleItems = NAV_ITEMS.filter((item) => hasPermission(permissions, item.resource, "read"))
+  const visibleItems = [
+    ...NAV_ITEMS.filter((item) => hasPermission(permissions, item.resource, "read")),
+    // Media isn't a granular Resource — any image-editing role may manage it.
+    ...(canManageMedia(permissions) ? [MEDIA_ITEM] : []),
+  ]
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">

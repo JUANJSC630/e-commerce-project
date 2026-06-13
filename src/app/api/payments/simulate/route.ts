@@ -4,11 +4,12 @@ import { isMockPaymentsEnabled } from "@/lib/payments"
 
 /**
  * Mock-only settlement endpoint, standing in for MercadoPago's webhook. The
- * simulated payment page calls it with the chosen outcome. Disabled entirely
- * unless the mock provider is active, so it can never confirm orders in prod.
+ * simulated payment page calls it with the chosen outcome. Hard-gated to
+ * non-production and to an active mock provider, so it can never confirm orders
+ * in prod even if PAYMENT_PROVIDER is left unset (which defaults to mock).
  */
 export async function POST(request: Request) {
-  if (!isMockPaymentsEnabled()) {
+  if (process.env.NODE_ENV === "production" || !isMockPaymentsEnabled()) {
     return NextResponse.json({ error: "No disponible" }, { status: 404 })
   }
 

@@ -1,11 +1,21 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getProductById, getRelatedProducts } from "@/lib/products"
+import { getAllProductIds, getProductById, getRelatedProducts } from "@/lib/products"
 import { ProductDetail } from "@/components/product/product-detail"
 import { loadAllSettings } from "@/lib/settings"
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+// ISR: prebuild known products and refresh on the `products` tag (admin edits)
+// or every 5 min. getProductById is cached, so generateMetadata + the page share
+// a single query per render instead of hitting the DB twice.
+export const revalidate = 300
+
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  const ids = await getAllProductIds()
+  return ids.map((id) => ({ id }))
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

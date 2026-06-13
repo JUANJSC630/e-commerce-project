@@ -12,9 +12,14 @@ function createPrismaClient() {
     "sslmode=verify-full",
   )
   const adapter = new PrismaPg(
+    // Serverless: each instance handles a handful of concurrent requests, so a
+    // small pool keeps total connections in check (instances × max) against the
+    // Postgres limit, and idle connections are released promptly.
     new Pool({
       connectionString,
       ssl: { rejectUnauthorized: true },
+      max: 5,
+      idleTimeoutMillis: 10_000,
     }),
   )
   return new PrismaClient({ adapter })

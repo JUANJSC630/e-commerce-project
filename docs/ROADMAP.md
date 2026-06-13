@@ -2541,6 +2541,25 @@ son los que más frecuentemente fallan en producción.
 
 ### 14.4 — Performance & Caché
 
+> **🚀 Audit de rendimiento — implementado 2026-06-13.** Hallazgos corregidos:
+>
+> - **Catálogo cacheado + revalidado** (`src/lib/products.ts`): todas las lecturas
+>   del storefront ahora usan `unstable_cache` bajo el tag `products` (ventana ISR
+>   5 min); las mutaciones de producto llaman `revalidateProducts()`. Antes
+>   `/products` y el home quedaban **congelados al build** (un producto editado no
+>   aparecía nunca). Resultado del build: `/products/[id]` pasó de `ƒ Dynamic` a
+>   `● SSG` (prebuild + ISR), `/products` y `/category/sales` ganaron revalidación 5m.
+> - **Detalle de producto sin doble query**: `generateMetadata` y la página
+>   compartían dos `getProductById`; al cachearlo, es una sola lectura por render.
+>   `generateStaticParams` prebuildea todos los productos publicados.
+> - **Lista de pedidos del admin sin over-fetch**: `include` de todos los items →
+>   `_count` (solo el número que se muestra).
+> - **Pool de Prisma acotado** (`max: 5`, `idleTimeoutMillis`) para serverless.
+> - **`recharts` eliminado** (dependencia + `ui/chart.tsx` muertos, sin importadores).
+> - **Logo del header a `next/image`** con `priority`; `priority` en las primeras 4
+>   cards de `/products` (home/categoría ya lo tenían). `/api/admin/products` GET
+>   acotado con `take: 100`.
+
 **[PERF-1] `loadAllSettings` no se usa en la capa de pedidos**
 
 - Impacto: `createOrder` usa `shipping` del config estático. Fix = usar settings de DB.

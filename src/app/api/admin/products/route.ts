@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 import { pickProductInput } from "@/lib/product-input"
+import { revalidateProducts } from "@/lib/products"
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -14,7 +15,9 @@ export async function GET() {
   if (!hasPermission(perms, "products", "read"))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-  const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } })
+  // Bounded read: the admin list page queries Prisma directly with pagination,
+  // so this endpoint just caps the result instead of dumping the whole table.
+  const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" }, take: 100 })
   return NextResponse.json(products)
 }
 
@@ -33,5 +36,6 @@ export async function POST(request: Request) {
   }
 
   const product = await prisma.product.create({ data: pickProductInput(body) })
+  revalidateProducts()
   return NextResponse.json(product, { status: 201 })
 }

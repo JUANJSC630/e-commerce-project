@@ -1,5 +1,6 @@
 import "server-only"
 
+import { unstable_cache, revalidateTag } from "next/cache"
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import type { Product } from "@/lib/types"
@@ -14,7 +15,14 @@ import type { Product } from "@/lib/types"
  *
  * Every query is scoped to published products and maps the Prisma row to the
  * lean domain `Product` the UI consumes (dropping admin-only columns).
+ *
+ * Catalog reads are cached under the `products` tag (5-min ISR window); the
+ * admin calls `revalidateProducts()` after any mutation so edits appear at once.
+ * Identity-variable reads (search, arbitrary id lists) stay uncached on purpose.
  */
+
+export const PRODUCTS_TAG = "products"
+const CACHE = { tags: [PRODUCTS_TAG], revalidate: 300 }
 
 /** Only published products are ever visible to shoppers. */
 const PUBLISHED = { isPublished: true } satisfies Prisma.ProductWhereInput
@@ -73,38 +81,81 @@ async function queryProducts(args: Omit<Prisma.ProductFindManyArgs, "select">): 
   return rows.map(toProduct)
 }
 
-export function getAllProducts(): Promise<Product[]> {
-  return queryProducts({ orderBy: NEWEST_FIRST })
-}
+export const getAllProducts = unstable_cache(
+  (): Promise<Product[]> => queryProducts({ orderBy: NEWEST_FIRST }),
+  ["all-products"],
+  CACHE,
+)
 
-export function getProductsByCategory(slug: string): Promise<Product[]> {
-  return queryProducts({ where: { categoryRef: { slug } }, orderBy: NEWEST_FIRST })
-}
+export const getProductsByCategory = unstable_cache(
+  (slug: string): Promise<Product[]> =>
+    queryProducts({ where: { categoryRef: { slug } }, orderBy: NEWEST_FIRST }),
+  ["products-by-category"],
+  CACHE,
+)
 
-export function getProductsByCategoryId(categoryId: string): Promise<Product[]> {
-  return queryProducts({ where: { categoryId }, orderBy: NEWEST_FIRST })
-}
+export const getProductsByCategoryId = unstable_cache(
+  (categoryId: string): Promise<Product[]> =>
+    queryProducts({ where: { categoryId }, orderBy: NEWEST_FIRST }),
+  ["products-by-category-id"],
+  CACHE,
+)
 
-export function getSaleProducts(): Promise<Product[]> {
-  return queryProducts({ where: { isOnSale: true }, orderBy: NEWEST_FIRST })
-}
+export const getSaleProducts = unstable_cache(
+  (): Promise<Product[]> => queryProducts({ where: { isOnSale: true }, orderBy: NEWEST_FIRST }),
+  ["sale-products"],
+  CACHE,
+)
 
-export function getFeaturedProducts(limit = 8): Promise<Product[]> {
-  return queryProducts({ where: { isFeatured: true }, orderBy: NEWEST_FIRST, take: limit })
-}
+export const getFeaturedProducts = unstable_cache(
+  (limit = 8): Promise<Product[]> =>
+    queryProducts({ where: { isFeatured: true }, orderBy: NEWEST_FIRST, take: limit }),
+  ["featured-products"],
+  CACHE,
+)
+
+const getRelatedBySlug = unstable_cache(
+  (slug: string, excludeId: string, limit: number): Promise<Product[]> =>
+    queryProducts({
+      where: { categoryRef: { slug }, id: { not: excludeId } },
+      orderBy: NEWEST_FIRST,
+      take: limit,
+    }),
+  ["related-products"],
+  CACHE,
+)
 
 export function getRelatedProducts(
   product: Pick<Product, "id" | "category">,
   limit = 4,
 ): Promise<Product[]> {
   if (!product.category) return Promise.resolve([])
-  return queryProducts({
-    where: { categoryRef: { slug: product.category.slug }, id: { not: product.id } },
-    orderBy: NEWEST_FIRST,
-    take: limit,
-  })
+  return getRelatedBySlug(product.category.slug, product.id, limit)
 }
 
+export const getProductById = unstable_cache(
+  async (id: string): Promise<Product | null> => {
+    const row = await prisma.product.findFirst({
+      where: { id, ...PUBLISHED },
+      select: STOREFRONT_SELECT,
+    })
+    return row ? toProduct(row) : null
+  },
+  ["product-by-id"],
+  CACHE,
+)
+
+/** Lightweight id-only query for the sitemap. */
+export const getAllProductIds = unstable_cache(
+  async (): Promise<string[]> => {
+    const rows = await prisma.product.findMany({ where: PUBLISHED, select: { id: true } })
+    return rows.map((row) => row.id)
+  },
+  ["all-product-ids"],
+  CACHE,
+)
+
+/** Variable, user-driven reads — not worth caching (would explode the key space). */
 export function getProductsByIds(ids: string[]): Promise<Product[]> {
   if (ids.length === 0) return Promise.resolve([])
   return queryProducts({ where: { id: { in: ids } } })
@@ -125,16 +176,7 @@ export function searchProducts(query: string): Promise<Product[]> {
   })
 }
 
-export async function getProductById(id: string): Promise<Product | null> {
-  const row = await prisma.product.findFirst({
-    where: { id, ...PUBLISHED },
-    select: STOREFRONT_SELECT,
-  })
-  return row ? toProduct(row) : null
-}
-
-/** Lightweight id-only query for the sitemap. */
-export async function getAllProductIds(): Promise<string[]> {
-  const rows = await prisma.product.findMany({ where: PUBLISHED, select: { id: true } })
-  return rows.map((row) => row.id)
+/** Invalidate every cached catalog read — call after any product mutation. */
+export function revalidateProducts(): void {
+  revalidateTag(PRODUCTS_TAG)
 }

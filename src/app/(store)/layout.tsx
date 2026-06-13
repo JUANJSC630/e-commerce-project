@@ -1,5 +1,6 @@
 import type React from "react"
 import dynamic from "next/dynamic"
+import Image from "next/image"
 import { CartProvider } from "@/components/cart/cart-provider"
 import { FavoritesProvider } from "@/components/favorites/favorites-provider"
 import { CartCounter } from "@/components/cart/cart-counter"
@@ -34,8 +35,17 @@ export default async function StoreLayout({ children }: { children: React.ReactN
               <div className="container mx-auto px-4 flex justify-between items-center">
                 <Link href={routes.home} className="font-display font-bold text-2xl text-brand-ink">
                   {brand.logoImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={brand.logoImage} alt={brand.name} className="h-8 w-auto" />
+                    // width/height 0 + sizes lets CSS (h-8 w-auto) drive the size
+                    // for an admin-uploaded logo of unknown intrinsic dimensions.
+                    <Image
+                      src={brand.logoImage}
+                      alt={brand.name}
+                      width={0}
+                      height={0}
+                      sizes="200px"
+                      priority
+                      className="h-8 w-auto"
+                    />
                   ) : (
                     brand.name
                   )}

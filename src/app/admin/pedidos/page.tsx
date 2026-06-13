@@ -50,7 +50,16 @@ export default async function AdminPedidosPage({
       orderBy: { createdAt: "desc" },
       take,
       skip,
-      include: { items: { include: { product: { select: { name: true } } } } },
+      select: {
+        id: true,
+        orderNumber: true,
+        customerName: true,
+        customerEmail: true,
+        total: true,
+        status: true,
+        createdAt: true,
+        _count: { select: { items: true } },
+      },
     }),
     prisma.order.count({ where }),
   ])
@@ -124,7 +133,7 @@ export default async function AdminPedidosPage({
                       <p className="text-xs text-slate-400">{order.customerEmail}</p>
                     </td>
                     <td className="px-4 py-3 text-slate-500">
-                      {order.items.length} {order.items.length === 1 ? "ítem" : "ítems"}
+                      {order._count.items} {order._count.items === 1 ? "ítem" : "ítems"}
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900">
                       ${order.total.toLocaleString("es-AR")}

@@ -44,7 +44,6 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.4",
     "react-resizable-panels": "^3.0.2",
-    "recharts": "2.15.0",
     "resend": "^6.12.4",
     "server-only": "^0.0.1",
     "shadcn": "latest",

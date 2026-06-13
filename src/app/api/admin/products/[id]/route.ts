@@ -6,6 +6,7 @@ import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 import { deleteReplacedImage, deleteUploadedImages } from "@/lib/media-cleanup"
 import { pickProductInput } from "@/lib/product-input"
+import { revalidateProducts } from "@/lib/products"
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -37,6 +38,7 @@ export async function PUT(request: Request, { params }: Params) {
   const prev = await prisma.product.findUnique({ where: { id }, select: { image: true } })
   const product = await prisma.product.update({ where: { id }, data: pickProductInput(body) })
   await deleteReplacedImage(prev?.image, product.image)
+  revalidateProducts()
   return NextResponse.json(product)
 }
 
@@ -54,6 +56,7 @@ export async function PATCH(request: Request, { params }: Params) {
   const prev = await prisma.product.findUnique({ where: { id }, select: { image: true } })
   const product = await prisma.product.update({ where: { id }, data: pickProductInput(body) })
   await deleteReplacedImage(prev?.image, product.image)
+  revalidateProducts()
   return NextResponse.json(product)
 }
 
@@ -68,5 +71,6 @@ export async function DELETE(_: Request, { params }: Params) {
   const { id } = await params
   const removed = await prisma.product.delete({ where: { id }, select: { image: true } })
   await deleteUploadedImages([removed.image])
+  revalidateProducts()
   return new NextResponse(null, { status: 204 })
 }

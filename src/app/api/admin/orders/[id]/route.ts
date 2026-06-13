@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
-import { markOrderFailed } from "@/lib/orders"
+import { getOrderForConfirmation, markOrderFailed } from "@/lib/orders"
+import { sendOrderShippedEmail } from "@/lib/email"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 
@@ -46,6 +47,16 @@ export async function PATCH(request: Request, { params }: Params) {
   // decides restock separately).
   if (status === "CANCELLED") await markOrderFailed(id)
 
+  const previous = await prisma.order.findUnique({ where: { id }, select: { status: true } })
   const order = await prisma.order.update({ where: { id }, data: { status } })
+
+  // Notify the customer once, only on the transition into SHIPPED.
+  if (status === "SHIPPED" && previous?.status !== "SHIPPED") {
+    after(async () => {
+      const dto = await getOrderForConfirmation(id)
+      if (dto) await sendOrderShippedEmail(dto)
+    })
+  }
+
   return NextResponse.json(order)
 }

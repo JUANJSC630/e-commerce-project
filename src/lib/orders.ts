@@ -3,6 +3,7 @@ import "server-only"
 import { Prisma, type PaymentStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { loadAllSettings } from "@/lib/settings"
+import { sendOrderPaidEmail } from "@/lib/email"
 import type { ShippingData } from "@/lib/validation"
 
 /**
@@ -401,7 +402,13 @@ export async function markOrderPaid(id: string): Promise<boolean> {
     where: { id, paymentStatus: { in: SETTLEABLE } },
     data: { paymentStatus: "PAID", status: "CONFIRMED" },
   })
-  return count > 0
+  if (count === 0) return false
+
+  // The guard above guarantees this runs once per settlement (a duplicate webhook
+  // finds the order already PAID and does nothing), so the email is sent exactly once.
+  const order = await getOrderForConfirmation(id)
+  if (order) await sendOrderPaidEmail(order)
+  return true
 }
 
 /**

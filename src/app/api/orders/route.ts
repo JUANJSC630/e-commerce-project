@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
-import { createOrder, OrderError } from "@/lib/orders"
+import { createOrder, getOrderForConfirmation, OrderError } from "@/lib/orders"
 import type { CreateOrderItemInput } from "@/lib/orders"
+import { sendOrderPlacedEmail } from "@/lib/email"
 import { validateShippingData } from "@/lib/validation"
 import type { ShippingData } from "@/lib/validation"
 import { isCustomer } from "@/lib/permissions"
@@ -57,6 +58,11 @@ export async function POST(request: Request) {
 
   try {
     const result = await createOrder({ items, customer, paymentMethod, userId })
+    // Send the "order received" email after responding so checkout stays fast.
+    after(async () => {
+      const order = await getOrderForConfirmation(result.id)
+      if (order) await sendOrderPlacedEmail(order)
+    })
     return NextResponse.json(result, { status: 201 })
   } catch (err) {
     if (err instanceof OrderError) {

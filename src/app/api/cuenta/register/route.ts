@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { AccountError, registerCustomer } from "@/lib/account"
+import { sendWelcomeEmail } from "@/lib/email"
 import { clientIp, isRateLimited, recordRateLimitHit } from "@/lib/rate-limit"
 
 const REGISTER_MAX = 5
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
 
   try {
     const user = await registerCustomer({ name, email, password })
+    after(() => sendWelcomeEmail(email, name))
     return NextResponse.json({ id: user.id }, { status: 201 })
   } catch (err) {
     if (err instanceof AccountError) {

@@ -1839,21 +1839,32 @@ function buildIntegritySignature(
 ### ⏳ Bloque 11 — Email transaccional
 
 > **Objetivo**: El cliente recibe email automático en cada evento importante.
+>
+> **🟡 En progreso (2026-06-13)** — infraestructura + 4 de 5 emails implementados.
+> Falta solo abandono de carrito (requiere cron) y la prueba con API key real.
+
+**Infraestructura** (`src/lib/email/`):
+
+- `client.ts` — transporte Resend best-effort: nunca lanza (un fallo de envío no
+  rompe el flujo que lo dispara) y es no-op con log si falta `RESEND_API_KEY`.
+- `templates.ts` — layout HTML email-safe con branding (nombre de marca vivo desde
+  settings, `formatPrice` por locale) + plantillas por evento. Funciones puras.
+- `index.ts` — disparadores de alto nivel (`sendOrderPlacedEmail`,
+  `sendOrderPaidEmail`, `sendOrderShippedEmail`, `sendWelcomeEmail`).
 
 ```
-[ ] Configurar Resend (recomendado) o MailerLite
-[ ] Agregar EMAIL_API_KEY al .env.local
-
-[ ] Email: Confirmación de pedido (se envía al crear el pedido)
-    - Número de orden, items con imágenes, total, dirección de envío
-    - Diseño con branding Dulce Infancia
-
-[ ] Email: Pedido confirmado (cuando el pago es exitoso)
-[ ] Email: Pedido enviado (cuando el admin actualiza estado a 'shipped')
-    - Incluye número de guía de envío y link de seguimiento
-
-[ ] Email: Contraseña / bienvenida (cuando el cliente crea cuenta)
-[ ] Email: Abandono de carrito (24h después sin completar compra)
+[x] Configurar Resend (paquete instalado; RESEND_API_KEY + EMAIL_FROM en .env.example)
+[x] Email: Confirmación de pedido (al crear) — número, items, totales, dirección
+    de envío, branding. Disparado en POST /api/orders con after() (no bloquea checkout)
+[x] Email: Pedido confirmado (pago exitoso) — disparado dentro de markOrderPaid
+    (el guard idempotente garantiza envío exactly-once aunque el webhook llegue 2 veces)
+[x] Email: Pedido enviado — disparado en PATCH /api/admin/orders/[id] solo en la
+    transición a SHIPPED, con after(). (Sin número de guía: no hay campo de tracking
+    en el schema — pendiente como mejora futura)
+[x] Email: Bienvenida (al crear cuenta) — POST /api/cuenta/register con after()
+[ ] Email: Abandono de carrito (24h sin completar) — requiere cron/scheduled job;
+    diferido (no hay infra de jobs todavía)
+[ ] Verificación E2E con API key real (RESEND_API_KEY) — falta credencial
 ```
 
 ---

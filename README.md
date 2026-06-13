@@ -4,18 +4,18 @@ Tienda en línea de ropa infantil para el mercado colombiano. Storefront públic
 
 ## Stack
 
-| | |
-|---|---|
-| Framework | Next.js 15.3.3 — App Router + Turbopack |
-| Lenguaje | TypeScript strict |
-| Estilos | Tailwind CSS v4 + OKLCH tokens |
-| Componentes | shadcn/ui |
-| ORM / DB | Prisma v7 + PostgreSQL |
-| Auth | NextAuth.js v4 (JWT) |
-| Pagos | MercadoPago Checkout API |
-| Imágenes | UploadThing v7 |
-| Email | Resend |
-| Deploy | Vercel |
+|             |                                         |
+| ----------- | --------------------------------------- |
+| Framework   | Next.js 15.3.3 — App Router + Turbopack |
+| Lenguaje    | TypeScript strict                       |
+| Estilos     | Tailwind CSS v4 + OKLCH tokens          |
+| Componentes | shadcn/ui                               |
+| ORM / DB    | Prisma v7 + PostgreSQL                  |
+| Auth        | NextAuth.js v4 (JWT)                    |
+| Pagos       | MercadoPago Checkout API                |
+| Imágenes    | UploadThing v7                          |
+| Email       | Resend                                  |
+| Deploy      | Vercel                                  |
 
 ## Arrancar el proyecto
 
@@ -45,9 +45,9 @@ yarn prisma studio     # Explorar la base de datos
 
 ## Documentación
 
-| | |
-|---|---|
-| [`docs/ROADMAP.md`](./docs/ROADMAP.md) | Estado del proyecto y plan de ejecución |
-| [`docs/STANDARDS.md`](./docs/STANDARDS.md) | Convenciones de código y checklist de PR |
+|                                                            |                                             |
+| ---------------------------------------------------------- | ------------------------------------------- |
+| [`docs/ROADMAP.md`](./docs/ROADMAP.md)                     | Estado del proyecto y plan de ejecución     |
+| [`docs/STANDARDS.md`](./docs/STANDARDS.md)                 | Convenciones de código y checklist de PR    |
 | [`docs/MERCADOPAGO-SETUP.md`](./docs/MERCADOPAGO-SETUP.md) | Configuración de pagos sandbox y producción |
-| [`docs/FABLE5-PLAN.md`](./docs/FABLE5-PLAN.md) | Plan de mejoras con prompts para Fable 5 |
+| [`docs/FABLE5-PLAN.md`](./docs/FABLE5-PLAN.md)             | Plan de mejoras con prompts para Fable 5    |

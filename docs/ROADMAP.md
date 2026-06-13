@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-11 (Bloque 13.5 — Login-claiming de pedidos guest) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-13 (Bloque 14 — ejecución Fable 5: ítems 4-14 salvo headers/stock-restore ya hechos) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -1121,7 +1121,12 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
 
 ---
 
-### ⏳ Bloque 9.10 — Media Manager (gestor completo de archivos del CDN)
+### ✅ Bloque 9.10 — Media Manager (gestor completo de archivos del CDN)
+
+> **✅ Completado 2026-06-13** (ver checklist al final de la sección). El badge de
+> huérfanos en el sidebar se omitió a propósito: un contador en vivo dispararía un
+> escaneo del CDN en cada carga del admin (regresión de performance). El conteo se
+> muestra de forma prominente dentro de `/admin/media`.
 
 > **Objetivo**: una página dedicada en el admin (`/admin/media`) que muestra TODOS
 > los archivos subidos al CDN de UploadThing, indica cuáles están siendo usados y
@@ -1425,18 +1430,20 @@ del archivo no es crítico para el funcionamiento. Puede agregarse como mejora V
 #### Checklist de tareas
 
 ```
-[ ] src/lib/media-manager.ts — scanner con ScanResult, FileReference, caché 5 min
-[ ] GET /api/admin/media — extender con paginación, ?filter, stats
-[ ] DELETE /api/admin/media — borrado con re-verificación + batch de 25 + revalidate
-[ ] GET /api/admin/media/scan — scan fresco forzado
-[ ] src/app/admin/media/page.tsx — Server Component con datos iniciales del scan
-[ ] src/components/admin/media/media-manager-page.tsx — Client Component:
-    tabs, grid, checkboxes, AlertDialog, paginación, toast
-[ ] Sidebar del admin → link "Medios" + badge de huérfanos
-[ ] MediaLibraryModal → link "Abrir gestor completo →"
-[ ] media-cleanup.ts → revalidateTag("media-scan") cuando borra archivos
-[ ] E2E: subir archivo de prueba → verificar aparece en gestor como huérfano →
-    eliminar → verificar desaparece de UTApi (listar de nuevo)
+[x] src/lib/media-manager.ts — scanner con ScanResult, FileReference, caché 5 min
+    (scanMediaUsage, keysInUse, deleteMediaFiles en chunks de 25)
+[x] DELETE /api/admin/media — borrado con re-verificación (keysInUse) + batch + revalidate
+[x] GET /api/admin/media/scan — scan fresco forzado (revalida antes de devolver)
+    (GET /api/admin/media se mantiene devolviendo {items} para no romper el modal;
+     la página usa scanMediaUsage() directo — patrón server-component sin hop HTTP)
+[x] src/app/admin/media/page.tsx — Server Component con datos iniciales del scan
+[x] src/components/admin/media/media-manager-page.tsx — Client Component:
+    tabs (Todos/En uso/Huérfanos), grid responsivo, checkboxes, AlertDialog, paginación 25, toast
+[x] Sidebar del admin → link "Medios" (gateado por canManageMedia; badge omitido, ver nota)
+[x] MediaLibraryModal → link "Abrir gestor completo →"
+[x] media-cleanup.ts → revalidateTag("media-scan") cuando borra archivos
+[ ] E2E manual (requiere servidor + credenciales UploadThing): subir → huérfano →
+    eliminar → confirmar desaparece de UTApi
 ```
 
 ---
@@ -1906,11 +1913,11 @@ function buildIntegritySignature(
 
 El flujo actual tiene una implementación parcial:
 
-| Escenario | Pedidos reclamados |
-|---|---|
-| Guest compra → **se registra** con ese email | ✅ Funciona (`registerCustomer` hace `updateMany`) |
-| Guest compra → **inicia sesión** con cuenta existente | ❌ No funciona — `authorize` no reclama nada |
-| Usuario registrado compra como guest → inicia sesión | ❌ No funciona — mismo gap en `authorize` |
+| Escenario                                             | Pedidos reclamados                                 |
+| ----------------------------------------------------- | -------------------------------------------------- |
+| Guest compra → **se registra** con ese email          | ✅ Funciona (`registerCustomer` hace `updateMany`) |
+| Guest compra → **inicia sesión** con cuenta existente | ❌ No funciona — `authorize` no reclama nada       |
+| Usuario registrado compra como guest → inicia sesión  | ❌ No funciona — mismo gap en `authorize`          |
 
 **Raíz del bug**: el claiming (`prisma.order.updateMany({ where: { userId: null, customerEmail: email } })`)
 está embebido en `registerCustomer()` (`src/lib/account.ts:70`) pero nunca se llama
@@ -1962,23 +1969,24 @@ async authorize(credentials) {
 
 ### Edge cases
 
-| Caso | Comportamiento esperado |
-|---|---|
-| No hay pedidos guest con ese email | `claimGuestOrders` hace 0 updates — no-op seguro |
-| Pedido ya reclamado (`userId ≠ null`) | Excluido por `WHERE userId IS NULL` — safe |
-| Admin inicia sesión | Claiming corre, no encuentra nada — no-op |
-| Email diferente al del checkout guest | No hay match — correcto (no reclamar pedidos ajenos) |
-| Registro concurrente mismo email | Prisma unique constraint en `email` previene duplicados |
+| Caso                                  | Comportamiento esperado                                 |
+| ------------------------------------- | ------------------------------------------------------- |
+| No hay pedidos guest con ese email    | `claimGuestOrders` hace 0 updates — no-op seguro        |
+| Pedido ya reclamado (`userId ≠ null`) | Excluido por `WHERE userId IS NULL` — safe              |
+| Admin inicia sesión                   | Claiming corre, no encuentra nada — no-op               |
+| Email diferente al del checkout guest | No hay match — correcto (no reclamar pedidos ajenos)    |
+| Registro concurrente mismo email      | Prisma unique constraint en `email` previene duplicados |
 
 ### Checklist
 
+> **✅ Completado 2026-06-13.**
+
 ```
-[ ] Extraer claimGuestOrders(email, userId) en src/lib/account.ts
-[ ] Refactorizar registerCustomer para usar claimGuestOrders (comportamiento idéntico)
-[ ] Agregar await claimGuestOrders(...) en authorize() de src/lib/auth-options.ts
-[ ] Test manual: guest compra con email X → inicia sesión con cuenta X → pedido aparece en /cuenta/pedidos
-[ ] Test: registro con email Y (sin CTA) → pedidos con ese email también se reclaman
-[ ] Actualizar scripts/verify-account.mjs con caso de login-claiming (caso 8)
+[x] Extraer claimGuestOrders(email, userId) en src/lib/account.ts (normaliza email, retorna count)
+[x] Refactorizar registerCustomer para usar claimGuestOrders (comportamiento idéntico)
+[x] Agregar await claimGuestOrders(...) en authorize() de src/lib/auth-options.ts (tras validar password)
+[x] Actualizar scripts/verify-account.mjs con caso de login-claiming (logout → guest checkout → login → 2 pedidos)
+[ ] Test manual E2E (requiere servidor) — verify:account cubre el flujo
 ```
 
 ---
@@ -2217,15 +2225,18 @@ src/
   CSP es complejo con MP iframes pero debe tener al menos `default-src 'self'` con
   las excepciones mínimas necesarias (sdk.mercadopago.com, \*.ufs.sh, fonts.googleapis.com).
 
-**[A-2] Sin rate limiting en login y registro**
+**[A-2] Sin rate limiting en login y registro** ✅ Resuelto 2026-06-13
 
-- Archivos: `src/app/api/cuenta/register/route.ts`,
-  `src/app/api/auth/[...nextauth]/route.ts`
-- Problema: un atacante puede registrar cuentas spam o hacer fuerza bruta de contraseñas
-  sin ningún límite. NextAuth v4 no tiene rate limiting integrado.
-- Fix esperado: implementar rate limiting con `@upstash/ratelimit` (Redis serverless)
-  o alternativa simple con Prisma (`LoginAttempt` tabla con ventana deslizante).
-  Límite sugerido: 5 intentos de login / 10 min por IP; 3 registros / hora por IP.
+- Resolución: rate limiting sin Redis basado en Prisma (`RateLimitHit`, ventana
+  deslizante, fail-open). `src/lib/rate-limit.ts` expone `isRateLimited` (check) y
+  `recordRateLimitHit` (registro + poda oportunista). Login (`auth-options.ts`
+  `authorize`): 5 intentos/10 min por email, registra solo fallos, lanza error con
+  mensaje claro al exceder (mostrado por `login-form`). Registro
+  (`register/route.ts`): 5 cuentas/hora por IP (`x-forwarded-for`), retorna 429.
+  Migración `add_rate_limit_hits` aplicada.
+
+- Archivos: `src/lib/rate-limit.ts` (nuevo), `src/lib/auth-options.ts`,
+  `src/app/api/cuenta/register/route.ts`, `prisma/schema.prisma`
 
 **[A-3] Stock NO se restaura al fallar o cancelar un pedido** ✅ Resuelto 2026-06-11
 
@@ -2247,17 +2258,17 @@ src/
 - Verificar: `src/lib/orders.ts` función `markOrderFailed` — confirmar que no
   llama ninguna restauración de stock.
 
-**[A-4] `order-success/[id]` no verifica propiedad del pedido**
+**[A-4] `order-success/[id]` no verifica propiedad del pedido** ✅ Resuelto 2026-06-13
 
-- Archivo: `src/app/(store)/order-success/[id]/page.tsx`,
-  `src/lib/orders.ts::getOrderForConfirmation`
-- Problema: cualquier usuario (o guest) puede ver la página de confirmación de
-  CUALQUIER pedido simplemente conociendo el ID (un CUID predecible si se intercepta
-  el redirect). La función `getOrderForConfirmation` busca por ID sin verificar
-  `userId` ni si es el guest que creó el pedido.
-- Fix esperado: agregar validación de propiedad — si hay sesión, verificar
-  `order.userId === session.user.id`; si es guest, verificar por cookie/token de sesión
-  temporal o al menos limitar la información expuesta (no mostrar dirección completa).
+- Resolución: `getOrderForConfirmation(id, viewerId?)` ahora scopea por dueño: un
+  pedido con `userId` solo es legible por ese usuario (devuelve `null` → la página
+  hace `notFound()`, sin revelar existencia); los pedidos guest (sin `userId`) siguen
+  accesibles por su CUID-capability. La página `order-success` obtiene la sesión y
+  pasa `session.user.id`; el endpoint `GET /api/orders/[id]` (usado por el poller)
+  aplica la misma verificación.
+
+- Archivos: `src/lib/orders.ts`, `src/app/(store)/order-success/[id]/page.tsx`,
+  `src/app/api/orders/[id]/route.ts`
 
 **[A-5] Fuga de rol en JWT — cambios de rol no se propagan**
 
@@ -2272,12 +2283,15 @@ src/
 
 #### 🟠 Prioridad B — Importantes
 
-**[B-1] `/api/payments/simulate` — ¿está gateado a dev?**
+**[B-1] `/api/payments/simulate` — ¿está gateado a dev?** ✅ Verificado/endurecido 2026-06-13
+
+- Resolución: ya estaba gateado por `isMockPaymentsEnabled()` (solo activo cuando el
+  proveedor es `mock`). Se añadió una segunda capa defensiva: el handler retorna 404
+  también si `NODE_ENV === "production"`, cubriendo el caso en que `PAYMENT_PROVIDER`
+  quede sin definir en prod (cuyo default es `mock`). El `mock-provider` solo
+  redirige a `/pago/[orderId]`; no liquida pagos (eso es del endpoint, ya bloqueado).
 
 - Archivo: `src/app/api/payments/simulate/route.ts`
-- Revisar: si la ruta de simulación existe en producción, un atacante podría simular
-  pagos aprobados sin pasar por el proveedor real. Debe retornar 404 en `NODE_ENV=production`.
-- Acción: leer el archivo y confirmar que tiene la guarda de entorno.
 
 **[B-2] Password sin límite de longitud máxima (bcrypt trunca a 72 bytes)**
 
@@ -2358,30 +2372,29 @@ src/
   como parámetro en vez de leerlos del módulo.
 - Verificar también: `cart-summary` y `mini-cart` — ¿usan `useSettings()` o el config estático?
 
-**[BUG-2] `pago-fallido` no sabe cuál pedido falló → stock y carrito inconsistentes**
+**[BUG-2] `pago-fallido` no sabe cuál pedido falló → stock y carrito inconsistentes** ✅ Resuelto 2026-06-13
 
-- Archivo: `src/app/(store)/pago-fallido/page.tsx`
-- Problema: la página no recibe `orderId`, así que:
-  1. No puede mostrar los detalles del pedido que falló
-  2. No puede ofrecer "Intentar de nuevo" con el mismo orderId
-  3. Dice "tus productos siguen en el carrito" pero si el stock ya fue decrementado
-     al crear el pedido, agregar de nuevo al carrito y reintentar causará un segundo
-     decremento (doble descuento de stock)
-- Fix: pasar `orderId` como query param desde los redirects que llevan a esta página.
-  La página debe leer `?orderId=` y mostrar el pedido + CTA "Reintentar pago" →
-  `/pago/[orderId]`. La inconsistencia de stock se resuelve con [A-3].
+- Resolución: todos los redirects a `/pago-fallido` ahora incluyen `?orderId=` (pse-return,
+  order-success, página de pago y el simulador). La página lee `searchParams.orderId` y
+  muestra "Intentar de nuevo" → `/pago/[orderId]` cuando está presente (fallback genérico
+  si no). Copy corregido: "No se realizó ningún cargo. Puedes intentar el pago de nuevo."
+  (ya no dice "siguen en el carrito"). La consistencia de stock la cubre [A-3].
 
-**[BUG-3] `order-success` sin polling para PSE pendiente**
+- Archivos: `src/app/(store)/pago-fallido/page.tsx`,
+  `src/app/api/payments/pse-return/route.ts`, `src/app/(store)/order-success/[id]/page.tsx`,
+  `src/app/(store)/pago/[orderId]/page.tsx`, `src/components/checkout/simulated-payment-actions.tsx`
 
-- Archivo: `src/app/(store)/order-success/[id]/page.tsx`
-- Problema: si el usuario llega a order-success con `paymentStatus=PENDING` (PSE en
-  tránsito), la página es estática — muestra "Tu pago está en proceso" pero nunca
-  se actualiza. El webhook puede confirmar el pago segundos después, pero el usuario
-  sigue viendo "pendiente" hasta que refresca manualmente.
-- Fix: convertir el componente de estado a un Client Component que haga polling a
-  `GET /api/orders/[id]` (solo el campo `paymentStatus`) cada 5s cuando
-  `paymentStatus === 'PENDING'`, y muestre el estado de "confirmado" en vivo.
-  Límite de polling: 5 minutos o hasta recibir `PAID`/`FAILED`.
+**[BUG-3] `order-success` sin polling para PSE pendiente** ✅ Resuelto 2026-06-13
+
+- Resolución: bloque de estado de pago extraído a `PaymentStatusPoller` (Client
+  Component). Si llega ya `PAID`/`FAILED` no hace polling; si está pendiente consulta
+  `GET /api/orders/[id]` cada 5s y transiciona la UI en vivo (verde al confirmar,
+  error + link a `/pago-fallido?orderId=` al fallar). Tope de 60 intentos (5 min) →
+  "Verifica tu correo para la confirmación del banco". Limpia carrito al pasar a PAID
+  (reemplaza `ClearCartOnPaid`, ahora eliminado). Cleanup del intervalo en `useEffect`.
+
+- Archivos: `src/components/payment/payment-status-poller.tsx` (nuevo),
+  `src/app/(store)/order-success/[id]/page.tsx`
 
 **[BUG-4] Hot-reload de Next.js HMR orphana los iframes de MP**
 
@@ -2521,11 +2534,13 @@ son los que más frecuentemente fallan en producción.
 - Revisar si las stats (total pedidos, total ventas, total usuarios, etc.) se hacen
   con `Promise.all()` o secuencialmente. Si son secuenciales, paralelizarlas.
 
-**[PERF-3] Sin paginación en listas del admin**
+**[PERF-3] Sin paginación en listas del admin** ✅ Ya resuelto (verificado 2026-06-13)
 
-- Archivos: `src/app/admin/productos/page.tsx`, `src/app/admin/pedidos/page.tsx`
-- Problema: si hay 500+ productos o pedidos, la query carga todos. Agregar
-  `take`/`skip` con cursor-based pagination y controles en la UI.
+- Ambas listas ya paginan con `take: 20` + `skip` (offset) y controles en la UI:
+  productos (`?q`/`?page` + `ProductsTable`) y pedidos (`?status`/`?page` con
+  "X–Y de N" + Anterior/Siguiente). No carga todos los registros. Se mantuvo offset
+  (no cursor): a esta escala el patrón "página X de Y" es mejor UX y reescribir a
+  cursor sería refactor sin beneficio funcional.
 
 **[PERF-4] `lucide-icons.ts` registra 1594 íconos en bundle**
 
@@ -2581,18 +2596,21 @@ son los que más frecuentemente fallan en producción.
 - No hay forma de marcar 10 pedidos como "Enviados" a la vez. Para operar a escala
   es necesario. Agregar checkbox + acción masiva en la tabla de pedidos.
 
-**[UX-7] Sin indicador de "stock bajo" en el admin de productos**
+**[UX-7] Sin indicador de "stock bajo" en el admin de productos** ✅ Resuelto 2026-06-13
 
-- Archivo: `src/app/admin/productos/page.tsx`
-- Si un producto tiene stock ≤ `inventory.lowStockThreshold`, debería aparecer un badge
-  de advertencia en la tabla del admin (ya existe la lógica en `src/lib/inventory.ts`).
+- `ProductsTable` ahora muestra `StockBadge` por fila: rojo "Agotado" (stock 0),
+  ámbar "Stock bajo (N)" (`isLowStock`), verde con el número si está OK — usando
+  `isLowStock`/`isOutOfStock` de `src/lib/inventory.ts` (sin hardcodear el umbral).
+  Filtro server-side `?stock=low|out` con tabs Todos/Stock bajo/Agotados (preserva `q`).
+- Archivos: `src/app/admin/productos/page.tsx`,
+  `src/components/admin/products/products-table.tsx`
 
-**[UX-8] Admin — PaymentLog no visible en detalle del pedido**
+**[UX-8] Admin — PaymentLog no visible en detalle del pedido** ✅ Resuelto 2026-06-13
 
-- Archivo: `src/app/admin/pedidos/[id]/page.tsx`
-- La tabla `PaymentLog` existe y se llena, pero no aparece en la UI del admin.
-  Agregar sección de historial de pagos en el detalle del pedido (orderId, evento,
-  providerId, status, timestamp) — útil para diagnóstico sin ir a la DB.
+- `src/app/admin/pedidos/[id]/page.tsx` agrega sección "Historial de pagos" (tabla
+  fecha/hora · evento · proveedor · provider id · status, más reciente primero; sin
+  `rawPayload`). "Sin intentos de pago registrados." cuando no hay logs. Query
+  `paymentLogs` ordenada desc en el include del pedido.
 
 ---
 
@@ -2606,11 +2624,11 @@ son los que más frecuentemente fallan en producción.
 
 - Ver A-5. El riesgo es bajo en producción temprana pero debe estar en el radar.
 
-**[ARCH-3] `mock-provider.ts` — confirmar que no puede activarse en producción**
+**[ARCH-3] `mock-provider.ts` — confirmar que no puede activarse en producción** ✅ Verificado 2026-06-13
 
-- Archivo: `src/lib/payments/mock-provider.ts`
-- Leer el archivo: verificar que retorna error o que el factory (`index.ts`) solo lo
-  instancia cuando `PAYMENT_PROVIDER=mock` AND `NODE_ENV !== 'production'`.
+- El `mock-provider` solo crea un redirect a `/pago/[orderId]`; no liquida pagos. La
+  única superficie de ataque era `/api/payments/simulate`, ahora con doble gate
+  (`isMockPaymentsEnabled()` + 404 en `NODE_ENV=production`). Ver [B-1].
 
 **[ARCH-4] Error boundaries — auditar cobertura en Server Components**
 
@@ -2618,17 +2636,16 @@ son los que más frecuentemente fallan en producción.
   `error.tsx` más cercano. Verificar que las páginas del storefront con datos de Prisma
   tienen error boundaries apropiados (`loading.tsx` + `error.tsx` en las carpetas necesarias).
 
-**[ARCH-5] `src/app/(store)/essentials/page.tsx` — verificar si es redundante**
+**[ARCH-5] `src/app/(store)/essentials/page.tsx` — verificar si es redundante** ✅ Verificado 2026-06-13
 
-- Desde Bloque 9.6, Esenciales es una categoría dinámica. Esta página estática puede
-  estar duplicando o contraddiciendo la ruta `/category/[slug]`. Revisar si se puede
-  eliminar o si tiene casos de uso propios.
+- No es redundante: es un `permanentRedirect("/category/essentials")` (solo mantiene
+  viva la URL antigua). Sin lógica propia que duplique la ruta dinámica. Se conserva.
 
-**[ARCH-6] `use-toast.ts` — shadcn toast legacy vs Sonner**
+**[ARCH-6] `use-toast.ts` — shadcn toast legacy vs Sonner** ✅ Resuelto 2026-06-13
 
-- Archivo: `src/hooks/use-toast.ts`
-- El proyecto migró a Sonner en Bloque 2, pero `use-toast.ts` sigue existiendo.
-  ¿Algún componente todavía lo importa? Verificar con grep y eliminar si es dead code.
+- Dead code confirmado por grep (ningún importador): eliminados `src/hooks/use-toast.ts`
+  y `src/components/ui/toaster.tsx` (shim sin uso). Sonner (`ui/sonner` en el root
+  layout) es el único toaster activo.
 
 **[ARCH-7] Tipos de pago en `types.ts` del SDK vs tipos internos**
 
@@ -2646,17 +2663,17 @@ son los que más frecuentemente fallan en producción.
 | --- | -------------------------------------------------------- | ---------- | ------------- |
 | 1   | **Email transaccional** (pedido confirmado, enviado)     | ⭐⭐⭐⭐⭐ | 11            |
 | 2   | **Restauración de stock en fallo de pago**               | ⭐⭐⭐⭐⭐ | 14 (A-3)      |
-| 3   | **Rate limiting en auth**                                | ⭐⭐⭐⭐   | 14 (A-2)      |
-| 4   | **Headers de seguridad HTTP**                            | ⭐⭐⭐⭐   | 14 (A-1)      |
+| 3   | ~~**Rate limiting en auth**~~ ✅                         | ⭐⭐⭐⭐   | 14 (A-2)      |
+| 4   | **Headers de seguridad HTTP** ✅                         | ⭐⭐⭐⭐   | 14 (A-1)      |
 | 5   | **PSE sandbox E2E** (con credenciales test-seller)       | ⭐⭐⭐⭐   | 10            |
-| 6   | **Polling en order-success para PSE**                    | ⭐⭐⭐     | 14 (UX-2)     |
-| 7   | **PaymentLog en UI del admin**                           | ⭐⭐⭐     | 14 (UX-8)     |
-| 8   | **Paginación en admin**                                  | ⭐⭐⭐     | 14 (PERF-3)   |
+| 6   | ~~**Polling en order-success para PSE**~~ ✅             | ⭐⭐⭐     | 14 (UX-2)     |
+| 7   | ~~**PaymentLog en UI del admin**~~ ✅                    | ⭐⭐⭐     | 14 (UX-8)     |
+| 8   | ~~**Paginación en admin**~~ ✅                           | ⭐⭐⭐     | 14 (PERF-3)   |
 | 9   | **Google Analytics 4 + Meta Pixel**                      | ⭐⭐⭐     | 12            |
 | 10  | **Wompi** (Nequi, Bancolombia, PSE nativo)               | ⭐⭐⭐     | 10.5          |
 | 11  | **Cancelación de pedido con restauración de stock**      | ⭐⭐⭐     | —             |
 | 12  | **Imágenes reales de productos** (migrar de placeholder) | ⭐⭐       | 9 (pendiente) |
-| 13  | **Stock bajo en admin**                                  | ⭐⭐       | 14 (UX-7)     |
+| 13  | ~~**Stock bajo en admin**~~ ✅                           | ⭐⭐       | 14 (UX-7)     |
 | 14  | **Stripe** (clientes internacionales)                    | ⭐⭐       | 10.6          |
 
 ---

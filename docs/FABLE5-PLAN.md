@@ -229,7 +229,7 @@ CRITERIO:
 
 **Prioridad**: Alta — UX crítica  
 **Archivos principales**: `src/app/(store)/pago-fallido/page.tsx`, `src/app/api/payments/pse-return/route.ts`, `src/app/(store)/order-success/[id]/page.tsx`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — todos los redirects pasan `?orderId=`; la página ofrece "Intentar de nuevo" → `/pago/[orderId]`; copy corregido
 
 ```
 CONTEXTO:
@@ -271,7 +271,7 @@ RESTRICCIONES:
 
 **Prioridad**: Alta — seguridad  
 **Archivos principales**: `src/app/api/cuenta/register/route.ts`, `src/lib/auth-options.ts`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — Opción A (Prisma `RateLimitHit`, sin Redis): login 5/10min por email (solo fallos), registro 5/h por IP; migración aplicada
 
 ```
 CONTEXTO:
@@ -314,7 +314,7 @@ RESTRICCIONES:
 
 **Prioridad**: Alta — UX  
 **Archivos principales**: `src/app/(store)/order-success/[id]/page.tsx`, `src/app/api/orders/[id]/route.ts`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — `PaymentStatusPoller` (Client) hace polling 5s, transiciona en vivo, tope 60 intentos, limpia carrito al pagar
 
 ```
 CONTEXTO:
@@ -359,7 +359,7 @@ RESTRICCIONES:
 
 **Prioridad**: Media-Alta — seguridad  
 **Archivos principales**: `src/lib/orders.ts`, `src/app/(store)/order-success/[id]/page.tsx`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — `getOrderForConfirmation(id, viewerId?)` scopea pedidos con dueño; guest sigue por CUID; aplicado en página y en `GET /api/orders/[id]`
 
 ```
 CONTEXTO:
@@ -397,7 +397,7 @@ RESTRICCIONES:
 
 **Prioridad**: Media  
 **Archivos principales**: `src/app/admin/pedidos/[id]/page.tsx`, `prisma/schema.prisma`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — sección "Historial de pagos" (tabla fecha/evento/proveedor/providerId/status, desc; sin rawPayload; empty state)
 
 ```
 CONTEXTO:
@@ -441,7 +441,7 @@ mantener consistencia visual. No crear componentes nuevos si hay uno reutilizabl
 
 **Prioridad**: Media  
 **Archivos principales**: `src/app/admin/pedidos/page.tsx`, `src/app/admin/productos/page.tsx`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Ya resuelto (verificado 2026-06-13) — ambas listas ya paginaban con offset `take:20`+`skip` y controles "X–Y de N". Se conservó offset (mejor UX a esta escala que cursor)
 
 ```
 CONTEXTO:
@@ -481,7 +481,7 @@ RESTRICCIONES:
 
 **Prioridad**: Media  
 **Archivos principales**: `src/app/admin/productos/page.tsx`, `src/lib/inventory.ts`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — `StockBadge` (Agotado/Stock bajo (N)/número) con `isLowStock`/`isOutOfStock`; filtro server-side `?stock=low|out` (tabs)
 
 ```
 CONTEXTO:
@@ -519,7 +519,7 @@ RESTRICCIONES:
 
 **Prioridad**: Media — seguridad  
 **Archivos principales**: `src/app/api/payments/simulate/route.ts`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — ya gateado por `isMockPaymentsEnabled()`; añadida 2ª capa: 404 si `NODE_ENV=production`. mock-provider solo redirige (no liquida)
 
 ```
 CONTEXTO:
@@ -547,7 +547,7 @@ src/lib/payments/mock-provider.ts y reporta si puede ser instanciado en producci
 ### 🟡 ÍTEM 12 — Dead code: use-toast.ts y otros
 
 **Prioridad**: Baja  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — eliminados `use-toast.ts` y `toaster.tsx` (sin importadores). `essentials/page.tsx` se conserva: es `permanentRedirect` (no duplica lógica)
 
 ```
 CONTEXTO:
@@ -580,7 +580,7 @@ Reportar exactamente qué se eliminó y confirmar que yarn validate sigue pasand
 
 **Prioridad**: Alta (limpieza de CDN, ahorro de costos)  
 **Archivos principales**: `src/lib/media-manager.ts` (nuevo), `src/app/api/admin/media/route.ts`, `src/app/admin/media/page.tsx` (nuevo), `src/components/admin/media/media-manager-page.tsx` (nuevo)  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — scan con caché 5min, DELETE con re-verificación + batch 25, `/scan` fresco, página + client (tabs/grid/selección/AlertDialog), link en sidebar y modal, revalidate en cleanup. Badge de huérfanos en sidebar omitido (evita scan en cada carga). GET principal sigue devolviendo `{items}` para no romper el modal
 
 ```
 CONTEXTO:
@@ -682,7 +682,7 @@ CRITERIO DE COMPLETITUD:
 
 **Prioridad**: Alta (bug confirmado — pedidos no aparecen en /cuenta/pedidos tras login)  
 **Archivos principales**: `src/lib/account.ts`, `src/lib/auth-options.ts`  
-**Estado**: [ ] Pendiente
+**Estado**: [x] Completado 2026-06-13 — `claimGuestOrders(email, userId)` extraída y reusada en `registerCustomer` + `authorize()`; `verify-account.mjs` cubre el flujo de login-claiming
 
 ```
 CONTEXTO:
@@ -863,30 +863,30 @@ Marca cada uno cuando esté completado:
 
 - [x] [ÍTEM 1] Stock se restaura cuando falla el pago
 - [x] [ÍTEM 2] Headers HTTP configurados en next.config.ts
-- [ ] [ÍTEM 5] Rate limiting en login y registro
-- [ ] [ÍTEM 7] Ownership check en order-success
-- [ ] [ÍTEM 11] /api/payments/simulate gateado a dev
+- [x] [ÍTEM 5] Rate limiting en login y registro
+- [x] [ÍTEM 7] Ownership check en order-success
+- [x] [ÍTEM 11] /api/payments/simulate gateado a dev
 - [ ] [Sec.5] Auditoría del flujo de pagos completada
 
 ### UX crítica
 
 - [x] [ÍTEM 3] createOrder usa shipping de la DB
-- [ ] [ÍTEM 4] pago-fallido recibe orderId y ofrece reintento
-- [ ] [ÍTEM 6] Polling en order-success para PSE pendiente
-- [ ] [ÍTEM 14] Pedidos guest vinculados al iniciar sesión (login-claiming)
+- [x] [ÍTEM 4] pago-fallido recibe orderId y ofrece reintento
+- [x] [ÍTEM 6] Polling en order-success para PSE pendiente
+- [x] [ÍTEM 14] Pedidos guest vinculados al iniciar sesión (login-claiming)
 
 ### Admin operativo
 
-- [ ] [ÍTEM 8] PaymentLog visible en detalle de pedido
-- [ ] [ÍTEM 9] Paginación en listas de pedidos y productos
-- [ ] [ÍTEM 10] Indicador de stock bajo en tabla de productos
-- [ ] [ÍTEM 13] Media Manager: gestor completo con detección de huérfanos y borrado en lote
+- [x] [ÍTEM 8] PaymentLog visible en detalle de pedido
+- [x] [ÍTEM 9] Paginación en listas de pedidos y productos (ya existía — offset)
+- [x] [ÍTEM 10] Indicador de stock bajo en tabla de productos
+- [x] [ÍTEM 13] Media Manager: gestor completo con detección de huérfanos y borrado en lote
 
 ### Calidad
 
-- [ ] [ÍTEM 12] Dead code eliminado (use-toast, essentials duplicado)
+- [x] [ÍTEM 12] Dead code eliminado (use-toast + toaster; essentials es redirect, se conserva)
 - [ ] [Sec.4] Auditoría de seguridad de todas las admin APIs
-- [ ] yarn validate pasa en verde
+- [x] yarn validate pasa en verde (type-check + lint + format de fuentes)
 - [ ] Prueba E2E: tarjeta APRO → pago exitoso → stock decrementado
 - [ ] Prueba E2E: tarjeta FUND → pago fallido → stock restaurado
 - [ ] Bloque 11 (emails transaccionales) iniciado

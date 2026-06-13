@@ -1862,10 +1862,19 @@ function buildIntegritySignature(
     transición a SHIPPED, con after(). (Sin número de guía: no hay campo de tracking
     en el schema — pendiente como mejora futura)
 [x] Email: Bienvenida (al crear cuenta) — POST /api/cuenta/register con after()
-[ ] Email: Abandono de carrito (24h sin completar) — requiere cron/scheduled job;
-    diferido (no hay infra de jobs todavía)
+[x] Email: Abandono de pago (pedido PENDING >24h) — cron diario GET
+    /api/cron/abandoned-orders (Vercel Cron, vercel.json), protegido con CRON_SECRET.
+    remindAbandonedOrders() reclama el recordatorio con update guardado (no doble envío)
+    y solo apunta a PENDING entre 24h y 7 días con email. Campo Order.reminderSentAt
+    (migración add_order_reminder_sent_at). NOTA: el carrito vive en localStorage, no
+    es detectable; en su lugar se recuperan pedidos creados que nunca se pagaron.
 [ ] Verificación E2E con API key real (RESEND_API_KEY) — falta credencial
 ```
+
+> **Para activar el cron en Vercel**: definir `CRON_SECRET` (p. ej. `openssl rand -hex 32`)
+> en las env vars del proyecto. Vercel Cron envía `Authorization: Bearer <CRON_SECRET>`
+> automáticamente; el handler falla cerrado si no está configurado. Schedule actual:
+> diario 15:00 UTC (~10:00 Colombia).
 
 ---
 
@@ -2744,14 +2753,16 @@ Archivos existentes relacionados: [listar].
 
 - [ ] Prueba sandbox E2E de MercadoPago con ngrok: tarjeta APRO (pago + stock−),
       tarjeta FUND (fallo + stock restaurado), PSE, webhook firmado. (Bloque 10)
-- [ ] `RESEND_API_KEY` real + verificar entrega de los 4 emails. (Bloque 11)
+- [ ] `RESEND_API_KEY` real + verificar entrega de los 5 emails. (Bloque 11)
+- [ ] `CRON_SECRET` en Vercel para activar el recordatorio de pago abandonado.
 
 **Importante (no bloqueante):**
 
 - [x] [A-5] Propagación de cambios de rol en JWT (re-sync cada 5 min) ✅
 - [x] [B-2] Password: límite máximo de 72 bytes (bcrypt) en registro/cambio ✅
 - [x] Auditoría: guard de auto-escalada en `roles:update` ✅
-- [ ] Abandono de carrito (email 24h) — requiere cron/scheduled job
+- [x] Recordatorio de pago abandonado (cron diario + email) ✅ — falta definir
+      `CRON_SECRET` en Vercel para activarlo
 
 **Mejoras de calidad (cuando haya tiempo):**
 

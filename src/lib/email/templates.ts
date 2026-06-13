@@ -140,6 +140,19 @@ export function orderShippedEmail({ order, brandName, appUrl }: OrderEmailContex
   }
 }
 
+export function abandonedOrderEmail({ order, brandName, locale, appUrl }: OrderEmailContext) {
+  const body =
+    p(
+      `Tu pedido <strong style="color:${COLORS.ink};">${order.orderNumber}</strong> está reservado pero el pago aún no se completó. Termínalo cuando quieras — tus productos te esperan.`,
+    ) +
+    itemsTable(order, locale) +
+    `<p style="margin:24px 0 0;"><a href="${appUrl}/pago/${order.id}" style="display:inline-block;background:${COLORS.accent};color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;">Completar mi pago</a></p>`
+  return {
+    subject: `¿Olvidaste algo? Completa tu pedido ${order.orderNumber}`,
+    html: layout(brandName, "Tu pedido te espera", body, appUrl),
+  }
+}
+
 export function welcomeEmail({
   name,
   brandName,

@@ -3,7 +3,7 @@ import "server-only"
 import { Prisma, type PaymentStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { loadAllSettings } from "@/lib/settings"
-import { sendOrderPaidEmail } from "@/lib/email"
+import { sendAbandonedOrderEmail, sendOrderPaidEmail } from "@/lib/email"
 import type { ShippingData } from "@/lib/validation"
 
 /**
@@ -169,6 +169,7 @@ export interface OrderConfirmationItem {
 }
 
 export interface OrderConfirmationDTO {
+  id: string
   orderNumber: string
   customerName: string | null
   customerEmail: string | null
@@ -185,6 +186,7 @@ export interface OrderConfirmationDTO {
 }
 
 const ORDER_DETAIL_SELECT = {
+  id: true,
   userId: true,
   orderNumber: true,
   customerName: true,
@@ -213,6 +215,7 @@ type OrderDetailRow = Prisma.OrderGetPayload<{ select: typeof ORDER_DETAIL_SELEC
 
 function toConfirmationDTO(order: OrderDetailRow): OrderConfirmationDTO {
   return {
+    id: order.id,
     orderNumber: order.orderNumber,
     customerName: order.customerName,
     customerEmail: order.customerEmail,
@@ -338,6 +341,44 @@ export async function getOrderPaymentInfo(id: string): Promise<OrderPaymentInfo 
   })
   if (!order) return null
   return { ...order, shippingAddress: (order.shippingAddress as ShippingData | null) ?? null }
+}
+
+/** Don't nag before this, and don't chase orders older than the window (stale). */
+const ABANDON_AFTER_MS = 24 * 60 * 60 * 1000
+const ABANDON_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
+
+/**
+ * Emails a one-time "complete your payment" reminder for orders left PENDING
+ * (checkout abandoned before paying). The reminder is claimed with a guarded
+ * update before sending, so concurrent cron runs — or a duplicate invocation —
+ * can never email the same customer twice. Returns how many were sent.
+ */
+export async function remindAbandonedOrders(): Promise<number> {
+  const now = Date.now()
+  const candidates = await prisma.order.findMany({
+    where: {
+      paymentStatus: "PENDING",
+      reminderSentAt: null,
+      customerEmail: { not: null },
+      createdAt: { lt: new Date(now - ABANDON_AFTER_MS), gt: new Date(now - ABANDON_WINDOW_MS) },
+    },
+    select: { id: true },
+  })
+
+  let sent = 0
+  for (const { id } of candidates) {
+    const { count } = await prisma.order.updateMany({
+      where: { id, reminderSentAt: null },
+      data: { reminderSentAt: new Date() },
+    })
+    if (count === 0) continue
+    const order = await getOrderForConfirmation(id)
+    if (order) {
+      await sendAbandonedOrderEmail(order)
+      sent++
+    }
+  }
+  return sent
 }
 
 /** Hard cap on charge attempts per order (brute-force / card-testing guard). */

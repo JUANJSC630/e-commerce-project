@@ -4,6 +4,7 @@ import type { OrderConfirmationDTO } from "@/lib/orders"
 import { loadAllSettings } from "@/lib/settings"
 import { sendEmail } from "@/lib/email/client"
 import {
+  abandonedOrderEmail,
   orderPaidEmail,
   orderPlacedEmail,
   orderShippedEmail,
@@ -41,6 +42,12 @@ export async function sendOrderPaidEmail(order: OrderConfirmationDTO): Promise<v
 export async function sendOrderShippedEmail(order: OrderConfirmationDTO): Promise<void> {
   if (!order.customerEmail) return
   const { subject, html } = orderShippedEmail(await emailContext(order))
+  await sendEmail({ to: order.customerEmail, subject, html })
+}
+
+export async function sendAbandonedOrderEmail(order: OrderConfirmationDTO): Promise<void> {
+  if (!order.customerEmail) return
+  const { subject, html } = abandonedOrderEmail(await emailContext(order))
   await sendEmail({ to: order.customerEmail, subject, html })
 }
 

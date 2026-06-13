@@ -126,6 +126,9 @@ model Order {
   idempotencyKey    String?     @unique
   pseRedirectUrl    String?
   paymentAttempts   Int         @default(0)
+  // Set when the "complete your payment" reminder for an abandoned order is sent,
+  // so the cron never emails the same customer twice.
+  reminderSentAt    DateTime?
   total           Float
   subtotal        Float
   shippingCost    Float         @default(0)

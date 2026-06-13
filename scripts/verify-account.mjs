@@ -25,6 +25,38 @@ const cart = [
   },
 ]
 
+async function placeOrderAndPay(page) {
+  await page.evaluate((c) => localStorage.setItem("dulceInfanciaCart", JSON.stringify(c)), cart)
+  await page.goto(`${BASE}/checkout-flow`, { waitUntil: "networkidle" })
+  await page.getByRole("button", { name: /Continuar al envío/i }).click()
+
+  await page.locator("#firstName").fill("Juan")
+  await page.locator("#lastName").fill("Pruebas")
+  await page.locator("#email").fill(email)
+  await page.locator("#phone").fill("3001234567")
+  await page.locator("#address").fill("Cra 5 #6-7")
+  await page.locator("#state").click()
+  await page.getByPlaceholder("Buscar departamento…").fill("Valle")
+  await page.getByRole("option", { name: "Valle del Cauca", exact: true }).click()
+  await page.locator("#city").click()
+  await page.getByRole("option", { name: "Cali", exact: true }).click()
+  await page.getByRole("button", { name: /Continuar al pago/i }).click()
+
+  await page.getByRole("radio", { name: /Transferencia/i }).click()
+  await page.getByRole("button", { name: "Revisar pedido" }).click()
+  await page.getByRole("button", { name: "Confirmar pedido" }).click()
+
+  await page.waitForURL(/\/pago\//, { timeout: 15000 })
+  await page.getByRole("button", { name: /Simular pago aprobado/i }).click()
+  await page.waitForURL(/\/order-success\//, { timeout: 15000 })
+}
+
+async function logout(page) {
+  await page.goto(`${BASE}/cuenta`, { waitUntil: "networkidle" })
+  await page.getByRole("button", { name: /Cerrar sesión/i }).click()
+  await page.waitForTimeout(2000)
+}
+
 const browser = await chromium.launch()
 const page = await browser
   .newContext({ viewport: { width: 1100, height: 1000 } })
@@ -49,32 +81,7 @@ try {
   check("Pedidos vacíos al inicio", emptyVisible)
 
   // ── Place an order while logged in ──────────────────────────────────────────
-  await page.evaluate((c) => localStorage.setItem("dulceInfanciaCart", JSON.stringify(c)), cart)
-  await page.goto(`${BASE}/checkout-flow`, { waitUntil: "networkidle" })
-  await page.getByRole("button", { name: /Continuar al envío/i }).click()
-
-  await page.locator("#firstName").fill("Juan")
-  await page.locator("#lastName").fill("Pruebas")
-  await page.locator("#email").fill(email)
-  await page.locator("#phone").fill("3001234567")
-  await page.locator("#address").fill("Cra 5 #6-7")
-  // chained selectors (country auto = Colombia)
-  await page.locator("#state").click()
-  await page.getByPlaceholder("Buscar departamento…").fill("Valle")
-  await page.getByRole("option", { name: "Valle del Cauca", exact: true }).click()
-  await page.locator("#city").click()
-  await page.getByRole("option", { name: "Cali", exact: true }).click()
-  await page.getByRole("button", { name: /Continuar al pago/i }).click()
-
-  // payment: pick bank transfer to skip card validation
-  await page.getByRole("radio", { name: /Transferencia/i }).click()
-  await page.getByRole("button", { name: "Revisar pedido" }).click()
-  await page.getByRole("button", { name: "Confirmar pedido" }).click()
-
-  // simulated gateway → approve
-  await page.waitForURL(/\/pago\//, { timeout: 15000 })
-  await page.getByRole("button", { name: /Simular pago aprobado/i }).click()
-  await page.waitForURL(/\/order-success\//, { timeout: 15000 })
+  await placeOrderAndPay(page)
   const thanks = await page
     .getByText(/Gracias por tu compra/i)
     .waitFor({ timeout: 8000 })
@@ -100,6 +107,20 @@ try {
   const detailHasItem = await page.getByText("Body Algodón Orgánico - Nubes").isVisible()
   check("Detalle del pedido muestra los items", detailHasItem)
   await page.screenshot({ path: `${SHOTS}/3-order-detail.png` })
+
+  // ── Login-claiming: a guest order with the same email is linked on login ─────
+  await logout(page)
+  await placeOrderAndPay(page) // guest checkout, no session, same email
+  await page.goto(`${BASE}/cuenta/login`, { waitUntil: "networkidle" })
+  await page.locator("#email").fill(email)
+  await page.locator("#password").fill(password)
+  await page.getByRole("button", { name: /Iniciar sesión/i }).click()
+  await page.waitForURL(`${BASE}/cuenta`, { timeout: 15000 })
+
+  await page.goto(`${BASE}/cuenta/pedidos`, { waitUntil: "networkidle" })
+  const claimedCount = await page.locator('a[href*="/cuenta/pedidos/"]').count()
+  check(`Pedido guest reclamado al iniciar sesión (${claimedCount})`, claimedCount === 2)
+  await page.screenshot({ path: `${SHOTS}/4-claimed.png` })
 
   // ── Logout ──────────────────────────────────────────────────────────────────
   // (signOut's post-redirect uses NEXTAUTH_URL, which may point at another port;

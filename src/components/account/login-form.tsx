@@ -25,7 +25,11 @@ export function LoginForm() {
     const result = await signIn("credentials", { email, password, redirect: false })
 
     if (result?.error) {
-      setError("Email o contraseña incorrectos")
+      // Thrown errors (e.g. rate limit) carry a message; a plain bad credential
+      // surfaces as the generic "CredentialsSignin" code.
+      setError(
+        result.error === "CredentialsSignin" ? "Email o contraseña incorrectos" : result.error,
+      )
       setLoading(false)
       return
     }

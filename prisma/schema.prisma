@@ -175,3 +175,12 @@ model Setting {
   value     Json
   updatedAt DateTime @updatedAt
 }
+
+model RateLimitHit {
+  id         String   @id @default(cuid())
+  action     String
+  identifier String
+  createdAt  DateTime @default(now())
+
+  @@index([action, identifier, createdAt])
+}

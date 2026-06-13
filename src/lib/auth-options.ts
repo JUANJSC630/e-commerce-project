@@ -2,7 +2,12 @@ import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { claimGuestOrders } from "@/lib/account"
+import { isRateLimited, recordRateLimitHit } from "@/lib/rate-limit"
 import type { Permissions } from "@/lib/permissions"
+
+const LOGIN_MAX_ATTEMPTS = 5
+const LOGIN_WINDOW_MS = 10 * 60 * 1000
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -19,15 +24,31 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
+        const email = credentials.email.trim().toLowerCase()
+
+        const limited = await isRateLimited({
+          action: "login",
+          identifier: email,
+          max: LOGIN_MAX_ATTEMPTS,
+          windowMs: LOGIN_WINDOW_MS,
+        })
+        if (limited) throw new Error("Demasiados intentos. Intenta de nuevo en 10 minutos.")
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email.trim().toLowerCase() },
+          where: { email },
           include: { role: true },
         })
 
-        if (!user || user.status !== "ACTIVE") return null
+        const passwordValid =
+          !!user &&
+          user.status === "ACTIVE" &&
+          (await bcrypt.compare(credentials.password, user.password))
+        if (!passwordValid) {
+          await recordRateLimitHit("login", email, LOGIN_WINDOW_MS)
+          return null
+        }
 
-        const passwordValid = await bcrypt.compare(credentials.password, user.password)
-        if (!passwordValid) return null
+        await claimGuestOrders(user.email, user.id)
 
         return {
           id: user.id,

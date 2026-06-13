@@ -39,6 +39,19 @@ export async function ensureCustomerRole(): Promise<string> {
   return role.id
 }
 
+/**
+ * Links guest orders placed with this email to a now-known account. Idempotent:
+ * the `userId: null` guard means already-claimed orders are never reassigned, so
+ * it's safe to run on every login. Returns how many orders were claimed.
+ */
+export async function claimGuestOrders(email: string, userId: string): Promise<number> {
+  const { count } = await prisma.order.updateMany({
+    where: { userId: null, customerEmail: email.trim().toLowerCase() },
+    data: { userId },
+  })
+  return count
+}
+
 export interface RegisterInput {
   name: string
   email: string
@@ -66,10 +79,7 @@ export async function registerCustomer(input: RegisterInput): Promise<{ id: stri
   })
 
   // Claim any guest orders placed with this email so they show in the account.
-  await prisma.order.updateMany({
-    where: { userId: null, customerEmail: email },
-    data: { userId: user.id },
-  })
+  await claimGuestOrders(email, user.id)
 
   return user
 }

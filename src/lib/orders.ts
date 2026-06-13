@@ -184,6 +184,7 @@ export interface OrderConfirmationDTO {
 }
 
 const ORDER_DETAIL_SELECT = {
+  userId: true,
   orderNumber: true,
   customerName: true,
   customerEmail: true,
@@ -237,13 +238,19 @@ function toConfirmationDTO(order: OrderDetailRow): OrderConfirmationDTO {
 }
 
 /**
- * Read a single order for its confirmation page. The unguessable cuid acts as a
- * capability token (guest checkout has no account), so we expose only what the
- * customer needs to see — never payment internals.
+ * Read a single order for its confirmation page. For guest orders the unguessable
+ * cuid acts as a capability token, so anyone with the link may view it. Orders
+ * that belong to an account are scoped to that account: a viewer who isn't the
+ * owner gets `null` (the caller renders notFound, never revealing existence).
  */
-export async function getOrderForConfirmation(id: string): Promise<OrderConfirmationDTO | null> {
+export async function getOrderForConfirmation(
+  id: string,
+  viewerId?: string | null,
+): Promise<OrderConfirmationDTO | null> {
   const order = await prisma.order.findUnique({ where: { id }, select: ORDER_DETAIL_SELECT })
-  return order ? toConfirmationDTO(order) : null
+  if (!order) return null
+  if (order.userId && order.userId !== viewerId) return null
+  return toConfirmationDTO(order)
 }
 
 /** Same detail, but scoped to the owning account so customers can't read others'. */

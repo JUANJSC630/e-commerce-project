@@ -23,7 +23,7 @@ export default async function PaymentPage({ params }: PageProps) {
 
   if (!order) notFound()
   if (order.paymentStatus === "PAID") redirect(`/order-success/${orderId}`)
-  if (order.paymentStatus === "FAILED") redirect("/pago-fallido")
+  if (order.paymentStatus === "FAILED") redirect(`/pago-fallido?orderId=${orderId}`)
   // PSE in flight: the success page shows the waiting state (webhook settles it).
   if (order.paymentStatus === "PROCESSING") redirect(`/order-success/${orderId}`)
 

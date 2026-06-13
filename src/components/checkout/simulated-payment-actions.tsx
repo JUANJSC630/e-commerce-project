@@ -38,7 +38,7 @@ export function SimulatedPaymentActions({ orderId, successHref }: SimulatedPayme
         clearCart()
         router.push(successHref)
       } else {
-        router.push("/pago-fallido")
+        router.push(`/pago-fallido?orderId=${orderId}`)
       }
     } catch {
       toast.error("No se pudo procesar el pago. Intenta de nuevo.")

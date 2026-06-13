@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
   // Already settled (webhook beat the redirect) — route by final state.
   if (order.paymentStatus === "PAID") return redirect(`/order-success/${order.id}`)
-  if (order.paymentStatus === "FAILED") return redirect("/pago-fallido")
+  if (order.paymentStatus === "FAILED") return redirect(`/pago-fallido?orderId=${order.id}`)
 
   const provider = getPaymentProvider()
   if (!isOnsiteProvider(provider) || !order.paymentProviderId) {
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     }
     if (result.status === "rejected") {
       await markOrderFailed(order.id)
-      return redirect("/pago-fallido")
+      return redirect(`/pago-fallido?orderId=${order.id}`)
     }
     // Still pending at the bank — the success page shows the waiting state.
     return redirect(`/order-success/${order.id}`)

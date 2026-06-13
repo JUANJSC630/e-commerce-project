@@ -1123,10 +1123,20 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
 
 ### ✅ Bloque 9.10 — Media Manager (gestor completo de archivos del CDN)
 
-> **✅ Completado 2026-06-13** (ver checklist al final de la sección). El badge de
-> huérfanos en el sidebar se omitió a propósito: un contador en vivo dispararía un
-> escaneo del CDN en cada carga del admin (regresión de performance). El conteo se
-> muestra de forma prominente dentro de `/admin/media`.
+> **✅ Completado 2026-06-13** (ver checklist al final de la sección).
+>
+> **Robustez añadida (cierre de gaps, 2026-06-13):**
+>
+> - `loading.tsx` con skeleton para el primer scan (cache frío) — ya no bloquea sin feedback.
+> - `error.tsx` con estado degradado + reintento si el scan falla (p. ej. falta
+>   `UPLOADTHING_TOKEN`), sin reventar al error boundary global del admin.
+> - **Badge de huérfanos en el sidebar**: ahora sí, pero **sin la regresión** que se
+>   evitaba: el sidebar consulta `GET /api/admin/media?stats=1`, que lee el conteo del
+>   scan **cacheado** (no dispara un scan por carga) de forma asíncrona/no bloqueante.
+>
+> Diferencia que se mantiene a propósito: el filtrado/paginación del gestor es
+> client-side sobre el `ScanResult` completo (la página lee `scanMediaUsage()` directo,
+> sin hop HTTP). A esta escala es más ágil que paginar server-side por HTTP.
 
 > **Objetivo**: una página dedicada en el admin (`/admin/media`) que muestra TODOS
 > los archivos subidos al CDN de UploadThing, indica cuáles están siendo usados y
@@ -1439,7 +1449,9 @@ del archivo no es crítico para el funcionamiento. Puede agregarse como mejora V
 [x] src/app/admin/media/page.tsx — Server Component con datos iniciales del scan
 [x] src/components/admin/media/media-manager-page.tsx — Client Component:
     tabs (Todos/En uso/Huérfanos), grid responsivo, checkboxes, AlertDialog, paginación 25, toast
-[x] Sidebar del admin → link "Medios" (gateado por canManageMedia; badge omitido, ver nota)
+[x] Sidebar del admin → link "Medios" (gateado por canManageMedia) + badge de huérfanos
+    (fetch no bloqueante a ?stats=1, conteo del scan cacheado)
+[x] loading.tsx (skeleton en cache frío) + error.tsx (estado degradado + reintento)
 [x] MediaLibraryModal → link "Abrir gestor completo →"
 [x] media-cleanup.ts → revalidateTag("media-scan") cuando borra archivos
 [ ] E2E manual (requiere servidor + credenciales UploadThing): subir → huérfano →

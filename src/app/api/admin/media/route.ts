@@ -5,14 +5,25 @@ import { authOptions } from "@/lib/auth-options"
 import { canManageMedia } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 import { listUploadedImages } from "@/lib/media-library"
-import { MEDIA_SCAN_TAG, deleteMediaFiles, keysInUse } from "@/lib/media-manager"
+import { MEDIA_SCAN_TAG, deleteMediaFiles, keysInUse, scanMediaUsage } from "@/lib/media-manager"
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const perms = session.user.role.permissions as Permissions
   if (!canManageMedia(perms)) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
+  // `?stats=1`: just the orphan count for the sidebar badge, read from the cached
+  // scan (no forced revalidate) so it never triggers a CDN scan per admin load.
+  if (new URL(request.url).searchParams.get("stats") === "1") {
+    try {
+      const { orphanCount } = await scanMediaUsage()
+      return NextResponse.json({ orphanCount })
+    } catch {
+      return NextResponse.json({ orphanCount: 0 })
+    }
+  }
 
   try {
     return NextResponse.json({ items: await listUploadedImages() })

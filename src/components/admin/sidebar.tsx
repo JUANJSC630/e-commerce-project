@@ -17,7 +17,7 @@ import {
   X,
   ChevronRight,
 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import type { Resource } from "@/lib/permissions"
 import { canManageMedia, hasPermission } from "@/lib/permissions"
@@ -48,11 +48,27 @@ export function AdminSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const permissions = session?.user?.role?.permissions as Permissions | undefined
+  const canMedia = canManageMedia(permissions)
+  const [orphanCount, setOrphanCount] = useState(0)
+
+  // Non-blocking: reads the orphan count from the cached scan (never triggers a
+  // CDN scan on its own), so the badge appears without slowing the admin down.
+  useEffect(() => {
+    if (!canMedia) return
+    let active = true
+    fetch("/api/admin/media?stats=1")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => active && data && setOrphanCount(data.orphanCount ?? 0))
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [canMedia])
 
   const visibleItems = [
     ...NAV_ITEMS.filter((item) => hasPermission(permissions, item.resource, "read")),
     // Media isn't a granular Resource — any image-editing role may manage it.
-    ...(canManageMedia(permissions) ? [MEDIA_ITEM] : []),
+    ...(canMedia ? [MEDIA_ITEM] : []),
   ]
 
   const SidebarContent = () => (
@@ -91,7 +107,20 @@ export function AdminSidebar() {
             >
               <Icon className="h-4 w-4 shrink-0" />
               {item.label}
-              {isActive && <ChevronRight className="h-3 w-3 ml-auto" />}
+              {item.href === MEDIA_ITEM.href && orphanCount > 0 && (
+                <span
+                  className={cn(
+                    "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none",
+                    isActive ? "bg-white/25 text-white" : "bg-red-100 text-red-700",
+                  )}
+                  title={`${orphanCount} archivos huérfanos`}
+                >
+                  {orphanCount}
+                </span>
+              )}
+              {isActive && item.href !== MEDIA_ITEM.href && (
+                <ChevronRight className="h-3 w-3 ml-auto" />
+              )}
             </Link>
           )
         })}

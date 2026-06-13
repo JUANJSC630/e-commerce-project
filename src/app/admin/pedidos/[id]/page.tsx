@@ -55,6 +55,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
           product: { select: { id: true, name: true, image: true } },
         },
       },
+      paymentLogs: { orderBy: { createdAt: "desc" } },
     },
   })
 
@@ -154,6 +155,45 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
             <span>${order.total.toLocaleString("es-AR")}</span>
           </div>
         </div>
+      </div>
+
+      {/* Payment history */}
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-100">
+          <h2 className="font-semibold text-slate-900">Historial de pagos</h2>
+        </div>
+        {order.paymentLogs.length === 0 ? (
+          <p className="px-5 py-4 text-sm text-slate-400">Sin intentos de pago registrados.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-slate-400 border-b border-slate-100">
+                  <th className="px-5 py-2 font-medium">Fecha/hora</th>
+                  <th className="px-5 py-2 font-medium">Evento</th>
+                  <th className="px-5 py-2 font-medium">Proveedor</th>
+                  <th className="px-5 py-2 font-medium">Provider ID</th>
+                  <th className="px-5 py-2 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {order.paymentLogs.map((log) => (
+                  <tr key={log.id} className="text-slate-700">
+                    <td className="px-5 py-2 whitespace-nowrap">
+                      {new Date(log.createdAt).toLocaleString("es-AR")}
+                    </td>
+                    <td className="px-5 py-2 font-mono text-xs">{log.event}</td>
+                    <td className="px-5 py-2">{log.provider}</td>
+                    <td className="px-5 py-2 font-mono text-xs text-slate-400">
+                      {log.providerId ?? "—"}
+                    </td>
+                    <td className="px-5 py-2">{log.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Status updater */}

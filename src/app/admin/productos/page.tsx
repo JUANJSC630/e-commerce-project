@@ -5,12 +5,16 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
+import { inventory } from "@/config/store.config"
 import { ProductsTable } from "@/components/admin/products/products-table"
+import type { Prisma } from "@prisma/client"
+
+type StockFilter = "low" | "out"
 
 export default async function AdminProductosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>
+  searchParams: Promise<{ q?: string; page?: string; stock?: string }>
 }) {
   const session = await getServerSession(authOptions)
   if (!session) redirect("/admin/login")
@@ -18,19 +22,29 @@ export default async function AdminProductosPage({
   const perms = session.user.role.permissions as Permissions
   if (!hasPermission(perms, "products", "read")) redirect("/admin")
 
-  const { q, page: pageStr } = await searchParams
+  const { q, page: pageStr, stock } = await searchParams
   const page = Math.max(1, parseInt(pageStr ?? "1", 10))
   const take = 20
   const skip = (page - 1) * take
 
-  const where = q
-    ? {
-        OR: [
-          { name: { contains: q, mode: "insensitive" as const } },
-          { category: { contains: q, mode: "insensitive" as const } },
-        ],
-      }
-    : {}
+  const stockFilter: StockFilter | undefined =
+    stock === "low" || stock === "out" ? stock : undefined
+
+  const where: Prisma.ProductWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { category: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+    ...(stockFilter === "out"
+      ? { stock: { lte: 0 } }
+      : stockFilter === "low"
+        ? { stock: { gt: 0, lte: inventory.lowStockThreshold } }
+        : {}),
+  }
 
   const [products, total] = await Promise.all([
     prisma.product.findMany({
@@ -71,6 +85,7 @@ export default async function AdminProductosPage({
         canEdit={canEdit}
         canDelete={canDelete}
         searchQuery={q}
+        stockFilter={stockFilter}
       />
     </div>
   )

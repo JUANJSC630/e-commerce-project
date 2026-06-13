@@ -4,10 +4,27 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { claimGuestOrders } from "@/lib/account"
 import { isRateLimited, recordRateLimitHit } from "@/lib/rate-limit"
+import { CUSTOMER_ROLE_SLUG } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 
 const LOGIN_MAX_ATTEMPTS = 5
 const LOGIN_WINDOW_MS = 10 * 60 * 1000
+
+/**
+ * How often the JWT re-reads the user's role from the database. Without this a
+ * role change (or deactivation) wouldn't take effect until the token expired —
+ * a degraded admin could keep their old access. 5 min bounds that window while
+ * keeping the per-request DB cost negligible.
+ */
+const ROLE_SYNC_TTL_MS = 5 * 60 * 1000
+
+/** Role given to a deactivated/deleted user: no permissions, bounced out of admin. */
+const REVOKED_ROLE = {
+  id: "",
+  name: "Inactivo",
+  slug: CUSTOMER_ROLE_SLUG,
+  permissions: {} as Permissions,
+}
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -69,6 +86,31 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.roleSyncedAt = Date.now()
+        return token
+      }
+
+      // Re-sync the role from the DB at most once per TTL so role changes and
+      // deactivations propagate without waiting for the token to expire.
+      const syncedAt = token.roleSyncedAt ?? 0
+      if (token.id && Date.now() - syncedAt > ROLE_SYNC_TTL_MS) {
+        const fresh = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: {
+            status: true,
+            role: { select: { id: true, name: true, slug: true, permissions: true } },
+          },
+        })
+        token.role =
+          !fresh || fresh.status !== "ACTIVE"
+            ? REVOKED_ROLE
+            : {
+                id: fresh.role.id,
+                name: fresh.role.name,
+                slug: fresh.role.slug,
+                permissions: fresh.role.permissions as Permissions,
+              }
+        token.roleSyncedAt = Date.now()
       }
       return token
     },

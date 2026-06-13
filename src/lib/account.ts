@@ -16,7 +16,19 @@ export class AccountError extends Error {
 }
 
 export const PASSWORD_MIN_LENGTH = 8
+/** bcrypt silently truncates input past 72 bytes — reject longer to avoid surprises. */
+export const PASSWORD_MAX_BYTES = 72
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** Validates a password length (chars min + bcrypt byte cap); throws AccountError. */
+export function assertValidPassword(password: string): void {
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    throw new AccountError(`La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
+  }
+  if (Buffer.byteLength(password, "utf8") > PASSWORD_MAX_BYTES) {
+    throw new AccountError(`La contraseña no puede superar ${PASSWORD_MAX_BYTES} bytes`)
+  }
+}
 
 let customerRoleId: string | undefined
 
@@ -65,9 +77,7 @@ export async function registerCustomer(input: RegisterInput): Promise<{ id: stri
 
   if (!name) throw new AccountError("El nombre es requerido")
   if (!email || !EMAIL_RE.test(email)) throw new AccountError("Email inválido")
-  if (password.length < PASSWORD_MIN_LENGTH) {
-    throw new AccountError(`La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
-  }
+  assertValidPassword(password)
 
   const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } })
   if (existing) throw new AccountError("Ya existe una cuenta con este email", 409)
@@ -89,11 +99,7 @@ export async function changePassword(
   currentPassword: string,
   newPassword: string,
 ): Promise<void> {
-  if (newPassword.length < PASSWORD_MIN_LENGTH) {
-    throw new AccountError(
-      `La nueva contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`,
-    )
-  }
+  assertValidPassword(newPassword)
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { password: true } })
   if (!user) throw new AccountError("Usuario no encontrado", 404)

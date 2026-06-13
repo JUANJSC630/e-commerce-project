@@ -2281,16 +2281,14 @@ src/
 - Archivos: `src/lib/orders.ts`, `src/app/(store)/order-success/[id]/page.tsx`,
   `src/app/api/orders/[id]/route.ts`
 
-**[A-5] Fuga de rol en JWT — cambios de rol no se propagan**
+**[A-5] Fuga de rol en JWT — cambios de rol no se propagan** ✅ Resuelto 2026-06-13
 
-- Archivos: `src/lib/auth-options.ts`, `middleware.ts`
-- Problema: NextAuth con estrategia JWT guarda el rol en el token (cookie cifrada).
-  Si un admin cambia el rol de un usuario activo, ese usuario sigue con el rol viejo
-  hasta que su JWT expire o reinicie sesión. Un usuario "degradado" puede seguir
-  accediendo al admin durante ese período.
-- Fix esperado: en el callback `session` de authOptions, verificar el rol contra la DB
-  en cada request O reducir el `maxAge` del JWT a 1 hora (hoy probablemente es 30 días
-  por defecto). Alternativamente, mantener un `Set` de JWTs revocados en Redis.
+- Resolución: el callback `jwt` de `auth-options.ts` re-lee el rol del usuario desde
+  la DB cada `ROLE_SYNC_TTL_MS` (5 min). Un cambio de rol o degradación toma efecto en
+  ≤5 min sin esperar a que expire el token. Un usuario `INACTIVE`/eliminado recibe
+  `REVOKED_ROLE` (permisos `{}` + slug customer → el middleware lo saca del admin).
+  `roleSyncedAt` añadido al tipo JWT. Costo por request: una query cada 5 min por sesión.
+- Archivos: `src/lib/auth-options.ts`, `src/types/next-auth.d.ts`
 
 #### 🟠 Prioridad B — Importantes
 
@@ -2304,15 +2302,13 @@ src/
 
 - Archivo: `src/app/api/payments/simulate/route.ts`
 
-**[B-2] Password sin límite de longitud máxima (bcrypt trunca a 72 bytes)**
+**[B-2] Password sin límite de longitud máxima (bcrypt trunca a 72 bytes)** ✅ Resuelto 2026-06-13
 
-- Archivo: `src/lib/account.ts::registerCustomer`
-- Problema: bcrypt trunca silenciosamente contraseñas > 72 bytes. Una contraseña de
-  100 caracteres y una de 72 (con el mismo prefijo) producen el mismo hash. No es
-  explotable fácilmente pero es un comportamiento sorpresivo.
-- Fix esperado: agregar `if (password.length > 72) throw new AccountError(...)` o
-  pre-hashear con SHA-256 antes de bcrypt (patrón seguro documentado).
-  También verificar: `newPassword` en `changePassword` tiene la misma validación.
+- Resolución: `assertValidPassword()` en `src/lib/account.ts` (min 8 chars + máx
+  `PASSWORD_MAX_BYTES`=72) usado en `registerCustomer` y `changePassword`. El admin
+  `users POST` aplica la misma validación de bytes. Rechaza con mensaje claro en lugar
+  de truncar en silencio.
+- Archivos: `src/lib/account.ts`, `src/app/api/admin/users/route.ts`
 
 **[B-3] `customer_role_id` cacheado a nivel de módulo en serverless**
 
@@ -2344,9 +2340,9 @@ src/
   campos). Ahora usan `pickProductInput()` (whitelist en `src/lib/product-input.ts`).
 - Endurecido — **users POST**: valida que `roleId` exista (evita 500 por FK → 400)
   y longitud mínima de contraseña.
-- Recomendación pendiente (no bloqueante): un titular de `roles:update` puede
-  editar los permisos de cualquier rol, incluido el suyo → auto-escalada. Mitigación
-  futura: impedir editar permisos del rol propio o de roles `isSystem` vía PATCH.
+- Auto-escalada de `roles:update` ✅ mitigada 2026-06-13: el PATCH de `roles/[id]`
+  rechaza (403) cualquier cambio de `permissions` sobre el rol que el propio usuario
+  tiene, cerrando la vía de auto-escalada.
 
 #### 🟡 Prioridad C — Menores
 
@@ -2752,9 +2748,9 @@ Archivos existentes relacionados: [listar].
 
 **Importante (no bloqueante):**
 
-- [ ] [A-5] Propagación de cambios de rol en JWT (hoy persiste hasta expirar el token)
-- [ ] [B-2] Password: límite máximo de 72 bytes (bcrypt) en registro/cambio
-- [ ] Recomendación auditoría: `roles:update` permite auto-escalada de permisos
+- [x] [A-5] Propagación de cambios de rol en JWT (re-sync cada 5 min) ✅
+- [x] [B-2] Password: límite máximo de 72 bytes (bcrypt) en registro/cambio ✅
+- [x] Auditoría: guard de auto-escalada en `roles:update` ✅
 - [ ] Abandono de carrito (email 24h) — requiere cron/scheduled job
 
 **Mejoras de calidad (cuando haya tiempo):**

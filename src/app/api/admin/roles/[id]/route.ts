@@ -18,6 +18,15 @@ export async function PATCH(request: Request, { params }: Params) {
   const { id } = await params
   const body = await request.json()
 
+  // Block privilege self-escalation: a user can't rewrite the permissions of the
+  // very role they hold (which would let them grant themselves anything).
+  if (id === session.user.role.id && "permissions" in body) {
+    return NextResponse.json(
+      { error: "No puedes modificar los permisos de tu propio rol" },
+      { status: 403 },
+    )
+  }
+
   const allowed = ["name", "description", "permissions"]
   const data: Record<string, unknown> = {}
   for (const key of allowed) {

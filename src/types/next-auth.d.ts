@@ -37,5 +37,7 @@ declare module "next-auth/jwt" {
       slug: string
       permissions: Permissions
     }
+    /** Epoch ms of the last DB role re-sync (see jwt callback). */
+    roleSyncedAt?: number
   }
 }

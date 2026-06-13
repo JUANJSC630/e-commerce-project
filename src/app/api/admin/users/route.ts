@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
-import { PASSWORD_MIN_LENGTH } from "@/lib/account"
+import { PASSWORD_MAX_BYTES, PASSWORD_MIN_LENGTH } from "@/lib/account"
 import bcrypt from "bcryptjs"
 
 export async function GET() {
@@ -38,6 +38,12 @@ export async function POST(request: Request) {
   if (typeof password !== "string" || password.length < PASSWORD_MIN_LENGTH) {
     return NextResponse.json(
       { error: `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres` },
+      { status: 400 },
+    )
+  }
+  if (Buffer.byteLength(password, "utf8") > PASSWORD_MAX_BYTES) {
+    return NextResponse.json(
+      { error: `La contraseña no puede superar ${PASSWORD_MAX_BYTES} bytes` },
       { status: 400 },
     )
   }

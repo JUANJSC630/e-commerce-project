@@ -2752,7 +2752,8 @@ Archivos existentes relacionados: [listar].
 **Bloqueante (antes de cobrar de verdad):**
 
 - [ ] Prueba sandbox E2E de MercadoPago con ngrok: tarjeta APRO (pago + stock−),
-      tarjeta FUND (fallo + stock restaurado), PSE, webhook firmado. (Bloque 10)
+      tarjeta FUND (rechazo reintentable), cancelación (restock), PSE, webhook firmado.
+      **Runbook paso a paso: [`docs/MERCADOPAGO-E2E.md`](MERCADOPAGO-E2E.md)** (Bloque 10)
 - [ ] `RESEND_API_KEY` real + verificar entrega de los 5 emails. (Bloque 11)
 - [ ] `CRON_SECRET` en Vercel para activar el recordatorio de pago abandonado.
 

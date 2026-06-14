@@ -2,19 +2,29 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Search, Heart, User } from "lucide-react"
+import { Menu, X, Search, Heart, User, ChevronDown } from "lucide-react"
 import { routes } from "@/config/store.config"
 import type { NavItem } from "@/config/store.config"
-import type { Category } from "@/lib/categories"
+import type { CategoryNode } from "@/lib/categories"
 
 interface MobileNavProps {
-  categories: Category[]
+  tree: CategoryNode[]
   links: NavItem[]
 }
 
-export function MobileNav({ categories, links }: MobileNavProps) {
+const catHref = (slug: string) => `${routes.categoryBase}/${slug}`
+
+export function MobileNav({ tree, links }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const close = () => setIsOpen(false)
+  const toggle = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
 
   return (
     <>
@@ -76,21 +86,41 @@ export function MobileNav({ categories, links }: MobileNavProps) {
                 </ul>
               )}
 
-              {categories.length > 0 && (
+              {tree.length > 0 && (
                 <div className="border-t border-brand-muted/15 pt-2">
                   <p className="px-6 pt-2 pb-1 text-xs font-semibold uppercase tracking-widest text-brand-muted">
                     Categorías
                   </p>
                   <ul role="list">
-                    {categories.map((cat) => (
-                      <li key={cat.slug}>
-                        <Link
-                          href={`${routes.categoryBase}/${cat.slug}`}
-                          onClick={close}
-                          className="flex items-center px-6 py-2.5 text-brand-ink hover:bg-brand-surface-alt hover:text-brand-base transition-colors text-base"
-                        >
-                          {cat.name}
-                        </Link>
+                    {tree.map((cat) => (
+                      <li key={cat.id}>
+                        <div className="flex items-center">
+                          <Link
+                            href={catHref(cat.slug)}
+                            onClick={close}
+                            className="flex-1 px-6 py-2.5 text-brand-ink hover:text-brand-base transition-colors text-base"
+                          >
+                            {cat.name}
+                          </Link>
+                          {cat.children.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => toggle(cat.id)}
+                              aria-expanded={expanded.has(cat.id)}
+                              aria-label={`Mostrar subcategorías de ${cat.name}`}
+                              className="p-2 mr-3 text-brand-muted hover:text-brand-base"
+                            >
+                              <ChevronDown
+                                className={`h-4 w-4 transition-transform ${expanded.has(cat.id) ? "rotate-180" : ""}`}
+                              />
+                            </button>
+                          )}
+                        </div>
+                        {cat.children.length > 0 && expanded.has(cat.id) && (
+                          <ul role="list" className="pb-1">
+                            <Branch nodes={cat.children} depth={1} onNavigate={close} />
+                          </ul>
+                        )}
                       </li>
                     ))}
                     <li>
@@ -128,6 +158,39 @@ export function MobileNav({ categories, links }: MobileNavProps) {
           </nav>
         </div>
       )}
+    </>
+  )
+}
+
+/** Renders nested subcategories as indented links (any depth). */
+function Branch({
+  nodes,
+  depth,
+  onNavigate,
+}: {
+  nodes: CategoryNode[]
+  depth: number
+  onNavigate: () => void
+}) {
+  return (
+    <>
+      {nodes.map((node) => (
+        <li key={node.id}>
+          <Link
+            href={catHref(node.slug)}
+            onClick={onNavigate}
+            style={{ paddingLeft: `${1.5 + depth * 1}rem` }}
+            className="block py-2 pr-6 text-sm text-brand-muted hover:text-brand-base transition-colors"
+          >
+            {node.name}
+          </Link>
+          {node.children.length > 0 && (
+            <ul role="list">
+              <Branch nodes={node.children} depth={depth + 1} onNavigate={onNavigate} />
+            </ul>
+          )}
+        </li>
+      ))}
     </>
   )
 }

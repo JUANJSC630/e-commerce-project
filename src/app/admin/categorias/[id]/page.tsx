@@ -4,7 +4,7 @@ import { redirect, notFound } from "next/navigation"
 import { authOptions } from "@/lib/auth-options"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
-import { getCategoryById } from "@/lib/categories"
+import { getCategoryById, getCategoryOptions } from "@/lib/categories"
 import { CategoryForm } from "@/components/admin/categories/category-form"
 
 export default async function EditarCategoriaPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,7 +15,7 @@ export default async function EditarCategoriaPage({ params }: { params: Promise<
   if (!hasPermission(perms, "categories", "update")) redirect("/admin/categorias")
 
   const { id } = await params
-  const category = await getCategoryById(id)
+  const [category, parents] = await Promise.all([getCategoryById(id), getCategoryOptions()])
   if (!category) notFound()
 
   return (
@@ -26,7 +26,7 @@ export default async function EditarCategoriaPage({ params }: { params: Promise<
         </Link>
         <h1 className="text-2xl font-bold text-slate-900 mt-2">Editar categoría</h1>
       </div>
-      <CategoryForm category={category} />
+      <CategoryForm category={category} parents={parents} />
     </div>
   )
 }

@@ -344,7 +344,11 @@ Ver historial al final del documento.
 [x] Seed crea las categorías y vincula los productos
 [x] SEO por categoría desde la DB; sitemap dinámico
 [x] Cache etiquetada (`categories`) + ISR; revalidateCategories() al editar en admin
-[ ] Subcategorías (parentId) y drag-to-reorder — opcionales, fase futura
+[x] Subcategorías (parentId, self-relación) — 2026-06-14. Migración add_category_parent;
+    selector de "categoría padre" en el form (con guarda anti-ciclo); getCategoryTree()
+    construye el árbol anidado; mega-menú "Categorías" estilo rail + panel de
+    subcategorías escalable; mobile-nav con acordeón. getNavItems usa solo nivel superior.
+[ ] drag-to-reorder de categorías — opcional, fase futura
 ```
 
 ---

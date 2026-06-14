@@ -5,7 +5,7 @@ import { FavoritesProvider } from "@/components/favorites/favorites-provider"
 import { PromoBanner } from "@/components/layout/promo-banner"
 import { SiteHeader } from "@/components/layout/site-header"
 import { Footer } from "@/components/layout/footer"
-import { getActiveCategories, getNavItems } from "@/lib/categories"
+import { getCategoryTree, getNavItems } from "@/lib/categories"
 import { loadAllSettings } from "@/lib/settings"
 import { SettingsProvider } from "@/components/providers/settings-provider"
 import { ThemeStyle } from "@/components/theme/theme-style"
@@ -14,9 +14,9 @@ import { FontStyle } from "@/components/theme/font-style"
 const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  const [navItems, categories, settings] = await Promise.all([
+  const [navItems, categoryTree, settings] = await Promise.all([
     getNavItems(),
-    getActiveCategories(),
+    getCategoryTree(),
     loadAllSettings(),
   ])
   const { brand, theme, headerLinks } = settings
@@ -32,7 +32,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         <CartProvider>
           <FavoritesProvider>
             <PromoBanner />
-            <SiteHeader brand={brand} categories={categories} headerLinks={headerLinks} />
+            <SiteHeader brand={brand} categoryTree={categoryTree} headerLinks={headerLinks} />
             <MiniCart />
             <main className="min-h-screen">{children}</main>
             <Footer navItems={navItems} />

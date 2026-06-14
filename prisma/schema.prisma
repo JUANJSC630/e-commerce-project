@@ -67,19 +67,25 @@ model Favorite {
 }
 
 model Category {
-  id              String    @id @default(cuid())
+  id              String     @id @default(cuid())
   name            String
-  slug            String    @unique
+  slug            String     @unique
   description     String?
   image           String?
   imageAlt        String?
   metaTitle       String?
   metaDescription String?
-  order           Int       @default(0)
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  order           Int        @default(0)
+  isActive        Boolean    @default(true)
+  // Self-relation for subcategories. A null parent = top-level category.
+  parentId        String?
+  parent          Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children        Category[] @relation("CategoryTree")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
   products        Product[]
+
+  @@index([parentId])
 }
 
 model Product {

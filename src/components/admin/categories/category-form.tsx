@@ -16,6 +16,12 @@ export interface CategoryFormData {
   metaDescription: string | null
   order: number
   isActive: boolean
+  parentId: string | null
+}
+
+export interface ParentOption {
+  id: string
+  name: string
 }
 
 function slugify(value: string): string {
@@ -27,9 +33,16 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/g, "")
 }
 
-export function CategoryForm({ category }: { category?: CategoryFormData }) {
+export function CategoryForm({
+  category,
+  parents = [],
+}: {
+  category?: CategoryFormData
+  parents?: ParentOption[]
+}) {
   const router = useRouter()
   const isEditing = !!category
+  const parentOptions = parents.filter((p) => p.id !== category?.id)
 
   const [form, setForm] = useState({
     name: category?.name ?? "",
@@ -41,6 +54,7 @@ export function CategoryForm({ category }: { category?: CategoryFormData }) {
     metaDescription: category?.metaDescription ?? "",
     order: category?.order?.toString() ?? "0",
     isActive: category?.isActive ?? true,
+    parentId: category?.parentId ?? "",
   })
   // Track whether the slug was hand-edited so we stop auto-deriving it.
   const [slugTouched, setSlugTouched] = useState(isEditing)
@@ -70,6 +84,7 @@ export function CategoryForm({ category }: { category?: CategoryFormData }) {
       metaDescription: form.metaDescription.trim() || null,
       order: parseInt(form.order, 10) || 0,
       isActive: form.isActive,
+      parentId: form.parentId || null,
     }
 
     const url = isEditing ? `/api/admin/categories/${category!.id}` : "/api/admin/categories"
@@ -127,6 +142,24 @@ export function CategoryForm({ category }: { category?: CategoryFormData }) {
               onChange={(e) => setField("description", e.target.value)}
               className={inputClass}
             />
+          </Field>
+
+          <Field label="Categoría padre">
+            <select
+              value={form.parentId}
+              onChange={(e) => setField("parentId", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">Ninguna (categoría principal)</option>
+              {parentOptions.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-slate-400 mt-1">
+              Conviértela en subcategoría eligiendo su categoría principal.
+            </p>
           </Field>
 
           <Field label="Imagen">

@@ -3,7 +3,7 @@ import Image from "next/image"
 import { Heart, User } from "lucide-react"
 import { routes } from "@/config/store.config"
 import type { NavItem } from "@/config/store.config"
-import type { Category } from "@/lib/categories"
+import type { CategoryNode } from "@/lib/categories"
 import { CartCounter } from "@/components/cart/cart-counter"
 import { MobileNav } from "@/components/layout/mobile-nav"
 import { SearchBar } from "@/components/search/search-bar"
@@ -13,7 +13,7 @@ import { HeaderNav } from "@/components/layout/header-nav"
 
 interface SiteHeaderProps {
   brand: { name: string; logoImage: string | null }
-  categories: Category[]
+  categoryTree: CategoryNode[]
   headerLinks: NavItem[]
 }
 
@@ -23,7 +23,7 @@ interface SiteHeaderProps {
  * plus admin-curated links. Built for a wide, mixed-age audience: search is
  * surfaced, actions carry labels on desktop, touch targets stay generous.
  */
-export function SiteHeader({ brand, categories, headerLinks }: SiteHeaderProps) {
+export function SiteHeader({ brand, categoryTree, headerLinks }: SiteHeaderProps) {
   const logo = brand.logoImage ? (
     <Image
       src={brand.logoImage}
@@ -44,7 +44,7 @@ export function SiteHeader({ brand, categories, headerLinks }: SiteHeaderProps) 
       <div className="container mx-auto px-4">
         <div className="flex items-center gap-3 md:gap-6 h-16">
           <div className="md:hidden">
-            <MobileNav categories={categories} links={headerLinks} />
+            <MobileNav tree={categoryTree} links={headerLinks} />
           </div>
 
           <Link
@@ -87,7 +87,7 @@ export function SiteHeader({ brand, categories, headerLinks }: SiteHeaderProps) 
       <div className="hidden md:block border-t border-brand-muted/15">
         <div className="container mx-auto px-4">
           <div className="flex items-center h-12">
-            <CategoryMegaMenu categories={categories} />
+            <CategoryMegaMenu tree={categoryTree} />
             <div className="flex-1 flex justify-center">
               <HeaderNav links={headerLinks} />
             </div>

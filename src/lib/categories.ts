@@ -24,6 +24,12 @@ export interface Category {
   imageAlt: string | null
   metaTitle: string | null
   metaDescription: string | null
+  parentId: string | null
+}
+
+/** A category with its (recursively nested) active subcategories. */
+export interface CategoryNode extends Category {
+  children: CategoryNode[]
 }
 
 const SELECT = {
@@ -35,6 +41,7 @@ const SELECT = {
   imageAlt: true,
   metaTitle: true,
   metaDescription: true,
+  parentId: true,
 } satisfies Prisma.CategorySelect
 
 const ORDER = [
@@ -67,6 +74,25 @@ export function getCategoryBySlug(slug: string): Promise<Category | null> {
   return prisma.category.findFirst({ where: { slug, isActive: true }, select: SELECT })
 }
 
+/** Builds the nested tree (preserving order) from a flat list of categories. */
+function buildTree(flat: Category[]): CategoryNode[] {
+  const byId = new Map<string, CategoryNode>(flat.map((c) => [c.id, { ...c, children: [] }]))
+  const roots: CategoryNode[] = []
+  for (const node of byId.values()) {
+    const parent = node.parentId ? byId.get(node.parentId) : undefined
+    if (parent) parent.children.push(node)
+    else roots.push(node)
+  }
+  return roots
+}
+
+/** Active categories as a nested tree (top-level → subcategories) for the nav. */
+export const getCategoryTree = unstable_cache(
+  async (): Promise<CategoryNode[]> => buildTree(await getActiveCategories()),
+  ["active-category-tree"],
+  { tags: [CATEGORIES_TAG] },
+)
+
 export interface NavItem {
   label: string
   href: string
@@ -76,7 +102,9 @@ export interface NavItem {
 export async function getNavItems(): Promise<NavItem[]> {
   const categories = await getActiveCategories()
   return [
-    ...categories.map((c) => ({ label: c.name, href: `/category/${c.slug}` })),
+    ...categories
+      .filter((c) => c.parentId === null)
+      .map((c) => ({ label: c.name, href: `/category/${c.slug}` })),
     ...specialNavItems,
   ]
 }
@@ -109,6 +137,7 @@ export interface CategoryInput {
   metaDescription?: string | null
   order?: number
   isActive?: boolean
+  parentId?: string | null
 }
 
 /** Normalizes a string into a URL-safe slug. */
@@ -137,6 +166,11 @@ export function getCategoryById(id: string) {
   })
 }
 
+/** Light list for the parent-category selector in the admin form. */
+export function getCategoryOptions(): Promise<{ id: string; name: string }[]> {
+  return prisma.category.findMany({ orderBy: ORDER, select: { id: true, name: true } })
+}
+
 function normalize(input: CategoryInput) {
   const name = input.name?.trim()
   const slug = slugify(input.slug || input.name || "")
@@ -152,6 +186,22 @@ function normalize(input: CategoryInput) {
     metaDescription: input.metaDescription?.trim() || null,
     order: Number.isFinite(input.order) ? Number(input.order) : 0,
     isActive: input.isActive ?? true,
+    parentId: input.parentId?.trim() || null,
+  }
+}
+
+/** Walks up the parent chain to reject cycles when re-parenting a category. */
+async function assertNoCycle(id: string, parentId: string | null): Promise<void> {
+  if (!parentId) return
+  if (parentId === id) throw new CategoryError("Una categoría no puede ser su propia padre")
+  let current: string | null = parentId
+  while (current) {
+    if (current === id) throw new CategoryError("No puedes mover una categoría dentro de sí misma")
+    const parent: { parentId: string | null } | null = await prisma.category.findUnique({
+      where: { id: current },
+      select: { parentId: true },
+    })
+    current = parent?.parentId ?? null
   }
 }
 
@@ -169,6 +219,7 @@ export async function updateCategory(id: string, input: CategoryInput): Promise<
   try {
     const prev = await prisma.category.findUnique({ where: { id }, select: { image: true } })
     const data = normalize(input)
+    await assertNoCycle(id, data.parentId)
     await prisma.category.update({ where: { id }, data })
     await deleteReplacedImage(prev?.image, data.image)
     revalidateCategories()

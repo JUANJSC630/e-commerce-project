@@ -10,10 +10,24 @@ import {
   promoBanner as defaultPromoBanner,
   social as defaultSocial,
   contact as defaultContact,
+  headerLinks as defaultHeaderLinks,
+  type NavItem,
 } from "@/config/store.config"
 import { typography as defaultTypography } from "@/config/theme.config"
 import { homeContent as defaultHomeContent, type HomeContent } from "@/config/store.config"
 import { sanitizeThemeConfig, type ThemeConfig } from "@/lib/theme"
+
+/** Keeps only valid {label, href} entries — header links are user-editable. */
+function sanitizeHeaderLinks(value: unknown): NavItem[] {
+  if (!Array.isArray(value)) return defaultHeaderLinks
+  const links = value
+    .filter(
+      (l): l is NavItem =>
+        !!l && typeof l.label === "string" && typeof l.href === "string" && l.label.trim() !== "",
+    )
+    .map((l) => ({ label: l.label.trim(), href: l.href.trim() }))
+  return links
+}
 
 /** Cache tag for all settings reads. Revalidated whenever a setting is saved. */
 export const SETTINGS_TAG = "settings"
@@ -29,6 +43,7 @@ export interface StoreSettings {
   theme: ThemeConfig
   typography: typeof defaultTypography
   homeContent: HomeContent
+  headerLinks: NavItem[]
 }
 
 /**
@@ -58,6 +73,7 @@ export const loadAllSettings = unstable_cache(
       ),
       typography: merge(defaultTypography, dbMap.get(SETTINGS_KEYS.typography)),
       homeContent: merge(defaultHomeContent, dbMap.get(SETTINGS_KEYS.homeContent)),
+      headerLinks: sanitizeHeaderLinks(dbMap.get(SETTINGS_KEYS.headerLinks)),
     }
   },
   ["all-settings"],

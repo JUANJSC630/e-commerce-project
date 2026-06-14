@@ -13,6 +13,7 @@ export const SETTINGS_KEYS = {
   theme: "theme",
   typography: "typography",
   homeContent: "home_content",
+  headerLinks: "header_links",
 } as const
 
 export type SettingsKey = (typeof SETTINGS_KEYS)[keyof typeof SETTINGS_KEYS]

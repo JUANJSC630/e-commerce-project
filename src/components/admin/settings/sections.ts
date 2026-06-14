@@ -9,6 +9,7 @@ import {
   Share2,
   Mail,
   LayoutTemplate,
+  Menu,
   type LucideIcon,
 } from "lucide-react"
 
@@ -31,5 +32,6 @@ export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
   { slug: "promociones", label: "Promoción", description: "Banner superior", icon: Megaphone },
   { slug: "redes", label: "Redes sociales", description: "Enlaces sociales", icon: Share2 },
   { slug: "contacto", label: "Contacto", description: "Email, teléfono", icon: Mail },
+  { slug: "menu", label: "Menú", description: "Enlaces del encabezado", icon: Menu },
   { slug: "inicio", label: "Inicio", description: "Contenido del home", icon: LayoutTemplate },
 ] as const

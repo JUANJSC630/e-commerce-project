@@ -132,6 +132,17 @@ export const specialNavItems: NavItem[] = [
   { label: "Ofertas", href: `${routes.categoryBase}/sales` },
 ]
 
+/**
+ * Custom header links shown in the top nav, fully editable from the admin
+ * (Configuración → Menú). Distinct from product categories, which live in the
+ * "Categorías" mega-menu. Defaults point only to pages that exist.
+ */
+export const headerLinks: NavItem[] = [
+  { label: "Novedades", href: routes.products },
+  { label: "Ofertas", href: `${routes.categoryBase}/sales` },
+  { label: "Esenciales", href: `${routes.categoryBase}/essentials` },
+]
+
 // ─── Shipping ─────────────────────────────────────────────────────────────────
 
 export const shipping = {

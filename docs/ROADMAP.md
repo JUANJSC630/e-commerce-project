@@ -249,7 +249,8 @@ Ver historial al final del documento.
 [x] Estilos vía Tailwind v4 (@import "uploadthing/tw/v4" + @source), no el CSS global
     (el stylesheet pre-construido rompía .hidden y ocultaba el sidebar)
 [ ] Migrar productos de placeholder a imágenes reales (contenido, vía /admin/productos)
-[ ] (Opcional) Borrar archivo del CDN al reemplazar imagen o eliminar producto (UTApi)
+[x] Borrar archivo del CDN al reemplazar imagen o eliminar producto (UTApi) — hecho en
+    Bloque 9.9 (media-cleanup.ts cableado en products PUT/PATCH/DELETE)
 ```
 
 #### Fixes de admin (durante Bloque 9)

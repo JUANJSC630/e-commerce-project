@@ -64,6 +64,45 @@ function Segmented<T extends string>({
   )
 }
 
+// ─── Toast position mini-map: shows the corner the toast will pop from ────────
+
+function ToastPositionPreview({
+  position,
+  richColors,
+}: {
+  position: (typeof TOAST_POSITIONS)[number]
+  richColors: boolean
+}) {
+  const [vertical, horizontal] = position.split("-")
+  const alignItems = vertical === "top" ? "flex-start" : "flex-end"
+  const justifyContent =
+    horizontal === "left" ? "flex-start" : horizontal === "right" ? "flex-end" : "center"
+
+  return (
+    <div
+      aria-hidden="true"
+      className="relative mt-2 h-24 rounded-lg border border-slate-200 bg-slate-100 p-2"
+      style={{ display: "flex", alignItems, justifyContent }}
+    >
+      <span className="absolute left-1/2 top-1 -translate-x-1/2 text-[9px] uppercase tracking-wide text-slate-400">
+        Tu pantalla
+      </span>
+      <div
+        className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] shadow-sm ${
+          richColors
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border-slate-200 bg-white text-slate-600"
+        }`}
+      >
+        <span
+          className={`h-2 w-2 rounded-full ${richColors ? "bg-emerald-500" : "bg-slate-400"}`}
+        />
+        Notificación
+      </div>
+    </div>
+  )
+}
+
 // ─── One color token: swatch + native picker + advanced OKLCH field ──────────
 
 function ColorRow({
@@ -385,9 +424,22 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
               ]}
             />
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">
-                Posición de las notificaciones
-              </label>
+              <div className="flex items-end justify-between gap-2 mb-1">
+                <label className="block text-xs font-medium text-slate-600">
+                  Posición de las notificaciones
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast.success("Así se verán tus notificaciones", {
+                      position: form.toastPosition,
+                    })
+                  }
+                  className="text-[11px] font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  Probar →
+                </button>
+              </div>
               <select
                 value={form.toastPosition}
                 onChange={(e) =>
@@ -401,6 +453,10 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
                   </option>
                 ))}
               </select>
+              <ToastPositionPreview
+                position={form.toastPosition}
+                richColors={form.toastRichColors}
+              />
             </div>
             <Toggle
               label="Notificaciones con colores por tipo"

@@ -580,7 +580,7 @@ Reportar exactamente qué se eliminó y confirmar que yarn validate sigue pasand
 
 **Prioridad**: Alta (limpieza de CDN, ahorro de costos)  
 **Archivos principales**: `src/lib/media-manager.ts` (nuevo), `src/app/api/admin/media/route.ts`, `src/app/admin/media/page.tsx` (nuevo), `src/components/admin/media/media-manager-page.tsx` (nuevo)  
-**Estado**: [x] Completado 2026-06-13 — scan con caché 5min, DELETE con re-verificación + batch 25, `/scan` fresco, página + client (tabs/grid/selección/AlertDialog), link en sidebar y modal, revalidate en cleanup. Badge de huérfanos en sidebar omitido (evita scan en cada carga). GET principal sigue devolviendo `{items}` para no romper el modal
+**Estado**: [x] Completado 2026-06-13 — scan con caché 5min, DELETE con re-verificación + batch 25, `/scan` fresco, página + client (tabs/grid/selección/AlertDialog), link en sidebar y modal, revalidate en cleanup. Gaps de robustez cerrados: `loading.tsx` (skeleton cache frío), `error.tsx` (estado degradado), y badge de huérfanos en sidebar vía `?stats=1` (conteo del scan cacheado, fetch no bloqueante). GET principal sigue devolviendo `{items}` para no romper el modal; filtrado/paginación client-side a propósito. Falta solo E2E con credenciales de UploadThing
 
 ```
 CONTEXTO:

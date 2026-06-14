@@ -2,6 +2,7 @@
 
 import { ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { useCart } from "@/hooks/use-cart"
 import type { Product } from "@/lib/types"
 
@@ -23,7 +24,7 @@ export function AddToCartButton({ product, className }: AddToCartButtonProps) {
   }
 
   return (
-    <Button className={className} onClick={handleAddToCart}>
+    <Button className={cn("btn-cta", className)} onClick={handleAddToCart}>
       Agregar al carrito
       <ShoppingCart className="w-4 h-4 ml-2" />
     </Button>

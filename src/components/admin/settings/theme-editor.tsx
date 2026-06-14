@@ -7,13 +7,62 @@ import { Palette, Check, AlertTriangle } from "lucide-react"
 import { SETTINGS_KEYS } from "@/lib/settings-keys"
 import {
   THEME_COLOR_FIELDS,
+  THEME_SEMANTIC_FIELDS,
   THEME_PRESETS,
+  THEME_DEFAULTS,
+  TOAST_POSITIONS,
+  type ThemeConfig,
   type ThemeTokens,
   themeVars,
   isValidColor,
 } from "@/lib/theme"
 import { colorToHex, formatOklch, hexToOklch, contrastRatio } from "@/lib/color"
-import { SectionCard, saveSection } from "./primitives"
+import { SectionCard, Toggle, saveSection } from "./primitives"
+
+const PALETTE_KEYS = Object.keys(THEME_DEFAULTS) as (keyof ThemeTokens)[]
+
+const TOAST_POSITION_LABELS: Record<(typeof TOAST_POSITIONS)[number], string> = {
+  "top-left": "Arriba izquierda",
+  "top-center": "Arriba centro",
+  "top-right": "Arriba derecha",
+  "bottom-left": "Abajo izquierda",
+  "bottom-center": "Abajo centro",
+  "bottom-right": "Abajo derecha",
+}
+
+// ─── Two-option segmented control ─────────────────────────────────────────────
+
+function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: T
+  options: { value: T; label: string }[]
+  onChange: (v: T) => void
+}) {
+  return (
+    <div>
+      <div className="text-xs font-medium text-slate-600 mb-1.5">{label}</div>
+      <div className="inline-flex rounded-lg border border-slate-200 p-0.5">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+              value === opt.value ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 // ─── One color token: swatch + native picker + advanced OKLCH field ──────────
 
@@ -89,14 +138,40 @@ function ContrastBadge({ label, fg, bg }: { label: string; fg: string; bg: strin
 
 // ─── Live preview (uses the same Tailwind tokens as the storefront) ──────────
 
-function Preview({ tokens }: { tokens: ThemeTokens }) {
-  const style = themeVars(tokens) as React.CSSProperties
+function Preview({ config }: { config: ThemeConfig }) {
+  const style = themeVars(config) as React.CSSProperties
+  const outline = config.buttonStyle === "outline"
+  const softBanner = config.bannerStyle === "soft"
+
+  const ctaStyle: React.CSSProperties = outline
+    ? {
+        background: "transparent",
+        color: "var(--brand-base)",
+        border: "1.5px solid var(--brand-base)",
+        borderRadius: "var(--radius)",
+      }
+    : {
+        background: "var(--primary)",
+        color: "var(--primary-foreground)",
+        borderRadius: "var(--radius)",
+      }
+
   return (
     <div
       style={style}
       className="self-start rounded-xl border border-slate-200 overflow-hidden bg-background text-foreground"
     >
-      <div className="bg-primary text-primary-foreground text-xs text-center py-1.5 font-medium">
+      <div
+        className="text-xs text-center py-1.5 font-medium"
+        style={
+          softBanner
+            ? {
+                background: "color-mix(in oklch, var(--brand-base) 12%, transparent)",
+                color: "var(--brand-ink)",
+              }
+            : { background: "var(--brand-base)", color: "var(--brand-on-base)" }
+        }
+      >
         🚚 Envío gratis en compras mayores a $150.000
       </div>
       <div className="p-4 space-y-3" style={{ borderRadius: "var(--radius)" }}>
@@ -110,7 +185,7 @@ function Preview({ tokens }: { tokens: ThemeTokens }) {
           </span>
         </div>
         <p className="text-sm text-muted-foreground">
-          Así se verá tu tienda con estos colores. Los cambios se aplican al guardar.
+          Así se verá tu tienda. Los cambios se aplican al guardar.
         </p>
         <div
           className="bg-card border border-border p-3 flex items-center justify-between gap-3"
@@ -120,27 +195,31 @@ function Preview({ tokens }: { tokens: ThemeTokens }) {
             <div className="text-sm font-medium">Body para bebé</div>
             <div className="text-base font-bold text-primary">$45.000</div>
           </div>
-          <button
-            className="bg-primary text-primary-foreground text-sm font-medium px-4 py-2"
-            style={{ borderRadius: "var(--radius)" }}
-          >
+          <button className="text-sm font-medium px-4 py-2" style={ctaStyle}>
             Agregar
           </button>
         </div>
+        {/* Semantic colors */}
         <div className="flex gap-2">
-          <button
-            className="flex-1 border border-border text-foreground text-sm py-2"
-            style={{ borderRadius: "var(--radius)" }}
+          <span
+            className="text-[11px] font-medium px-2 py-1 text-white"
+            style={{ background: "var(--brand-success)", borderRadius: "var(--radius)" }}
           >
-            Secundario
-          </button>
-          <input
-            placeholder="Tu correo…"
-            className="flex-1 bg-background border border-input text-sm px-3 py-2 placeholder:text-muted-foreground"
-            style={{ borderRadius: "var(--radius)" }}
-            readOnly
-          />
+            Disponible
+          </span>
+          <span
+            className="text-[11px] font-medium px-2 py-1 text-white"
+            style={{ background: "var(--brand-danger)", borderRadius: "var(--radius)" }}
+          >
+            Agotado
+          </span>
         </div>
+        <input
+          placeholder="Tu correo…"
+          className="w-full bg-background border border-input text-sm px-3 py-2 placeholder:text-muted-foreground"
+          style={{ borderRadius: "var(--radius)" }}
+          readOnly
+        />
       </div>
     </div>
   )
@@ -148,20 +227,31 @@ function Preview({ tokens }: { tokens: ThemeTokens }) {
 
 // ─── The editor ──────────────────────────────────────────────────────────────
 
-export function ThemeEditor({ data }: { data: ThemeTokens }) {
+export function ThemeEditor({ data }: { data: ThemeConfig }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [form, setForm] = useState<ThemeTokens>(() => ({ ...data }))
+  const [form, setForm] = useState<ThemeConfig>(() => ({ ...data }))
   const [original] = useState(() => JSON.stringify(data))
   const isDirty = JSON.stringify(form) !== original
 
-  const allValid = useMemo(() => THEME_COLOR_FIELDS.every((f) => isValidColor(form[f.key])), [form])
+  const allValid = useMemo(
+    () =>
+      THEME_COLOR_FIELDS.every((f) => isValidColor(form[f.key])) &&
+      THEME_SEMANTIC_FIELDS.every((f) => isValidColor(form[f.key])),
+    [form],
+  )
 
   const radiusRem = parseFloat(form.radius) || 0
-  const activePreset = THEME_PRESETS.find((p) => JSON.stringify(p.tokens) === JSON.stringify(form))
+  // Presets only define the palette; compare just those keys so options don't break the match.
+  const activePreset = THEME_PRESETS.find((p) => PALETTE_KEYS.every((k) => p.tokens[k] === form[k]))
 
-  function set(key: keyof ThemeTokens, value: string) {
+  function set<K extends keyof ThemeConfig>(key: K, value: ThemeConfig[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function applyPreset(tokens: ThemeTokens) {
+    // Keep the component options (button/banner/toast/semantic) — a preset is a palette.
+    setForm((prev) => ({ ...prev, ...tokens }))
   }
 
   function handleSave() {
@@ -199,7 +289,7 @@ export function ThemeEditor({ data }: { data: ThemeTokens }) {
               <button
                 key={preset.id}
                 type="button"
-                onClick={() => setForm({ ...preset.tokens })}
+                onClick={() => applyPreset(preset.tokens)}
                 className={`flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
                   isActive
                     ? "border-indigo-400 bg-indigo-50 text-indigo-700"
@@ -258,10 +348,70 @@ export function ThemeEditor({ data }: { data: ThemeTokens }) {
             <ContrastBadge label="Botón" fg={form.onBase} bg={form.base} />
             <ContrastBadge label="Texto" fg={form.ink} bg={form.surface} />
           </div>
+
+          {/* Semantic colors */}
+          <div className="pt-3 border-t border-slate-100 space-y-3">
+            <div className="text-xs font-semibold text-slate-700">Colores semánticos</div>
+            {THEME_SEMANTIC_FIELDS.map((f) => (
+              <ColorRow
+                key={f.key}
+                label={f.label}
+                hint={f.hint}
+                value={form[f.key]}
+                onChange={(v) => set(f.key, v)}
+              />
+            ))}
+          </div>
+
+          {/* Component options */}
+          <div className="pt-3 border-t border-slate-100 space-y-3">
+            <div className="text-xs font-semibold text-slate-700">Componentes</div>
+            <Segmented
+              label="Estilo de botón"
+              value={form.buttonStyle}
+              onChange={(v) => set("buttonStyle", v)}
+              options={[
+                { value: "solid", label: "Relleno" },
+                { value: "outline", label: "Contorno" },
+              ]}
+            />
+            <Segmented
+              label="Banner de promoción"
+              value={form.bannerStyle}
+              onChange={(v) => set("bannerStyle", v)}
+              options={[
+                { value: "solid", label: "Sólido" },
+                { value: "soft", label: "Suave" },
+              ]}
+            />
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">
+                Posición de las notificaciones
+              </label>
+              <select
+                value={form.toastPosition}
+                onChange={(e) =>
+                  set("toastPosition", e.target.value as ThemeConfig["toastPosition"])
+                }
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+              >
+                {TOAST_POSITIONS.map((p) => (
+                  <option key={p} value={p}>
+                    {TOAST_POSITION_LABELS[p]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Toggle
+              label="Notificaciones con colores por tipo"
+              checked={form.toastRichColors}
+              onChange={(v) => set("toastRichColors", v)}
+            />
+          </div>
         </div>
 
         {/* Preview */}
-        <Preview tokens={form} />
+        <Preview config={form} />
       </div>
     </SectionCard>
   )

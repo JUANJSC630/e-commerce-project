@@ -39,6 +39,66 @@ export const THEME_DEFAULTS: ThemeTokens = {
   radius: radiusConfig.base,
 }
 
+// ─── Fase 4: per-component options (success/danger + UI behaviour) ─────────────
+
+export const BUTTON_STYLES = ["solid", "outline"] as const
+export const BANNER_STYLES = ["solid", "soft"] as const
+export const TOAST_POSITIONS = [
+  "top-left",
+  "top-center",
+  "top-right",
+  "bottom-left",
+  "bottom-center",
+  "bottom-right",
+] as const
+
+export type ButtonStyle = (typeof BUTTON_STYLES)[number]
+export type BannerStyle = (typeof BANNER_STYLES)[number]
+export type ToastPosition = (typeof TOAST_POSITIONS)[number]
+
+/** Semantic colors + behavioural options layered on top of the 6-color palette. */
+export interface ThemeOptions {
+  /** Success accent — confirmations, "in stock", positive toasts */
+  success: string
+  /** Danger accent — errors, "out of stock", destructive actions */
+  danger: string
+  /** Default look of primary CTAs across the storefront */
+  buttonStyle: ButtonStyle
+  /** Promo banner fill: bold (solid) or subtle (soft) */
+  bannerStyle: BannerStyle
+  /** Where toasts appear */
+  toastPosition: ToastPosition
+  /** Sonner's per-type accent colors */
+  toastRichColors: boolean
+}
+
+export const THEME_OPTION_DEFAULTS: ThemeOptions = {
+  success: "oklch(0.6 0.13 150)",
+  danger: "oklch(0.58 0.22 27)",
+  buttonStyle: "solid",
+  bannerStyle: "solid",
+  toastPosition: "top-right",
+  toastRichColors: true,
+}
+
+/** The full theme stored in the `theme` setting: palette + options. */
+export type ThemeConfig = ThemeTokens & ThemeOptions
+
+export const THEME_CONFIG_DEFAULTS: ThemeConfig = {
+  ...THEME_DEFAULTS,
+  ...THEME_OPTION_DEFAULTS,
+}
+
+/** Editor metadata for the two semantic colors. */
+export const THEME_SEMANTIC_FIELDS = [
+  { key: "success", label: "Éxito", hint: "Confirmaciones, disponible" },
+  { key: "danger", label: "Peligro", hint: "Errores, agotado" },
+] as const satisfies ReadonlyArray<{
+  key: keyof Pick<ThemeOptions, "success" | "danger">
+  label: string
+  hint: string
+}>
+
 /** Editor metadata: ordered, labelled, with a hint of where each token shows. */
 export const THEME_COLOR_FIELDS = [
   { key: "base", label: "Acento principal", hint: "Botones, enlaces, precios" },
@@ -242,6 +302,36 @@ export function sanitizeTheme(input: Partial<Record<keyof ThemeTokens, unknown>>
   }
 }
 
+const oneOf = <T extends readonly string[]>(
+  value: unknown,
+  allowed: T,
+  fallback: T[number],
+): T[number] => (allowed.includes(value as T[number]) ? (value as T[number]) : fallback)
+
+/** Coerce arbitrary input into safe ThemeOptions (colors validated, enums clamped). */
+export function sanitizeThemeOptions(
+  input: Partial<Record<keyof ThemeOptions, unknown>>,
+): ThemeOptions {
+  return {
+    success: isValidColor(input.success)
+      ? (input.success as string)
+      : THEME_OPTION_DEFAULTS.success,
+    danger: isValidColor(input.danger) ? (input.danger as string) : THEME_OPTION_DEFAULTS.danger,
+    buttonStyle: oneOf(input.buttonStyle, BUTTON_STYLES, THEME_OPTION_DEFAULTS.buttonStyle),
+    bannerStyle: oneOf(input.bannerStyle, BANNER_STYLES, THEME_OPTION_DEFAULTS.bannerStyle),
+    toastPosition: oneOf(input.toastPosition, TOAST_POSITIONS, THEME_OPTION_DEFAULTS.toastPosition),
+    toastRichColors:
+      typeof input.toastRichColors === "boolean"
+        ? input.toastRichColors
+        : THEME_OPTION_DEFAULTS.toastRichColors,
+  }
+}
+
+/** Coerce arbitrary input into a complete, safe ThemeConfig (palette + options). */
+export function sanitizeThemeConfig(input: Partial<Record<string, unknown>>): ThemeConfig {
+  return { ...sanitizeTheme(input), ...sanitizeThemeOptions(input) }
+}
+
 // ─── CSS generation ─────────────────────────────────────────────────────────
 
 /**
@@ -250,10 +340,9 @@ export function sanitizeTheme(input: Partial<Record<keyof ThemeTokens, unknown>>
  * sanitized first, so the output is always a fixed set of safe declarations.
  */
 /** Sanitized CSS-variable map: brand-* tokens + the shadcn tokens derived from them. */
-export function themeVars(
-  input: Partial<Record<keyof ThemeTokens, unknown>>,
-): Record<string, string> {
+export function themeVars(input: Partial<ThemeConfig>): Record<string, string> {
   const t = sanitizeTheme(input)
+  const o = sanitizeThemeOptions(input)
   return {
     "--brand-base": t.base,
     "--brand-on-base": t.onBase,
@@ -261,7 +350,9 @@ export function themeVars(
     "--brand-surface-alt": t.surfaceAlt,
     "--brand-muted": t.muted,
     "--brand-ink": t.ink,
-    // shadcn tokens derived from the 6 so the whole storefront retones coherently
+    "--brand-success": o.success,
+    "--brand-danger": o.danger,
+    // shadcn tokens derived from the palette so the whole storefront retones coherently
     "--background": t.surface,
     "--foreground": t.ink,
     "--card": t.surface,
@@ -279,14 +370,13 @@ export function themeVars(
     "--border": t.surfaceAlt,
     "--input": t.surfaceAlt,
     "--ring": t.base,
+    "--success": o.success,
+    "--destructive": o.danger,
     "--radius": t.radius,
   }
 }
 
-export function buildThemeCss(
-  input: Partial<Record<keyof ThemeTokens, unknown>>,
-  selector = ".dulce-theme",
-): string {
+export function buildThemeCss(input: Partial<ThemeConfig>, selector = ".dulce-theme"): string {
   const body = Object.entries(themeVars(input))
     .map(([k, v]) => `${k}:${v}`)
     .join(";")

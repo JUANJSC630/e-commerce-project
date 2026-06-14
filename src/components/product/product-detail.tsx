@@ -255,7 +255,12 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
 
             {/* CTAs */}
             <div className="flex gap-3 pt-1">
-              <Button size="lg" className="flex-1" onClick={handleAddToCart} disabled={outOfStock}>
+              <Button
+                size="lg"
+                className="btn-cta flex-1"
+                onClick={handleAddToCart}
+                disabled={outOfStock}
+              >
                 <ShoppingCart className="w-4 h-4 mr-2" aria-hidden="true" />
                 {outOfStock ? "Agotado" : "Agregar al carrito"}
               </Button>

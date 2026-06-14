@@ -5,6 +5,7 @@ import { Nunito, Atkinson_Hyperlegible } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import { RadixThemeProvider } from "@/components/theme-provider"
 import { rootMetadata } from "@/lib/seo"
+import { loadAllSettings } from "@/lib/settings"
 
 const displayFont = Nunito({
   subsets: ["latin"],
@@ -24,11 +25,13 @@ export function generateMetadata(): Promise<Metadata> {
   return rootMetadata()
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const { theme } = await loadAllSettings()
+
   return (
     <html
       lang="es"
@@ -38,7 +41,7 @@ export default function RootLayout({
       <body>
         <RadixThemeProvider>
           {children}
-          <Toaster position="top-right" richColors closeButton />
+          <Toaster position={theme.toastPosition} richColors={theme.toastRichColors} closeButton />
         </RadixThemeProvider>
       </body>
     </html>

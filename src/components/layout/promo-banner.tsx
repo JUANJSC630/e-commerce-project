@@ -8,7 +8,8 @@ import { useSettings } from "@/components/providers/settings-provider"
 const DISMISSED_KEY = "dulceInfanciaPromoBannerDismissed"
 
 export function PromoBanner() {
-  const { promoBanner } = useSettings()
+  const { promoBanner, theme } = useSettings()
+  const soft = theme.bannerStyle === "soft"
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -33,7 +34,9 @@ export function PromoBanner() {
     <div
       role="banner"
       aria-label="Promoción"
-      className="bg-brand-base text-brand-on-base text-sm py-2 px-4"
+      className={`text-sm py-2 px-4 ${
+        soft ? "bg-brand-base/10 text-brand-ink" : "bg-brand-base text-brand-on-base"
+      }`}
     >
       <div className="container mx-auto flex items-center justify-center gap-3 relative">
         <span className="text-center font-medium">{promoBanner.message}</span>
@@ -48,7 +51,9 @@ export function PromoBanner() {
         <button
           onClick={dismiss}
           aria-label="Cerrar promoción"
-          className="absolute right-0 p-1 rounded hover:bg-white/20 transition-colors"
+          className={`absolute right-0 p-1 rounded transition-colors ${
+            soft ? "hover:bg-brand-ink/10" : "hover:bg-white/20"
+          }`}
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>

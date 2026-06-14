@@ -21,13 +21,16 @@ const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) =>
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const [navItems, settings] = await Promise.all([getNavItems(), loadAllSettings()])
-  const { brand } = settings
+  const { brand, theme } = settings
 
   return (
     <SettingsProvider settings={settings}>
       <ThemeStyle />
       <FontStyle />
-      <div className="dulce-theme bg-background text-foreground">
+      <div
+        className="dulce-theme bg-background text-foreground"
+        data-button-style={theme.buttonStyle}
+      >
         <CartProvider>
           <FavoritesProvider>
             <PromoBanner />

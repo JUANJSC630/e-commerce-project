@@ -353,8 +353,8 @@ Ver historial al final del documento.
 
 > **Objetivo**: que el cliente personalice el look de la tienda sin tocar código
 > — colores con selectores visuales, plantillas, vista previa en vivo, seguro.
-> **Estado**: ✅ Fases 1–3 completas (colores + radius + presets + preview +
-> contraste AA + inyección segura). Fase 4 (estilos por componente) opcional.
+> **Estado**: ✅ Fases 1–4 completas (colores + radius + presets + preview +
+> contraste AA + inyección segura + **opciones por componente**).
 
 #### Fase 1 — Aplicar el tema de la DB al storefront (cimiento) ✅
 
@@ -387,11 +387,24 @@ Ver historial al final del documento.
 [x] Preset activo resaltado; todo reversible (Deshacer + presets)
 ```
 
-#### Fase 4 — Personalización por componente (opcional, futuro)
+#### Fase 4 — Personalización por componente ✅ Completado 2026-06-13
 
 ```
-[ ] Esquema extendido: success/danger, estilo de botón (solid/outline), banner,
-    toasts (posición, richColors) — mapear a CSS vars + props leídos de settings
+[x] Esquema extendido (ThemeOptions en lib/theme.ts): success/danger (colores),
+    buttonStyle (solid/outline), bannerStyle (solid/soft), toastPosition,
+    toastRichColors. Validado/clampeado en sanitizeThemeOptions; loadAllSettings
+    sanitiza el theme completo (todo consumidor recibe valores seguros).
+    - success/danger → CSS vars (--brand-success/-danger) + retono de --destructive
+      (la badge "Agotado" y la página pago-fallido ya retonan con el danger del tema).
+      Registrados como utilidades Tailwind (bg-brand-success/-danger) en globals.css.
+    - buttonStyle → data-button-style en el wrapper .dulce-theme + regla CSS
+      (.btn-cta outline); marcador btn-cta en los CTAs "Agregar al carrito".
+    - bannerStyle → PromoBanner lee theme.bannerStyle (sólido vs suave).
+    - toastPosition/toastRichColors → Toaster del root layout leídos de settings.
+    Editor (theme-editor.tsx): ColorRows de éxito/peligro, segmented de botón y
+    banner, select de posición de toast, toggle de richColors; preview en vivo de
+    todo (botón outline, banner suave, chips semánticos). Presets aplican solo la
+    paleta y preservan las opciones.
 [x] Uploader UploadThing para imágenes del home (hecho en 9.8)
 [x] Tipografía dinámica REAL: las fuentes elegidas se aplican en vivo al storefront.
     FontPicker (combobox buscable con preview en la propia fuente, catálogo curado

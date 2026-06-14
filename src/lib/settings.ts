@@ -13,7 +13,7 @@ import {
 } from "@/config/store.config"
 import { typography as defaultTypography } from "@/config/theme.config"
 import { homeContent as defaultHomeContent, type HomeContent } from "@/config/store.config"
-import { THEME_DEFAULTS, type ThemeTokens } from "@/lib/theme"
+import { sanitizeThemeConfig, type ThemeConfig } from "@/lib/theme"
 
 /** Cache tag for all settings reads. Revalidated whenever a setting is saved. */
 export const SETTINGS_TAG = "settings"
@@ -26,7 +26,7 @@ export interface StoreSettings {
   promoBanner: typeof defaultPromoBanner
   social: typeof defaultSocial
   contact: typeof defaultContact
-  theme: ThemeTokens
+  theme: ThemeConfig
   typography: typeof defaultTypography
   homeContent: HomeContent
 }
@@ -51,7 +51,11 @@ export const loadAllSettings = unstable_cache(
       promoBanner: merge(defaultPromoBanner, dbMap.get(SETTINGS_KEYS.promoBanner)),
       social: merge(defaultSocial, dbMap.get(SETTINGS_KEYS.social)),
       contact: merge(defaultContact, dbMap.get(SETTINGS_KEYS.contact)),
-      theme: merge(THEME_DEFAULTS, dbMap.get(SETTINGS_KEYS.theme)),
+      // Sanitized so every consumer (CSS injection, layout attrs, Toaster props)
+      // gets validated colors + clamped enums — never raw DB values.
+      theme: sanitizeThemeConfig(
+        (dbMap.get(SETTINGS_KEYS.theme) as Record<string, unknown> | undefined) ?? {},
+      ),
       typography: merge(defaultTypography, dbMap.get(SETTINGS_KEYS.typography)),
       homeContent: merge(defaultHomeContent, dbMap.get(SETTINGS_KEYS.homeContent)),
     }

@@ -43,6 +43,7 @@ export const THEME_DEFAULTS: ThemeTokens = {
 
 export const BUTTON_STYLES = ["solid", "outline"] as const
 export const BANNER_STYLES = ["solid", "soft"] as const
+export const CARD_SIZES = ["small", "medium", "large"] as const
 export const TOAST_POSITIONS = [
   "top-left",
   "top-center",
@@ -55,6 +56,14 @@ export const TOAST_POSITIONS = [
 export type ButtonStyle = (typeof BUTTON_STYLES)[number]
 export type BannerStyle = (typeof BANNER_STYLES)[number]
 export type ToastPosition = (typeof TOAST_POSITIONS)[number]
+export type CardSize = (typeof CARD_SIZES)[number]
+
+/** Product grid columns per card size — denser size = smaller cards. */
+export const PRODUCT_GRID_CLASS: Record<CardSize, string> = {
+  small: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
+  medium: "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+  large: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3",
+}
 
 /** Semantic colors + behavioural options layered on top of the 6-color palette. */
 export interface ThemeOptions {
@@ -70,6 +79,8 @@ export interface ThemeOptions {
   toastPosition: ToastPosition
   /** Sonner's per-type accent colors */
   toastRichColors: boolean
+  /** Product card density across listing grids */
+  cardSize: CardSize
 }
 
 export const THEME_OPTION_DEFAULTS: ThemeOptions = {
@@ -79,6 +90,7 @@ export const THEME_OPTION_DEFAULTS: ThemeOptions = {
   bannerStyle: "solid",
   toastPosition: "top-right",
   toastRichColors: true,
+  cardSize: "medium",
 }
 
 /** The full theme stored in the `theme` setting: palette + options. */
@@ -324,6 +336,7 @@ export function sanitizeThemeOptions(
       typeof input.toastRichColors === "boolean"
         ? input.toastRichColors
         : THEME_OPTION_DEFAULTS.toastRichColors,
+    cardSize: oneOf(input.cardSize, CARD_SIZES, THEME_OPTION_DEFAULTS.cardSize),
   }
 }
 

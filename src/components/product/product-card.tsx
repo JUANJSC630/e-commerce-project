@@ -5,11 +5,8 @@ import Link from "next/link"
 import { useState } from "react"
 import { Heart, Eye, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { AddToCartButton } from "@/components/cart/add-to-cart-button"
 import { StockBadge } from "@/components/product/stock-badge"
-import { isOutOfStock } from "@/lib/inventory"
 import { useFavorites } from "@/hooks/use-favorites"
 import { useFormatPrice } from "@/components/providers/settings-provider"
 import type { Product } from "@/lib/types"
@@ -28,8 +25,6 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
-
-  const outOfStock = isOutOfStock(product.stock)
 
   return (
     <div className="group relative bg-card text-card-foreground rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border">
@@ -95,7 +90,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         </div>
       </Link>
 
-      <div className="p-4 space-y-3">
+      <div className="p-3.5 space-y-2.5">
         {product.category && (
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
             {product.category.name}
@@ -174,13 +169,13 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </div>
         )}
 
-        {outOfStock ? (
-          <Button disabled className="w-full mt-4 font-medium">
-            Agotado
-          </Button>
-        ) : (
-          <AddToCartButton product={product} className="w-full mt-4 font-medium" />
-        )}
+        <Link
+          href={`/products/${product.id}`}
+          className="btn-cta mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          Ver producto
+          <Eye className="h-4 w-4" aria-hidden="true" />
+        </Link>
       </div>
     </div>
   )

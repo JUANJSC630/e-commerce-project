@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { routes } from "@/config/store.config"
+import { useSettings } from "@/components/providers/settings-provider"
+import { PRODUCT_GRID_CLASS } from "@/lib/theme"
 import type { Product } from "@/lib/types"
 
 interface CategoryPageProps {
@@ -220,6 +222,8 @@ export function CategoryPage({
   emptyMessage,
 }: CategoryPageProps) {
   void slug
+  const { theme } = useSettings()
+  const gridColumns = PRODUCT_GRID_CLASS[theme.cardSize]
   const {
     filters,
     filteredProducts,
@@ -303,7 +307,7 @@ export function CategoryPage({
           )}
 
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            <div className={cn("grid gap-4 md:gap-6", gridColumns)}>
               {filteredProducts.map((product, index) => (
                 <ProductCard key={product.id} product={product} priority={index < 4} />
               ))}

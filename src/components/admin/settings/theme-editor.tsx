@@ -423,6 +423,16 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
                 { value: "soft", label: "Suave" },
               ]}
             />
+            <Segmented
+              label="Tamaño de las tarjetas de producto"
+              value={form.cardSize}
+              onChange={(v) => set("cardSize", v)}
+              options={[
+                { value: "small", label: "Pequeñas" },
+                { value: "medium", label: "Medianas" },
+                { value: "large", label: "Grandes" },
+              ]}
+            />
             <div>
               <div className="flex items-end justify-between gap-2 mb-1">
                 <label className="block text-xs font-medium text-slate-600">

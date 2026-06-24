@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-24 (Bloque 15 — paridad Shopify; A.1 galería ✅ + A.2 variantes ✅. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-24 (Bloque 15 — paridad Shopify; A.1 galería ✅ + A.2 variantes ✅ + Fase D UX ✅ + análisis 5 competidores. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -49,7 +49,7 @@ categorías son dinámicas desde la DB vía `src/lib/categories.ts` — Bloque 9
 
 | Módulo               | Ruta                | Estado          | Notas                                                               |
 | -------------------- | ------------------- | --------------- | ------------------------------------------------------------------- |
-| Home                 | `/`                 | ✅ Sólido       | Hero split 45/55, trust bar marquee, brand promise                  |
+| Home                 | `/`                 | ✅ Sólido       | Hero split 45/55, trust bar marquee, category pills, gender tabs, SEO block, newsletter popup |
 | Categoría Bebés      | `/category/babies`  | ✅ Funcional    | 5 productos                                                         |
 | Categoría Niñas      | `/category/girls`   | ✅ Funcional    | 4 productos                                                         |
 | Categoría Niños      | `/category/boys`    | ✅ Funcional    | 4 productos                                                         |
@@ -2889,6 +2889,166 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [ ] C.2 Analytics GA4 + Meta Pixel + OG por producto (= Bloque 12)
 [ ] C.3 Gift cards, multi-ubicación, preventa, guía de tallas, metafields/tags
 ```
+
+**✅ Fase D — UX & Conversión (análisis competidores)** — 2026-06-24
+
+> Análisis de 5 competidores directos del mercado infantil Colombia:
+> **Offcorss.us**, **Tomaticos.com**, **BabyFresh.co**, **MagicBabyCol.com** y
+> **BabyCentro.com**. Se identificaron patrones UX comunes y se implementaron
+> los 4 más impactantes del primer análisis (Offcorss). Los hallazgos restantes
+> se programan en Fase E.
+
+```
+[x] D.1 Newsletter pop-up modal (10% OFF primera compra, dismiss en localStorage, delay 5s)  ✅ 2026-06-24
+[x] D.2 Category pills (quick-links debajo del hero, lee categorías activas de la DB)  ✅ 2026-06-24
+[x] D.3 Gender tabs section ("Niños" / "Niñas" con tab-switch, muestra productos por categoría)  ✅ 2026-06-24
+[x] D.4 SEO content block (bloque H2/H3 keyword-rich al final del home, antes del footer)  ✅ 2026-06-24
+```
+
+---
+
+### Análisis Competitivo Detallado (2026-06-24)
+
+#### Competidores Analizados
+
+| Competidor | Plataforma | Enfoque | Ubicación |
+|---|---|---|---|
+| **Offcorss.us** | Custom/Shopify | Ropa infantil premium (0-16 años) | Medellín |
+| **Tomaticos.com** | Shopify | Ropa infantil económica | Ibagué (Grupo Carolina) |
+| **BabyFresh.co** | Shopify | Ropa bebé/niño algodón (0-6 años) | Sabaneta (Crystal S.A.S) |
+| **MagicBabyCol.com** | Shopify | Productos/juguetes bebé variado | Colombia |
+| **BabyCentro.com** | Shopify | Productos premium/importados | Bogotá |
+
+#### Hallazgos por Competidor
+
+**Offcorss.us** — Marca líder, referente de UX:
+- Newsletter pop-up con incentivo (10-15% OFF)
+- Category pills tipo "TOPS / BOTTOMS / SETS" debajo del hero
+- Gender tabs "Shop Boys" / "Shop Girls" con productos filtrados
+- SEO content block extenso al final del home
+- Mega-menú con imágenes y subcategorías anidadas
+- "Shop the Look" (outfits completos, cross-sell)
+- Envío gratis con umbral prominente en header
+- Recomendaciones "Complete the look" en detalle de producto
+
+**Tomaticos.com** — Ropa infantil económica:
+- Homepage con tabs: "Más Vendidos" / "Lo Nuevo" / "Grandes Descuentos"
+- Badge de descuento prominente (-50%) en cada card de producto
+- Hover swap: segunda imagen se muestra al pasar el mouse sobre la card
+- Wishlist integrada (ícono corazón en navbar, página dedicada)
+- Grid visual de categorías con imagen (Niño, Niña, Bebé Niña, Bebé Niño, Tennis)
+- Newsletter en homepage con checkbox de términos
+- Instagram feed embebido (Instafeed)
+- Precio tachado + precio de oferta siempre visible
+- Sello "Marca País" como trust signal
+
+**BabyFresh.co** — Marca grande (Crystal S.A.S):
+- 3 promo banners rotativos en header ("Rebajas", "Envío gratis >$149.990", "Paga con ADDI")
+- Subcategoría pills: "Camisetas", "Vestidos", "Conjuntos", "Pijamas"
+- "Descubre más de Baby Fresh" — banners por segmento (Bebés Niñas, Bebés Niños, Niñas, Niños)
+- Ratings inline con conteo (★★★★★ (23)) en product cards
+- BNPL integrado (ADDI — Compra ahora, paga después)
+- "Rastrea tu pedido" — página pública de tracking
+- "Recoge en tienda" (Click & Collect)
+- Tiendas físicas con store locator
+- Cookie consent banner (Pandectes)
+- Blog "Nuestro blog" (contenido de marca)
+- Tarjeta regalo como producto
+- FAQ page dedicada
+- Cupones y códigos (página informativa)
+- "Añadir a favoritos" en cada card con corazón
+
+**MagicBabyCol.com** — Productos variados bebé:
+- Secciones del home organizadas **por uso/ocasión**: "Alimentación y Lactancia", "Hora de Dormir", "Juegos para Aprender", "Ropa Niño y Niña"
+- "Los Más Vendidos" como primera sección del home (social proof)
+- **Testimonios masivos con fotos** — app Revie con 80+ reseñas con imagen real del producto
+- WhatsApp flotante (wa.me link directo con mensaje pre-escrito)
+- Botón "Agregar al carrito" directamente en la product card (quick-add)
+- Promo bar: "👶🏻 Todo lo que necesitas para tu bebé lo encuentras aquí 👶🏻"
+- Instagram feed embebido (@magicbabycol)
+- Cookie consent banner con opción "No acepto" / "Sí acepto"
+- Google Maps link (enlace a reseñas de Google)
+- Categorías en el nav con imagen de ícono por cada una
+- Footer con links de políticas, categorías y redes sociales
+
+**BabyCentro.com** — Premium/importado:
+- Banners full-width por categoría con copy + CTA ("La Seguridad Primero", "Es Hora de Comer!")
+- Tabs por subcategoría dentro de secciones (Sillas/Coches/De Paseo/Equipo Viaje)
+- Showcase de marcas/logos (Globber, Sophie La Girafe, Pigeon, Palmers, etc.)
+- Blog "De Mamá a Mamá" con artículos de crianza (contenido SEO + engagement)
+- "Listas de Regalos" (gift registry)
+- Badge de descuento (-14%, -20%, -40%) en cards
+- "AGREGA A CARRO" — botón quick-add prominente en cada product card
+- Vendor/marca visible en cada product card
+- Instagram feed embebido (@babycentrocom)
+- Íconos de métodos de pago en footer (Visa, Mastercard, AmEx, Diners, Discover, Maestro)
+- Chat WhatsApp con asesor en línea
+- Envío gratis diferenciado por zona: "$300.000 Bogotá — $500.000 resto del país"
+- Sección "Categorías" con grid de imágenes circulares al final del home
+- Newsletter "Suscríbete a BabyCentro" en footer
+
+#### Matriz Comparativa — Estado Actual de Dulce Infancia
+
+| Patrón UX | Dulce Infancia | Offcorss | Tomaticos | BabyFresh | MagicBaby | BabyCentro |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Newsletter popup | ✅ | ✅ | ✅ | — | — | ✅ |
+| Category pills | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Gender/age tabs | ✅ | ✅ | — | ✅ | — | ✅ |
+| SEO content block | ✅ | ✅ | — | ✅ | — | — |
+| Reviews/ratings | ✅ | ✅ | — | ✅ | ✅ | — |
+| Cupones/descuentos | ✅ | ✅ | ✅ | ✅ | — | ✅ |
+| Favoritos/wishlist | ✅ | ✅ | ✅ | ✅ | — | ✅ |
+| Envío gratis (umbral) | ✅ | ✅ | — | ✅ | — | ✅ |
+| Trust bar | ✅ | ✅ | — | — | — | — |
+| Promo banner | ✅ | ✅ | — | ✅ (×3) | ✅ | — |
+| Back-in-stock | ✅ | — | — | — | — | — |
+| Variantes (talla×color) | ✅ | ✅ | ✅ | ✅ | — | ✅ |
+| Galería multi-imagen | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Zonas de envío | ✅ | ✅ | — | — | — | ✅ |
+| Tracking de pedido | ✅ | ✅ | — | ✅ | — | — |
+| **WhatsApp flotante** | ❌ | — | — | — | ✅ | ✅ |
+| **Badge % descuento** | ❌ | ✅ | ✅ | ✅ | — | ✅ |
+| **Hover swap (2da img)** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **"Más Vendidos" section** | ❌ | — | ✅ | — | ✅ | — |
+| **Quick add-to-cart** | ❌ | — | — | — | ✅ | ✅ |
+| **Cookie consent** | ❌ | — | — | ✅ | ✅ | — |
+| **Instagram feed** | ❌ | — | ✅ | — | ✅ | ✅ |
+| **Blog / contenido** | ❌ | ✅ | — | ✅ | — | ✅ |
+| **Logos métodos de pago** | ❌ | ✅ | — | — | — | ✅ |
+| **BNPL (ADDI)** | ❌ | — | — | ✅ | — | — |
+| **Testimonios con foto** | ❌ | — | — | — | ✅ | — |
+| **Secciones por ocasión** | ❌ | — | — | — | ✅ | ✅ |
+| **Shop the Look (outfits)** | ❌ | ✅ | — | — | — | — |
+| **Gift registry** | ❌ | — | — | — | — | ✅ |
+| **Store locator** | ❌ | — | — | ✅ | — | — |
+
+---
+
+**🟡 Fase E — UX Competitivo (hallazgos análisis multi-competidor)** — pendiente
+
+> Patrones identificados en 4+ competidores que Dulce Infancia aún no tiene.
+> Priorizados por impacto en conversión × esfuerzo de implementación.
+
+```
+[ ] E.1 WhatsApp flotante (botón fijo bottom-right, link wa.me con mensaje pre-escrito)
+[ ] E.2 Badge % descuento en product cards (badge -XX% cuando isOnSale + compareAtPrice)
+[ ] E.3 Hover swap en product cards (muestra 2da imagen de galería al hover)
+[ ] E.4 Sección "Más Vendidos" en home (ordenar por ventas/popularidad)
+[ ] E.5 Quick add-to-cart en product cards (botón "Agregar" directo, sin ir al detalle)
+[ ] E.6 Cookie consent banner (cumplimiento legal Colombia, localStorage)
+[ ] E.7 Instagram feed embebido en home (API o embed estático)
+[ ] E.8 Blog básico (modelo Post + /blog + 2-3 artículos SEO de crianza)
+[ ] E.9 Logos de métodos de pago en footer (Visa, MC, AmEx, MercadoPago, PSE)
+[ ] E.10 Testimonios con foto en home (extraer reseñas destacadas con imagen)
+```
+
+#### Priorización sugerida
+
+| Prioridad | Items | Razón |
+|---|---|---|
+| 🔴 Alta (hacer ya) | E.1, E.2, E.3, E.6 | Bajo esfuerzo, alto impacto conversión, 4/5 competidores lo tienen |
+| 🟠 Media | E.4, E.5, E.9 | Impacto medio, esfuerzo moderado |
+| 🟡 Baja (planificar) | E.7, E.8, E.10 | Mayor esfuerzo o dependencias externas (API Instagram, contenido) |
 
 ### A.1 — Galería de imágenes ✅ (2026-06-24)
 

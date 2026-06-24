@@ -51,7 +51,13 @@ export function CartProvider({ children }: CartProviderProps) {
   const openCart = useCallback(() => setIsCartOpen(true), [])
 
   const addItem = useCallback(
-    (product: Product, quantity: number, selectedSize?: string, selectedColor?: string) => {
+    (
+      product: Product,
+      quantity: number,
+      selectedSize?: string,
+      selectedColor?: string,
+      variantId?: string,
+    ) => {
       const itemKey = getItemKey(product.id, selectedSize, selectedColor)
 
       // Pure updater: immutably add or bump the matching line.
@@ -64,7 +70,7 @@ export function CartProvider({ children }: CartProviderProps) {
             i === existingIndex ? { ...item, quantity: item.quantity + quantity } : item,
           )
         }
-        return [...prevItems, { ...product, quantity, selectedSize, selectedColor }]
+        return [...prevItems, { ...product, quantity, selectedSize, selectedColor, variantId }]
       })
 
       toast.success(`${product.name} añadido al carrito!`, {

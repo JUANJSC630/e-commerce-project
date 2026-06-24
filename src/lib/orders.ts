@@ -31,6 +31,8 @@ export class OrderError extends Error {
 
 export interface CreateOrderItemInput {
   productId: string
+  /** When set, stock is deducted from this variant (and its price is used). */
+  variantId?: string
   quantity: number
   size?: string
   color?: string
@@ -82,9 +84,22 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           })
           const byId = new Map(products.map((p) => [p.id, p]))
 
-          // Aggregate quantity per product — a product can span several cart lines
-          // (different size/color) and stock is checked against the combined total.
+          const variantIds = [
+            ...new Set(items.map((i) => i.variantId).filter((v): v is string => Boolean(v))),
+          ]
+          const variants = variantIds.length
+            ? await tx.productVariant.findMany({
+                where: { id: { in: variantIds } },
+                select: { id: true, productId: true, price: true, size: true, color: true },
+              })
+            : []
+          const variantById = new Map(variants.map((v) => [v.id, v]))
+
+          // Aggregate quantity per stock unit. Variant items deduct from the
+          // variant's stock; plain items from the product's. A unit can span
+          // several cart lines, so stock is checked against the combined total.
           const qtyByProduct = new Map<string, number>()
+          const qtyByVariant = new Map<string, number>()
           for (const item of items) {
             if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
               throw new OrderError("OUT_OF_STOCK", "Cantidad inválida")
@@ -92,10 +107,21 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
             if (!byId.has(item.productId)) {
               throw new OrderError("PRODUCT_UNAVAILABLE", "Un producto ya no está disponible")
             }
-            qtyByProduct.set(
-              item.productId,
-              (qtyByProduct.get(item.productId) ?? 0) + item.quantity,
-            )
+            if (item.variantId) {
+              const variant = variantById.get(item.variantId)
+              if (!variant || variant.productId !== item.productId) {
+                throw new OrderError("PRODUCT_UNAVAILABLE", "Una variante ya no está disponible")
+              }
+              qtyByVariant.set(
+                item.variantId,
+                (qtyByVariant.get(item.variantId) ?? 0) + item.quantity,
+              )
+            } else {
+              qtyByProduct.set(
+                item.productId,
+                (qtyByProduct.get(item.productId) ?? 0) + item.quantity,
+              )
+            }
           }
 
           // Guarded decrement: only succeeds while enough stock remains, so
@@ -112,14 +138,34 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
               )
             }
           }
+          for (const [variantId, qty] of qtyByVariant) {
+            const { count } = await tx.productVariant.updateMany({
+              where: { id: variantId, stock: { gte: qty } },
+              data: { stock: { decrement: qty } },
+            })
+            if (count === 0) {
+              const productId = variantById.get(variantId)?.productId
+              throw new OrderError(
+                "OUT_OF_STOCK",
+                `Sin stock suficiente para "${byId.get(productId ?? "")?.name ?? "un producto"}"`,
+              )
+            }
+          }
 
-          const lineItems = items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: byId.get(item.productId)!.price,
-            size: item.size ?? null,
-            color: item.color ?? null,
-          }))
+          // Money is recomputed server-side: a variant uses its own price (or the
+          // product price when it inherits); plain items use the product price.
+          const lineItems = items.map((item) => {
+            const variant = item.variantId ? variantById.get(item.variantId) : undefined
+            const price = variant?.price ?? byId.get(item.productId)!.price
+            return {
+              productId: item.productId,
+              variantId: item.variantId ?? null,
+              quantity: item.quantity,
+              price,
+              size: item.size ?? variant?.size ?? null,
+              color: item.color ?? variant?.color ?? null,
+            }
+          })
 
           const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0)
           const shippingCost = shippingCostFor(subtotal, shipping)
@@ -468,13 +514,22 @@ export async function markOrderFailed(id: string): Promise<boolean> {
 
       const items = await tx.orderItem.findMany({
         where: { orderId: id },
-        select: { productId: true, quantity: true },
+        select: { productId: true, variantId: true, quantity: true },
       })
       for (const item of items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } },
-        })
+        // Return stock to the same unit it came from: the variant when the line
+        // had one (and it still exists), otherwise the product.
+        if (item.variantId) {
+          await tx.productVariant.updateMany({
+            where: { id: item.variantId },
+            data: { stock: { increment: item.quantity } },
+          })
+        } else {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } },
+          })
+        }
       }
       return true
     },

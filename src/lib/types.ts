@@ -4,6 +4,19 @@ export interface ProductImageDto {
   alt?: string
 }
 
+/** A purchasable size×color combination as the storefront consumes it. */
+export interface ProductVariantDto {
+  id: string
+  size?: string
+  color?: string
+  sku?: string
+  /** Effective unit price (already resolved: variant price or the product price). */
+  price: number
+  stock: number
+  /** Variant-specific image; falls back to the product cover when absent. */
+  imageUrl?: string
+}
+
 export interface Product {
   id: string
   name: string
@@ -13,6 +26,8 @@ export interface Product {
   imageAlt?: string
   /** Additional gallery photos (ordered). The detail page shows the cover first, then these. */
   images?: ProductImageDto[]
+  /** Purchasable size×color variants. When present, selectors/stock/price come from these. */
+  variants?: ProductVariantDto[]
   originalPrice?: number
   rating?: number
   reviewCount?: number
@@ -31,6 +46,8 @@ export interface CartItem extends Product {
   quantity: number
   selectedSize?: string
   selectedColor?: string // Color seleccionado por el usuario
+  /** The chosen variant, when the product has variants. Drives stock + price server-side. */
+  variantId?: string
 }
 
 export interface CartContextType {
@@ -40,6 +57,7 @@ export interface CartContextType {
     quantity: number,
     selectedSize?: string,
     selectedColor?: string,
+    variantId?: string,
   ) => void
   removeItem: (productId: string, selectedSize?: string, selectedColor?: string) => void
   updateItemQuantity: (

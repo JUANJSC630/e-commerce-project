@@ -29,15 +29,51 @@ interface ProductDetailProps {
   relatedProducts: Product[]
 }
 
+/** Distinct values preserving first-seen order. */
+function uniq<T>(values: T[]): T[] {
+  return [...new Set(values)]
+}
+
 export function ProductDetail({ product, relatedProducts }: ProductDetailProps) {
   const { locale, shipping } = useSettings()
   const { addItem, openCart } = useCart()
-  const outOfStock = isOutOfStock(product.stock)
   const { isFavorite, toggleFavorite } = useFavorites(product.id)
 
-  const [selectedSize, setSelectedSize] = useState<string | undefined>(product.sizes?.[0])
-  const [selectedColor, setSelectedColor] = useState<string | undefined>(product.colors?.[0])
+  const hasVariants = (product.variants?.length ?? 0) > 0
+
+  // Option lists come from the variants when present, else the loose arrays.
+  const sizeOptions = useMemo(
+    () =>
+      hasVariants
+        ? uniq(product.variants!.map((v) => v.size).filter((s): s is string => Boolean(s)))
+        : (product.sizes ?? []),
+    [product, hasVariants],
+  )
+  const colorOptions = useMemo(
+    () =>
+      hasVariants
+        ? uniq(product.variants!.map((v) => v.color).filter((c): c is string => Boolean(c)))
+        : (product.colors ?? []),
+    [product, hasVariants],
+  )
+
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(sizeOptions[0])
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(colorOptions[0])
   const [quantity, setQuantity] = useState(1)
+
+  // The variant matching the current size+color, when the product has variants.
+  const selectedVariant = useMemo(() => {
+    if (!hasVariants) return undefined
+    return product.variants!.find(
+      (v) => (v.size ?? undefined) === selectedSize && (v.color ?? undefined) === selectedColor,
+    )
+  }, [product, hasVariants, selectedSize, selectedColor])
+
+  const effectivePrice = selectedVariant?.price ?? product.price
+  const effectiveStock = hasVariants ? (selectedVariant?.stock ?? 0) : product.stock
+  const outOfStock = isOutOfStock(effectiveStock)
+  // With variants, a valid combo must be picked before adding to the cart.
+  const mustSelectVariant = hasVariants && !selectedVariant
 
   // Cover first, then the ordered gallery (deduped by URL). Falls back to a
   // single image when the product has no extra photos.
@@ -52,15 +88,22 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
     return [cover, ...extra]
   }, [product])
   const [activeImage, setActiveImage] = useState(0)
-  const active = gallery[activeImage] ?? gallery[0]
+  // A selected variant with its own photo overrides the gallery selection.
+  const active = selectedVariant?.imageUrl
+    ? { url: selectedVariant.imageUrl, alt: product.name }
+    : (gallery[activeImage] ?? gallery[0])
 
   const discountPct = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
 
   const handleAddToCart = () => {
-    if (outOfStock) return
-    addItem(product, quantity, selectedSize, selectedColor)
+    if (outOfStock || mustSelectVariant) return
+    // Carry the variant's price + image on the cart line so totals are correct.
+    const cartProduct = selectedVariant
+      ? { ...product, price: effectivePrice, image: selectedVariant.imageUrl || product.image }
+      : product
+    addItem(cartProduct, quantity, selectedSize, selectedColor, selectedVariant?.id)
     openCart()
   }
 
@@ -199,7 +242,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
             <div className="flex items-baseline gap-3">
               <span className="font-bold text-3xl text-brand-ink">
                 {locale.currencySymbol}
-                {product.price.toLocaleString(locale.dateLocale)}
+                {effectivePrice.toLocaleString(locale.dateLocale)}
               </span>
               {product.originalPrice && (
                 <span className="text-lg text-muted-foreground line-through">
@@ -215,20 +258,20 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
               )}
             </div>
 
-            <StockBadge stock={product.stock} />
+            <StockBadge stock={effectiveStock} />
 
             {product.description && (
               <p className="text-muted-foreground leading-relaxed">{product.description}</p>
             )}
 
             {/* Color selector */}
-            {product.colors && product.colors.length > 0 && (
+            {colorOptions.length > 0 && (
               <div>
                 <p className="text-sm font-medium text-brand-ink mb-2">
                   Color: <span className="font-normal text-muted-foreground">{selectedColor}</span>
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  {product.colors.map((color) => (
+                  {colorOptions.map((color) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
@@ -248,13 +291,13 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
             )}
 
             {/* Size selector */}
-            {product.sizes && product.sizes.length > 0 && (
+            {sizeOptions.length > 0 && (
               <div>
                 <p className="text-sm font-medium text-brand-ink mb-2">
                   Talla: <span className="font-normal text-muted-foreground">{selectedSize}</span>
                 </p>
                 <div className="flex gap-2 flex-wrap" role="group" aria-label="Seleccionar talla">
-                  {product.sizes.map((size) => (
+                  {sizeOptions.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
@@ -303,10 +346,14 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
                 size="lg"
                 className="btn-cta flex-1"
                 onClick={handleAddToCart}
-                disabled={outOfStock}
+                disabled={outOfStock || mustSelectVariant}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" aria-hidden="true" />
-                {outOfStock ? "Agotado" : "Agregar al carrito"}
+                {mustSelectVariant
+                  ? "Selecciona talla y color"
+                  : outOfStock
+                    ? "Agotado"
+                    : "Agregar al carrito"}
               </Button>
               <button
                 onClick={toggleFavorite}

@@ -114,8 +114,33 @@ model Product {
   // Gallery shown on the product detail page. `image` above stays the cover
   // (card thumbnail); these are the additional ordered photos.
   images        ProductImage[]
+  // Purchasable size×color combinations. When a product has variants, stock,
+  // price and image are resolved per variant; `stock`/`sizes`/`colors`/`price`
+  // above act as fallbacks for products without variants (backwards compat).
+  variants      ProductVariant[]
 
   @@index([categoryId])
+}
+
+/// A purchasable size×color combination of a product, each with its own stock,
+/// optional price override (null → inherits the product price), SKU and image.
+/// Deleted in cascade with the product; order items keep a snapshot so deleting
+/// a variant only nulls the back-reference (onDelete: SetNull on OrderItem).
+model ProductVariant {
+  id         String      @id @default(cuid())
+  productId  String
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size       String?
+  color      String?
+  sku        String?     @unique
+  price      Float?
+  stock      Int         @default(0)
+  imageUrl   String?
+  position   Int         @default(0)
+  createdAt  DateTime    @default(now())
+  orderItems OrderItem[]
+
+  @@index([productId])
 }
 
 /// Additional gallery photos for a product, ordered by `position`. The product's
@@ -185,11 +210,15 @@ model PaymentLog {
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
+  id        String          @id @default(cuid())
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product         @relation(fields: [productId], references: [id])
+  // The specific variant purchased, when the product has variants. Nulled if the
+  // variant is later deleted — size/color/price below snapshot what was bought.
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
   quantity  Int
   price     Float
   size      String?

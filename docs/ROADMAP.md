@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-24 (Bloque 15 iniciado — paridad Shopify; A.1 galería ✅. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-24 (Bloque 15 — paridad Shopify; A.1 galería ✅ + A.2 variantes ✅. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -27,16 +27,16 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ### Storefront → Backend (alta prioridad)
 
-| Problema                          | Detalle                                                                             |
-| --------------------------------- | ----------------------------------------------------------------------------------- |
-| ~~Productos desde mock-data~~ ✅  | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`      |
-| ~~Checkout no guarda pedido~~ ✅  | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                  |
-| ~~1 sola imagen por producto~~ ✅ | Resuelto: portada + galería `ProductImage[]` (Bloque 15 A.1)                        |
-| Sin variantes reales              | `sizes[]`/`colors[]` sueltos + stock global → riesgo de sobreventa (Bloque 15 A.2)  |
-| Imágenes placeholder              | Faltan fotos reales de productos (Bloque 15 A.3)                                    |
-| ~~Sin stock real~~ ✅             | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB         |
-| ~~Categorías hardcoded~~ ✅       | Resuelto: modelo `Category` + admin CRUD + `/category/[slug]` dinámico (Bloque 9.6) |
-| ~~Tema editado no se aplica~~ ✅  | Resuelto: `ThemeStyle` inyecta el tema de la DB (scopeado, validado) — Bloque 9.7   |
+| Problema                          | Detalle                                                                              |
+| --------------------------------- | ------------------------------------------------------------------------------------ |
+| ~~Productos desde mock-data~~ ✅  | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`       |
+| ~~Checkout no guarda pedido~~ ✅  | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                   |
+| ~~1 sola imagen por producto~~ ✅ | Resuelto: portada + galería `ProductImage[]` (Bloque 15 A.1)                         |
+| ~~Sin variantes reales~~ ✅       | Resuelto: `ProductVariant` (stock/precio/SKU/imagen por talla×color) — Bloque 15 A.2 |
+| Imágenes placeholder              | Faltan fotos reales de productos (Bloque 15 A.3)                                     |
+| ~~Sin stock real~~ ✅             | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB          |
+| ~~Categorías hardcoded~~ ✅       | Resuelto: modelo `Category` + admin CRUD + `/category/[slug]` dinámico (Bloque 9.6)  |
+| ~~Tema editado no se aplica~~ ✅  | Resuelto: `ThemeStyle` inyecta el tema de la DB (scopeado, validado) — Bloque 9.7    |
 
 ### Código con bugs menores
 
@@ -2867,7 +2867,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 ```
 [x] A.1 Galería de imágenes (ProductImage[])  ✅ Completado 2026-06-24
-[ ] A.2 Variantes reales (ProductVariant: talla×color, stock/precio/SKU/imagen propios)
+[x] A.2 Variantes reales (ProductVariant: talla×color, stock/precio/SKU/imagen)  ✅ 2026-06-24
 [ ] A.3 Cargar imágenes reales de productos (migrar de placeholder)
 ```
 
@@ -2921,6 +2921,49 @@ archivos de portada + galería.
 **Verificado**: type-check + lint limpios; detalle de producto HTTP 200; prueba
 con 2 imágenes insertadas → renderiza 3 miniaturas (portada + 2). Pendiente real:
 cargar fotos reales desde el admin (A.3).
+
+### A.2 — Variantes reales (estilo Shopify) ✅ (2026-06-24)
+
+> Cada combinación **talla × color** es una variante con su propio **stock,
+> precio (vacío = hereda el del producto), SKU e imagen**. Resuelve la
+> sobreventa: el stock ya no es global. Retrocompatible: los productos sin
+> variantes siguen usando `stock`/`price`/`sizes`/`colors` del producto.
+
+**Modelo**: nuevo `ProductVariant { size?, color?, sku? @unique, price?, stock,
+imageUrl?, position }` (cascade del producto) + relación `Product.variants` +
+`OrderItem.variantId` con `onDelete: SetNull` (borrar una variante no rompe el
+historial; el OrderItem ya guarda size/color/price). Migración
+`20260624213625_add_product_variants`.
+
+**Data layer** (`products.ts`): `STOREFRONT_SELECT` incluye `variants`;
+`toProduct` resuelve el precio efectivo (variante o producto) y calcula el
+**stock total = suma de variantes** cuando existen. Tipo `ProductVariantDto`.
+
+**Storefront** (`product-detail.tsx`): cuando hay variantes, los selectores de
+talla/color se derivan de ellas; al elegir combo se resuelve la variante →
+muestra su **precio**, su **stock** (`StockBadge`) y su **imagen** (cambia la
+principal). El CTA exige elegir un combo válido ("Selecciona talla y color") y se
+deshabilita si la variante está agotada. El carrito lleva `variantId` + precio e
+imagen de la variante en la línea.
+
+**Admin**: nuevo `VariantEditor` (filas con talla, color, SKU, precio, stock e
+imagen; agregar/quitar) en `ProductForm`. La página de edición carga `variants`.
+
+**API**: `pickVariants` parsea/limpia las filas; create usa nested
+`variants.create`; update **reemplaza** el set en transacción; SKU duplicado →
+HTTP 409 con mensaje claro. La limpieza de UploadThing ahora cubre también las
+imágenes de variante huérfanas.
+
+**Checkout/pedidos** (`orders.ts`, ruta crítica de dinero/stock): el server
+descuenta el stock **de la variante** con el mismo guard anti-sobreventa
+(`updateMany ... stock >= qty`), resuelve el **precio server-side** (variante o
+producto), y guarda `variantId` en el `OrderItem`. El restock en `markOrderFailed`
+(usado también por la cancelación admin) devuelve el stock a la variante correcta.
+
+**Verificado E2E** (pedido real vía `POST /api/orders`, guest): pedido de variante
+con stock → **201** y stock de esa variante 3→2 (las otras intactas); pedido de
+variante agotada → **400 OUT_OF_STOCK**; `OrderItem` guardó `variantId` y el
+**precio de la variante** (39.000, no el base 20.000). type-check + lint limpios.
 
 ---
 

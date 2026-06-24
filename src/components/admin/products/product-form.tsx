@@ -3,9 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import type { Product, ProductImage } from "@prisma/client"
+import type { Product, ProductImage, ProductVariant } from "@prisma/client"
 import { ImageUploadField } from "@/components/admin/media/image-upload-field"
 import { GalleryUploadField } from "@/components/admin/media/gallery-upload-field"
+import { VariantEditor, type VariantRow } from "@/components/admin/products/variant-editor"
 
 interface CategoryOption {
   id: string
@@ -14,7 +15,7 @@ interface CategoryOption {
 }
 
 interface ProductFormProps {
-  product?: (Product & { images?: ProductImage[] }) | null
+  product?: (Product & { images?: ProductImage[]; variants?: ProductVariant[] }) | null
   categories: CategoryOption[]
 }
 
@@ -45,6 +46,22 @@ export function ProductForm({ product, categories }: ProductFormProps) {
       .slice()
       .sort((a, b) => a.position - b.position)
       .map((img) => img.url),
+  )
+
+  // Purchasable variants (size×color). Empty = product uses its general stock/price.
+  const [variants, setVariants] = useState<VariantRow[]>(
+    (product?.variants ?? [])
+      .slice()
+      .sort((a, b) => a.position - b.position)
+      .map((v) => ({
+        id: v.id,
+        size: v.size ?? "",
+        color: v.color ?? "",
+        sku: v.sku ?? "",
+        price: v.price?.toString() ?? "",
+        stock: v.stock.toString(),
+        imageUrl: v.imageUrl ?? "",
+      })),
   )
 
   const [loading, setLoading] = useState(false)
@@ -85,6 +102,19 @@ export function ProductForm({ product, categories }: ProductFormProps) {
       isPublished: form.isPublished,
       // Gallery is a relation; the API replaces ProductImage rows from this list.
       images: gallery,
+      // Variants are a relation; the API replaces ProductVariant rows. Drop fully
+      // empty rows and coerce numbers (blank price = inherit → null).
+      variants: variants
+        .filter((v) => v.size.trim() || v.color.trim() || v.sku.trim())
+        .map((v) => ({
+          id: v.id,
+          size: v.size.trim() || null,
+          color: v.color.trim() || null,
+          sku: v.sku.trim() || null,
+          price: v.price.trim() ? parseFloat(v.price) : null,
+          stock: parseInt(v.stock, 10) || 0,
+          imageUrl: v.imageUrl.trim() || null,
+        })),
     }
 
     const url = isEditing ? `/api/admin/products/${product!.id}` : "/api/admin/products"
@@ -255,6 +285,17 @@ export function ProductForm({ product, categories }: ProductFormProps) {
             </label>
           ))}
         </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-3">
+        <div>
+          <h2 className="font-semibold text-slate-900">Variantes (talla × color)</h2>
+          <p className="text-xs text-slate-400">
+            Opcional. Cada variante tiene su propio stock, precio (vacío = hereda el del producto),
+            SKU e imagen. Si agregas variantes, el stock y precio de la tienda se toman de ellas.
+          </p>
+        </div>
+        <VariantEditor value={variants} onChange={setVariants} basePrice={form.price} />
       </div>
 
       {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg">{error}</p>}

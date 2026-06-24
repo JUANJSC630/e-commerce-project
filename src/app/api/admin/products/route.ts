@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
+import { Prisma } from "@prisma/client"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
-import { pickProductInput, pickGalleryUrls } from "@/lib/product-input"
+import { pickProductInput, pickGalleryUrls, pickVariants } from "@/lib/product-input"
 import { revalidateProducts } from "@/lib/products"
 
 export async function GET() {
@@ -36,12 +37,22 @@ export async function POST(request: Request) {
   }
 
   const gallery = pickGalleryUrls(body) ?? []
-  const product = await prisma.product.create({
-    data: {
-      ...pickProductInput(body),
-      images: { create: gallery.map((url, position) => ({ url, position })) },
-    },
-  })
-  revalidateProducts()
-  return NextResponse.json(product, { status: 201 })
+  const variants = pickVariants(body) ?? []
+  try {
+    const product = await prisma.product.create({
+      data: {
+        ...pickProductInput(body),
+        images: { create: gallery.map((url, position) => ({ url, position })) },
+        variants: { create: variants.map((v, position) => ({ ...v, position })) },
+      },
+    })
+    revalidateProducts()
+    return NextResponse.json(product, { status: 201 })
+  } catch (err) {
+    // Duplicate SKU (ProductVariant.sku is unique across the catalog).
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ error: "Hay un SKU de variante duplicado" }, { status: 409 })
+    }
+    throw err
+  }
 }

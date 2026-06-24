@@ -37,6 +37,18 @@ const STOREFRONT_SELECT = {
   imageAlt: true,
   categoryRef: { select: { name: true, slug: true } },
   images: { select: { url: true, alt: true }, orderBy: { position: "asc" } },
+  variants: {
+    select: {
+      id: true,
+      size: true,
+      color: true,
+      sku: true,
+      price: true,
+      stock: true,
+      imageUrl: true,
+    },
+    orderBy: { position: "asc" },
+  },
   sizes: true,
   colors: true,
   description: true,
@@ -53,6 +65,20 @@ const NEWEST_FIRST = { createdAt: "desc" } satisfies Prisma.ProductOrderByWithRe
 
 /** Maps a Prisma row to the domain model, normalizing `null` → `undefined`. */
 function toProduct(row: ProductRow): Product {
+  // Each variant's effective price resolves null → the product price here, so the
+  // storefront never has to know about the inheritance rule.
+  const variants = row.variants.map((v) => ({
+    id: v.id,
+    size: v.size ?? undefined,
+    color: v.color ?? undefined,
+    sku: v.sku ?? undefined,
+    price: v.price ?? row.price,
+    stock: v.stock,
+    imageUrl: v.imageUrl ?? undefined,
+  }))
+  // With variants, total stock is the sum across them; otherwise the product column.
+  const stock = variants.length > 0 ? variants.reduce((sum, v) => sum + v.stock, 0) : row.stock
+
   return {
     id: row.id,
     name: row.name,
@@ -60,10 +86,11 @@ function toProduct(row: ProductRow): Product {
     image: row.image,
     imageAlt: row.imageAlt ?? undefined,
     images: row.images.map((img) => ({ url: img.url, alt: img.alt ?? undefined })),
+    variants: variants.length > 0 ? variants : undefined,
     category: row.categoryRef,
     sizes: row.sizes,
     colors: row.colors,
-    stock: row.stock,
+    stock,
     reviewCount: row.reviewCount,
     isOnSale: row.isOnSale,
     isNew: row.isNew,

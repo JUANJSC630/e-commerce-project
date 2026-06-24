@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
+import { Prisma } from "@prisma/client"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
 import { deleteReplacedImage, deleteUploadedImages } from "@/lib/media-cleanup"
-import { pickProductInput, pickGalleryUrls } from "@/lib/product-input"
+import { pickProductInput, pickGalleryUrls, pickVariants } from "@/lib/product-input"
 import { revalidateProducts } from "@/lib/products"
 
 type Params = { params: Promise<{ id: string }> }
@@ -33,10 +34,15 @@ export async function GET(_: Request, { params }: Params) {
 async function updateProduct(id: string, body: unknown) {
   const prev = await prisma.product.findUnique({
     where: { id },
-    select: { image: true, images: { select: { url: true } } },
+    select: {
+      image: true,
+      images: { select: { url: true } },
+      variants: { select: { imageUrl: true } },
+    },
   })
 
   const gallery = pickGalleryUrls(body)
+  const variants = pickVariants(body)
 
   const product = await prisma.$transaction(async (tx) => {
     const updated = await tx.product.update({ where: { id }, data: pickProductInput(body) })
@@ -48,15 +54,32 @@ async function updateProduct(id: string, body: unknown) {
         })
       }
     }
+    if (variants !== null) {
+      // Replace the set; OrderItem.variantId is SetNull, so order history is kept.
+      await tx.productVariant.deleteMany({ where: { productId: id } })
+      if (variants.length > 0) {
+        await tx.productVariant.createMany({
+          data: variants.map((v, position) => ({ ...v, productId: id, position })),
+        })
+      }
+    }
     return updated
   })
 
   await deleteReplacedImage(prev?.image, product.image)
-  if (gallery !== null) {
-    const kept = new Set([product.image, ...gallery])
-    const orphans = (prev?.images ?? []).map((img) => img.url).filter((url) => !kept.has(url))
-    await deleteUploadedImages(orphans)
-  }
+  // Remove UploadThing files orphaned by the edit (cover, gallery, variant images).
+  const kept = new Set<string>([product.image])
+  if (gallery !== null) gallery.forEach((url) => kept.add(url))
+  else (prev?.images ?? []).forEach((img) => kept.add(img.url))
+  if (variants !== null) variants.forEach((v) => v.imageUrl && kept.add(v.imageUrl))
+  else (prev?.variants ?? []).forEach((v) => v.imageUrl && kept.add(v.imageUrl))
+
+  const prevUrls = [
+    ...(prev?.images ?? []).map((img) => img.url),
+    ...(prev?.variants ?? []).map((v) => v.imageUrl),
+  ]
+  const orphans = prevUrls.filter((url): url is string => url !== null && !kept.has(url))
+  await deleteUploadedImages(orphans)
 
   revalidateProducts()
   return product
@@ -71,8 +94,15 @@ export async function PUT(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const { id } = await params
-  const product = await updateProduct(id, await request.json())
-  return NextResponse.json(product)
+  try {
+    const product = await updateProduct(id, await request.json())
+    return NextResponse.json(product)
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ error: "Hay un SKU de variante duplicado" }, { status: 409 })
+    }
+    throw err
+  }
 }
 
 export async function PATCH(request: Request, { params }: Params) {
@@ -84,8 +114,15 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const { id } = await params
-  const product = await updateProduct(id, await request.json())
-  return NextResponse.json(product)
+  try {
+    const product = await updateProduct(id, await request.json())
+    return NextResponse.json(product)
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ error: "Hay un SKU de variante duplicado" }, { status: 409 })
+    }
+    throw err
+  }
 }
 
 export async function DELETE(_: Request, { params }: Params) {
@@ -97,12 +134,21 @@ export async function DELETE(_: Request, { params }: Params) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const { id } = await params
-  // ProductImage rows cascade on delete; we still remove the CDN files (cover + gallery).
+  // ProductImage/ProductVariant rows cascade on delete; we still remove the CDN
+  // files (cover + gallery + variant images).
   const removed = await prisma.product.delete({
     where: { id },
-    select: { image: true, images: { select: { url: true } } },
+    select: {
+      image: true,
+      images: { select: { url: true } },
+      variants: { select: { imageUrl: true } },
+    },
   })
-  await deleteUploadedImages([removed.image, ...removed.images.map((img) => img.url)])
+  await deleteUploadedImages([
+    removed.image,
+    ...removed.images.map((img) => img.url),
+    ...removed.variants.map((v) => v.imageUrl),
+  ])
   revalidateProducts()
   return new NextResponse(null, { status: 204 })
 }

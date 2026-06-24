@@ -89,6 +89,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: items.map((item) => ({
             productId: item.id,
+            variantId: item.variantId,
             quantity: item.quantity,
             size: item.selectedSize,
             color: item.selectedColor,

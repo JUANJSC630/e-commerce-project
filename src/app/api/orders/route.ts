@@ -19,10 +19,11 @@ function parseItems(raw: unknown): CreateOrderItemInput[] | null {
   const items: CreateOrderItemInput[] = []
   for (const entry of raw) {
     if (typeof entry !== "object" || entry === null) return null
-    const { productId, quantity, size, color } = entry as Record<string, unknown>
+    const { productId, variantId, quantity, size, color } = entry as Record<string, unknown>
     if (typeof productId !== "string" || typeof quantity !== "number") return null
     items.push({
       productId,
+      variantId: typeof variantId === "string" ? variantId : undefined,
       quantity,
       size: typeof size === "string" ? size : undefined,
       color: typeof color === "string" ? color : undefined,

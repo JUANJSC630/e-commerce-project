@@ -53,3 +53,52 @@ export function pickGalleryUrls(body: unknown): string[] | null {
   }
   return urls
 }
+
+/** A parsed, ready-to-persist variant row (without the product link or position). */
+export interface ParsedVariant {
+  size: string | null
+  color: string | null
+  sku: string | null
+  price: number | null
+  stock: number
+  imageUrl: string | null
+}
+
+function str(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null
+}
+
+function num(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null
+}
+
+/**
+ * Parses the `body.variants` field into clean variant rows. Drops rows with no
+ * size, color or SKU (nothing to identify them). Price is optional (null =
+ * inherit the product price); stock defaults to 0 and is clamped non-negative.
+ * Returns `null` when `variants` is absent → "leave the variants untouched".
+ */
+export function pickVariants(body: unknown): ParsedVariant[] | null {
+  const source = (typeof body === "object" && body !== null ? body : {}) as Record<string, unknown>
+  if (!("variants" in source)) return null
+  const raw = source.variants
+  if (!Array.isArray(raw)) return []
+  const rows: ParsedVariant[] = []
+  for (const item of raw) {
+    const v = (item ?? {}) as Record<string, unknown>
+    const size = str(v.size)
+    const color = str(v.color)
+    const sku = str(v.sku)
+    if (!size && !color && !sku) continue
+    const stock = num(v.stock) ?? 0
+    rows.push({
+      size,
+      color,
+      sku,
+      price: num(v.price),
+      stock: Math.max(0, Math.trunc(stock)),
+      imageUrl: str(v.imageUrl),
+    })
+  }
+  return rows
+}

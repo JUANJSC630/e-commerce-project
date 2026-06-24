@@ -53,6 +53,7 @@ model User {
   updatedAt DateTime   @updatedAt
   orders    Order[]
   favorites Favorite[]
+  reviews   Review[]
 }
 
 model Favorite {
@@ -118,8 +119,29 @@ model Product {
   // price and image are resolved per variant; `stock`/`sizes`/`colors`/`price`
   // above act as fallbacks for products without variants (backwards compat).
   variants      ProductVariant[]
+  // Customer reviews. `rating`/`reviewCount` above are denormalized aggregates
+  // recomputed from the approved reviews on every change.
+  reviews       Review[]
 
   @@index([categoryId])
+}
+
+/// A customer review of a product (1–5 stars + optional comment). One per user
+/// per product. The product's `rating`/`reviewCount` are recomputed from these.
+model Review {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  authorName String
+  rating     Int
+  comment    String?
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@unique([productId, userId])
+  @@index([productId])
 }
 
 /// A purchasable size×color combination of a product, each with its own stock,

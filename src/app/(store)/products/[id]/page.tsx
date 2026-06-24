@@ -1,7 +1,10 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getAllProductIds, getProductById, getRelatedProducts } from "@/lib/products"
+import { getProductReviews } from "@/lib/reviews"
 import { ProductDetail } from "@/components/product/product-detail"
+import { ReviewsSection } from "@/components/product/reviews-section"
+import { AuthSessionProvider } from "@/components/providers/auth-session-provider"
 import { loadAllSettings } from "@/lib/settings"
 
 interface PageProps {
@@ -49,7 +52,19 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   if (!product) notFound()
 
-  const relatedProducts = await getRelatedProducts(product)
+  const [relatedProducts, reviews] = await Promise.all([
+    getRelatedProducts(product),
+    getProductReviews(id),
+  ])
 
-  return <ProductDetail product={product} relatedProducts={relatedProducts} />
+  return (
+    <>
+      <ProductDetail product={product} relatedProducts={relatedProducts} />
+      <div className="container mx-auto px-4 pb-16">
+        <AuthSessionProvider>
+          <ReviewsSection productId={id} reviews={reviews} />
+        </AuthSessionProvider>
+      </div>
+    </>
+  )
 }

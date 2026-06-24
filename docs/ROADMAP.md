@@ -2875,7 +2875,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 ```
 [x] B.1 Cupones / descuentos (Discount: %, fijo, envío gratis) + UI checkout  ✅ 2026-06-24
-[ ] B.2 Reviews reales (modelo Review; recalcular rating/reviewCount)
+[x] B.2 Reviews reales (modelo Review; recalcula rating/reviewCount)  ✅ 2026-06-24
 [ ] B.3 Zonas de envío + IVA configurables
 [ ] B.4 Número de guía/tracking en pedido + email "enviado"
 [ ] B.5 Acciones masivas en admin de pedidos + import/export CSV de productos
@@ -3000,6 +3000,38 @@ duplicado.
 **Verificado E2E**: validación 10% de 100.000 → 10.000; pedido real con código →
 **201**, `subtotal 40.000 + envío 10.000 − 4.000 = total 46.000`, `discountCode`
 guardado y `redemptions` 0→1. type-check + lint limpios.
+
+### B.2 — Reseñas reales ✅ (2026-06-24)
+
+> Reseñas de clientes (1–5★ + comentario) en el detalle de producto. Una por
+> usuario por producto. El `rating`/`reviewCount` del producto se **recalcula**
+> desde las reseñas aprobadas (deja de ser un número estático del seed).
+
+**Modelo**: `Review { productId, userId?, authorName, rating (1–5), comment?,
+isApproved, createdAt }` con `@@unique([productId, userId])` + relaciones en
+`Product` y `User`. Migración `add_reviews`.
+
+**Lógica** (`src/lib/reviews.ts`): `createReview` valida (1–5, una por usuario),
+crea la reseña y **recalcula el agregado** (`_avg`/`_count`) del producto en la
+misma transacción; luego `revalidateProducts()` para refrescar la tienda.
+`getProductReviews` lee las aprobadas.
+
+**API**: `POST /api/products/[id]/reviews` — **requiere sesión** (el nombre del
+autor sale de la sesión, no del cliente); 401 sin login, 409 si ya reseñó.
+
+**Storefront**: `ReviewsSection` (cliente) bajo el detalle — lista de reseñas +
+formulario con selector de estrellas; si no hay sesión muestra enlace a login.
+La página sigue siendo ISR: las reseñas se cargan en el server (cacheadas) y el
+estado de login se resuelve con `useSession` (nuevo `AuthSessionProvider` que
+envuelve solo la sección, sin volver dinámica la página).
+
+**Verificado E2E** (login NextAuth real): sin sesión → **401**; con sesión →
+**201** y agregado del producto recalculado (rating 4, count 1); segunda reseña
+del mismo usuario → **409**. type-check + lint limpios.
+
+> Nota: los productos del seed traen `rating`/`reviewCount` ficticios; ahora que
+> hay reseñas reales, esos valores se recalculan a medida que llegan reseñas (un
+> producto sin reseñas reales mostrará 0). No se migran retroactivamente.
 
 ---
 

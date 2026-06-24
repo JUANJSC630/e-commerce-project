@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { ProductCard } from "@/components/product/product-card"
 import { StockBadge } from "@/components/product/stock-badge"
+import { StockAlertForm } from "@/components/product/stock-alert-form"
 import { isOutOfStock } from "@/lib/inventory"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
@@ -369,6 +370,9 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
                 <Heart className={cn("w-5 h-5", isFavorite && "fill-red-500")} aria-hidden="true" />
               </button>
             </div>
+
+            {/* Back-in-stock alert */}
+            {outOfStock && <StockAlertForm productId={product.id} />}
 
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">

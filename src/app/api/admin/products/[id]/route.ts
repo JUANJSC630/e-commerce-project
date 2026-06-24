@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { getServerSession } from "next-auth"
 import { Prisma } from "@prisma/client"
 import { authOptions } from "@/lib/auth-options"
@@ -8,6 +8,7 @@ import type { Permissions } from "@/lib/permissions"
 import { deleteReplacedImage, deleteUploadedImages } from "@/lib/media-cleanup"
 import { pickProductInput, pickGalleryUrls, pickVariants } from "@/lib/product-input"
 import { revalidateProducts } from "@/lib/products"
+import { notifyBackInStock } from "@/lib/stock-alerts"
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -35,6 +36,7 @@ async function updateProduct(id: string, body: unknown) {
   const prev = await prisma.product.findUnique({
     where: { id },
     select: {
+      stock: true,
       image: true,
       images: { select: { url: true } },
       variants: { select: { imageUrl: true } },
@@ -82,6 +84,12 @@ async function updateProduct(id: string, body: unknown) {
   await deleteUploadedImages(orphans)
 
   revalidateProducts()
+
+  // Back-in-stock: if stock went from 0 → >0, notify subscribers.
+  if ((prev?.stock ?? 0) <= 0 && product.stock > 0) {
+    after(() => notifyBackInStock(id))
+  }
+
   return product
 }
 

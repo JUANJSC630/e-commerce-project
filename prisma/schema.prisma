@@ -122,6 +122,8 @@ model Product {
   // Customer reviews. `rating`/`reviewCount` above are denormalized aggregates
   // recomputed from the approved reviews on every change.
   reviews       Review[]
+  // "Notify me when back in stock" subscriptions.
+  stockAlerts   StockAlert[]
 
   @@index([categoryId])
 }
@@ -296,4 +298,18 @@ model RateLimitHit {
   createdAt  DateTime @default(now())
 
   @@index([action, identifier, createdAt])
+}
+
+/// "Notify me when back in stock" — one per email×product. Marked `notified`
+/// once the email is sent so it won't be sent again unless the customer re-subs.
+model StockAlert {
+  id        String   @id @default(cuid())
+  email     String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  notified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([email, productId])
+  @@index([productId, notified])
 }

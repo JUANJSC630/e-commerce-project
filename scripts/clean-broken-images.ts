@@ -14,6 +14,16 @@
  * Uso:
  *   yarn db:clean-images          # dry-run: muestra qué cambiaría, sin escribir
  *   yarn db:clean-images --apply  # aplica los cambios en la base de datos
+ *
+ * IMPORTANTE — caché de Next:
+ *   Los Setting del storefront se leen a través de `unstable_cache`
+ *   (ver src/lib/settings.ts -> loadAllSettings), que solo se invalida vía
+ *   `revalidateTag(SETTINGS_TAG)` cuando se guarda desde la app (saveSetting).
+ *   Este script escribe DIRECTO en la base de datos, así que NO refresca esa
+ *   caché. Tras correr con --apply, la home seguirá sirviendo las imágenes
+ *   viejas hasta que la caché se invalide:
+ *     - En dev: reinicia el server (rm -rf .next/cache y vuelve a `yarn dev`).
+ *     - En prod: redeploy, o dispara una revalidación del tag de settings.
  * -----------------------------------------------------------------------------
  */
 import { existsSync } from "node:fs"
@@ -141,7 +151,16 @@ async function main() {
     console.log("Sin imágenes rotas. Nada que hacer.\n")
   } else {
     console.log(`\n${APPLY ? "Aplicadas" : "Detectadas"} ${fixes.length} corrección(es).`)
-    if (!APPLY) console.log("Ejecuta `yarn db:clean-images --apply` para guardar los cambios.\n")
+    if (!APPLY) {
+      console.log("Ejecuta `yarn db:clean-images --apply` para guardar los cambios.\n")
+    } else {
+      console.log(
+        "\n⚠ Caché de Next: la home lee los Setting vía unstable_cache y este script\n" +
+          "  escribe directo a la BD. Para que se reflejen los cambios, invalida la caché:\n" +
+          "    dev  -> rm -rf .next/cache && yarn dev\n" +
+          "    prod -> redeploy o revalida el tag de settings.\n",
+      )
+    }
   }
 }
 

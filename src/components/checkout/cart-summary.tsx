@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Minus, Plus, Trash2, Tag, X } from "lucide-react"
 import { toast } from "sonner"
 import { useSettings, useFormatPrice } from "@/components/providers/settings-provider"
+import { resolveShippingCost, computeTax } from "@/lib/shipping"
 import type { CartItem } from "@/lib/types"
 
 // Modified item type that uses size and color instead of selectedSize and selectedColor
@@ -29,6 +30,8 @@ interface CartSummaryProps {
   enableDiscount?: boolean
   discount?: AppliedDiscount | null
   onDiscountChange?: (discount: AppliedDiscount | null) => void
+  /** Destination state (departamento) — picks the shipping zone rate when known. */
+  state?: string
 }
 
 export function CartSummary({
@@ -39,6 +42,7 @@ export function CartSummary({
   enableDiscount = false,
   discount = null,
   onDiscountChange,
+  state,
 }: CartSummaryProps) {
   const { shipping } = useSettings()
   const formatPrice = useFormatPrice()
@@ -46,12 +50,15 @@ export function CartSummary({
   const [applying, setApplying] = useState(false)
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const baseShipping = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
+  const baseShipping = resolveShippingCost(subtotal, state, shipping)
   const freeShipping = discount?.freeShipping ?? false
   const shippingCost = freeShipping ? 0 : baseShipping
   // Free-shipping codes zero the shipping line; others take an amount off subtotal.
   const discountValue = discount && !discount.freeShipping ? discount.amount : 0
-  const total = subtotal + shippingCost - discountValue
+  // IVA on the post-discount goods (mirrors the server). Included tax stays inside
+  // the total; added tax bumps it.
+  const tax = computeTax(subtotal - discountValue, shipping)
+  const total = subtotal + shippingCost - discountValue + (tax.included ? 0 : tax.amount)
 
   async function applyDiscount() {
     if (!code.trim()) return
@@ -209,6 +216,15 @@ export function CartSummary({
           </p>
         )}
         {freeShipping && <p className="text-xs text-green-600">¡Envío gratis con tu código!</p>}
+        {tax.amount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">
+              IVA {shipping.taxRate ? `(${shipping.taxRate}%)` : ""}
+              {tax.included ? " incluido" : ""}
+            </span>
+            <span className="font-medium">{formatPrice(tax.amount)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-lg font-semibold pt-2 border-t border-border">
           <span>Total</span>
           <span className="text-brand-base">{formatPrice(total)}</span>

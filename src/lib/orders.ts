@@ -4,6 +4,7 @@ import { Prisma, type PaymentStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { loadAllSettings } from "@/lib/settings"
 import { consumeDiscountInTx } from "@/lib/discounts"
+import { resolveShippingCost, computeTax } from "@/lib/shipping"
 import { sendAbandonedOrderEmail, sendOrderPaidEmail } from "@/lib/email"
 import type { ShippingData } from "@/lib/validation"
 
@@ -55,13 +56,6 @@ export interface CreateOrderResult {
 }
 
 const MAX_ATTEMPTS = 3
-
-function shippingCostFor(
-  subtotal: number,
-  shipping: { freeThreshold: number; standardCost: number },
-): number {
-  return subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
-}
 
 /** Sequential, human-friendly number reset per year: DI-2026-001. */
 async function nextOrderNumber(tx: Prisma.TransactionClient): Promise<string> {
@@ -171,7 +165,8 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           })
 
           const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0)
-          const shippingCost = shippingCostFor(subtotal, shipping)
+          // Shipping rate by destination zone (customer.state), free above threshold.
+          const shippingCost = resolveShippingCost(subtotal, customer.state, shipping)
 
           // Re-validate + atomically consume the discount. An invalid code is
           // treated as "no discount" so the order still goes through.
@@ -179,7 +174,11 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
             ? await consumeDiscountInTx(tx, discountCode, subtotal, shippingCost)
             : null
           const discountAmount = discount?.amount ?? 0
+          // Goods discount reduces the taxable base; a free-shipping code doesn't.
+          const goodsDiscount = discount && !discount.freeShipping ? discount.amount : 0
+          const tax = computeTax(subtotal - goodsDiscount, shipping)
 
+          const baseTotal = subtotal + shippingCost - discountAmount
           return tx.order.create({
             data: {
               orderNumber: await nextOrderNumber(tx),
@@ -190,7 +189,9 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
               shippingCost,
               discountCode: discount?.code ?? null,
               discountAmount,
-              total: subtotal + shippingCost - discountAmount,
+              taxAmount: tax.amount,
+              // Included tax is already inside the total; added tax bumps it.
+              total: tax.included ? baseTotal : baseTotal + tax.amount,
               paymentMethod,
               shippingAddress: customer as unknown as Prisma.InputJsonValue,
               items: { create: lineItems },
@@ -239,6 +240,7 @@ export interface OrderConfirmationDTO {
   shippingCost: number
   discountCode: string | null
   discountAmount: number
+  taxAmount: number
   total: number
   createdAt: Date
   shippingAddress: ShippingData | null
@@ -258,6 +260,7 @@ const ORDER_DETAIL_SELECT = {
   shippingCost: true,
   discountCode: true,
   discountAmount: true,
+  taxAmount: true,
   total: true,
   createdAt: true,
   shippingAddress: true,
@@ -290,6 +293,7 @@ function toConfirmationDTO(order: OrderDetailRow): OrderConfirmationDTO {
     shippingCost: order.shippingCost,
     discountCode: order.discountCode,
     discountAmount: order.discountAmount,
+    taxAmount: order.taxAmount,
     total: order.total,
     createdAt: order.createdAt,
     shippingAddress: (order.shippingAddress as ShippingData | null) ?? null,

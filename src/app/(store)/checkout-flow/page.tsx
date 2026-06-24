@@ -156,6 +156,7 @@ export default function CheckoutPage() {
                       enableDiscount
                       discount={discount}
                       onDiscountChange={setDiscount}
+                      state={shippingData.state}
                     />
                     <div className="mt-6">
                       <Button onClick={() => setCurrentStep(2)} className="w-full" size="lg">
@@ -232,6 +233,7 @@ export default function CheckoutPage() {
                 enableDiscount
                 discount={discount}
                 onDiscountChange={setDiscount}
+                state={shippingData.state}
               />
             </div>
           </div>

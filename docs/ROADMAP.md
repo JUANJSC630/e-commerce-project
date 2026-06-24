@@ -2876,7 +2876,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 ```
 [x] B.1 Cupones / descuentos (Discount: %, fijo, envío gratis) + UI checkout  ✅ 2026-06-24
 [x] B.2 Reviews reales (modelo Review; recalcula rating/reviewCount)  ✅ 2026-06-24
-[ ] B.3 Zonas de envío + IVA configurables
+[x] B.3 Zonas de envío + IVA configurables  ✅ 2026-06-24
 [ ] B.4 Número de guía/tracking en pedido + email "enviado"
 [ ] B.5 Acciones masivas en admin de pedidos + import/export CSV de productos
 [ ] B.6 Back-in-stock ("avísame cuando vuelva")
@@ -3032,6 +3032,36 @@ del mismo usuario → **409**. type-check + lint limpios.
 > Nota: los productos del seed traen `rating`/`reviewCount` ficticios; ahora que
 > hay reseñas reales, esos valores se recalculan a medida que llegan reseñas (un
 > producto sin reseñas reales mostrará 0). No se migran retroactivamente.
+
+### B.3 — Zonas de envío + IVA ✅ (2026-06-24)
+
+> Tarifas de envío por **zona** (departamento) e **IVA** configurable, ambos
+> resueltos con la misma lógica en el servidor y en el preview del checkout.
+
+**Config** (`store.config.ts shipping`): agrega `zones [{ name, states[], cost }]`,
+`taxRate` (%) y `taxIncluded` (bool, default true = precios con IVA incluido,
+estilo Colombia). `Order.taxAmount` nuevo (migración `add_order_tax`).
+
+**Lógica compartida** (`src/lib/shipping.ts`): `resolveShippingCost(subtotal,
+state, cfg)` → gratis sobre el umbral, si no la primera zona cuyo `states`
+incluye el departamento (match sin acentos/mayúsculas), o el costo estándar.
+`computeTax(base, cfg)` → monto de IVA (porción incluida o sumada).
+
+**Pedidos** (`orders.ts`): el envío se resuelve por `customer.state`; el IVA se
+calcula sobre el subtotal post-descuento y se guarda en `taxAmount`. Con
+`taxIncluded` el total no cambia (IVA ya dentro); si no, se suma.
+
+**Admin** (`shipping-editor.tsx`): sección "Envíos e impuestos" con IVA %,
+checkbox "precios incluyen IVA" y editor de zonas (nombre, departamentos, costo).
+
+**Checkout**: `cart-summary` usa `resolveShippingCost` con el `state` del
+formulario (el preview refleja la zona al elegir departamento) y muestra la línea
+de IVA; `OrderSummary` muestra IVA en la confirmación.
+
+**Verificado E2E**: pedido a Cundinamarca (zona=5.000, no el estándar 10.000) con
+IVA 19% incluido → `taxAmount 6.387` (=40.000−40.000/1,19), `total 45.000`
+(subtotal+envío, IVA no se suma). type-check + lint limpios. Config de prueba
+reseteada a defaults (sin zonas, IVA 0).
 
 ---
 

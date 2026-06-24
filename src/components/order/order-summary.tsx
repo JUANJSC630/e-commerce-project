@@ -72,6 +72,15 @@ export async function OrderSummary({ order, showShipping = true }: OrderSummaryP
             <dt className="text-brand-muted">Envío</dt>
             <dd>{order.shippingCost === 0 ? "Gratis" : price(order.shippingCost)}</dd>
           </div>
+          {order.taxAmount > 0 && (
+            <div className="flex justify-between">
+              <dt className="text-brand-muted">
+                IVA {shipping.taxRate ? `(${shipping.taxRate}%)` : ""}
+                {shipping.taxIncluded ? " incluido" : ""}
+              </dt>
+              <dd>{price(order.taxAmount)}</dd>
+            </div>
+          )}
           <div className="flex justify-between text-lg font-semibold border-t border-border pt-2">
             <dt>Total</dt>
             <dd className="text-brand-base">{price(order.total)}</dd>

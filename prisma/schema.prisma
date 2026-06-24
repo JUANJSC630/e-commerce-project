@@ -207,6 +207,9 @@ model Order {
   // order total stays auditable even if the Discount is later edited or deleted.
   discountCode    String?
   discountAmount  Float         @default(0)
+  // Tax (IVA) recorded on the order for invoicing. When prices include tax this
+  // is the portion already inside the total; otherwise it was added to it.
+  taxAmount       Float         @default(0)
   items           OrderItem[]
   shippingAddress Json?
   paymentMethod   String?

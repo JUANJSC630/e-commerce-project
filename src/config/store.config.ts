@@ -149,11 +149,26 @@ export const shipping = {
   /** Order subtotal above which shipping is free */
   freeThreshold: 150_000,
 
-  /** Cost when below freeThreshold */
+  /** Cost when below freeThreshold and no zone matches the destination */
   standardCost: 10_000,
 
   /** Displayed delivery estimate */
   estimatedDays: "3-5 días hábiles",
+
+  /**
+   * Per-region rate overrides. The customer's `state` (departamento) is matched
+   * against each zone's `states`; the first match wins, else `standardCost`.
+   */
+  zones: [] as { name: string; states: string[]; cost: number }[],
+
+  /** IVA percentage applied to the order (0 = no tax shown). */
+  taxRate: 0,
+
+  /**
+   * When true, prices already include the IVA (Colombian default) and the tax is
+   * shown as the included portion. When false, the tax is added on top of the total.
+   */
+  taxIncluded: true,
 }
 
 // ─── Inventory ────────────────────────────────────────────────────────────────

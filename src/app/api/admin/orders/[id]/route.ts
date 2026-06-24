@@ -35,12 +35,18 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const { id } = await params
-  const { status } = await request.json()
+  const body = await request.json()
+  const { status } = body
 
   const VALID_STATUSES = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"]
   if (!VALID_STATUSES.includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 })
   }
+
+  // Optional fulfillment tracking; trimmed, empty → null, absent → unchanged.
+  const carrier = typeof body.carrier === "string" ? body.carrier.trim() || null : undefined
+  const trackingNumber =
+    typeof body.trackingNumber === "string" ? body.trackingNumber.trim() || null : undefined
 
   // Cancelling an unsettled order goes through markOrderFailed so the reserved
   // stock is returned exactly once; PAID orders only change status (refund flow
@@ -48,7 +54,14 @@ export async function PATCH(request: Request, { params }: Params) {
   if (status === "CANCELLED") await markOrderFailed(id)
 
   const previous = await prisma.order.findUnique({ where: { id }, select: { status: true } })
-  const order = await prisma.order.update({ where: { id }, data: { status } })
+  const order = await prisma.order.update({
+    where: { id },
+    data: {
+      status,
+      ...(carrier !== undefined ? { carrier } : {}),
+      ...(trackingNumber !== undefined ? { trackingNumber } : {}),
+    },
+  })
 
   // Notify the customer once, only on the transition into SHIPPED.
   if (status === "SHIPPED" && previous?.status !== "SHIPPED") {

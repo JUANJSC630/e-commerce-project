@@ -128,10 +128,16 @@ export function orderPaidEmail({ order, brandName, locale, appUrl }: OrderEmailC
 }
 
 export function orderShippedEmail({ order, brandName, appUrl }: OrderEmailContext) {
+  const tracking = order.trackingNumber
+    ? p(
+        `Guía de seguimiento${order.carrier ? ` (${order.carrier})` : ""}: <strong style="color:${COLORS.ink};">${order.trackingNumber}</strong>`,
+      )
+    : ""
   const body =
     p(
       `Tu pedido <strong style="color:${COLORS.ink};">${order.orderNumber}</strong> va en camino. Te avisaremos cuando sea entregado.`,
     ) +
+    tracking +
     addressBlock(order) +
     `<p style="margin:24px 0 0;"><a href="${appUrl}/cuenta/pedidos" style="display:inline-block;background:${COLORS.accent};color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;">Ver mis pedidos</a></p>`
   return {

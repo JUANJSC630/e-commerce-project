@@ -242,6 +242,8 @@ export interface OrderConfirmationDTO {
   discountAmount: number
   taxAmount: number
   total: number
+  carrier: string | null
+  trackingNumber: string | null
   createdAt: Date
   shippingAddress: ShippingData | null
   items: OrderConfirmationItem[]
@@ -262,6 +264,8 @@ const ORDER_DETAIL_SELECT = {
   discountAmount: true,
   taxAmount: true,
   total: true,
+  carrier: true,
+  trackingNumber: true,
   createdAt: true,
   shippingAddress: true,
   items: {
@@ -295,6 +299,8 @@ function toConfirmationDTO(order: OrderDetailRow): OrderConfirmationDTO {
     discountAmount: order.discountAmount,
     taxAmount: order.taxAmount,
     total: order.total,
+    carrier: order.carrier,
+    trackingNumber: order.trackingNumber,
     createdAt: order.createdAt,
     shippingAddress: (order.shippingAddress as ShippingData | null) ?? null,
     items: order.items.map((item) => ({

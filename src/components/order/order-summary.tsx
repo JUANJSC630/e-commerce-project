@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Package, MapPin } from "lucide-react"
+import { Package, MapPin, Truck } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import { loadAllSettings } from "@/lib/settings"
 import type { OrderConfirmationDTO } from "@/lib/orders"
@@ -87,6 +87,33 @@ export async function OrderSummary({ order, showShipping = true }: OrderSummaryP
           </div>
         </dl>
       </section>
+
+      {order.trackingNumber && (
+        <section
+          aria-labelledby="order-tracking-heading"
+          className="bg-card border border-border rounded-xl p-5"
+        >
+          <h2
+            id="order-tracking-heading"
+            className="flex items-center gap-2 font-semibold text-brand-ink mb-3"
+          >
+            <Truck className="h-5 w-5 text-brand-base" aria-hidden="true" />
+            Seguimiento del envío
+          </h2>
+          <dl className="text-sm space-y-1">
+            {order.carrier && (
+              <div className="flex gap-2">
+                <dt className="text-brand-muted">Transportadora:</dt>
+                <dd className="text-brand-ink font-medium">{order.carrier}</dd>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <dt className="text-brand-muted">N.° de guía:</dt>
+              <dd className="text-brand-ink font-medium font-mono">{order.trackingNumber}</dd>
+            </div>
+          </dl>
+        </section>
+      )}
 
       {showShipping && address && (
         <section

@@ -197,7 +197,14 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
       </div>
 
       {/* Status updater */}
-      {canUpdate && <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />}
+      {canUpdate && (
+        <OrderStatusUpdater
+          orderId={order.id}
+          currentStatus={order.status}
+          currentCarrier={order.carrier}
+          currentTracking={order.trackingNumber}
+        />
+      )}
     </div>
   )
 }

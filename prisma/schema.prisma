@@ -203,6 +203,9 @@ model Order {
   total           Float
   subtotal        Float
   shippingCost    Float         @default(0)
+  // Fulfillment tracking, set by the admin when the order ships.
+  carrier         String?
+  trackingNumber  String?
   // Applied discount snapshot: the code used and the amount it took off, so the
   // order total stays auditable even if the Discount is later edited or deleted.
   discountCode    String?

@@ -181,6 +181,10 @@ model Order {
   total           Float
   subtotal        Float
   shippingCost    Float         @default(0)
+  // Applied discount snapshot: the code used and the amount it took off, so the
+  // order total stays auditable even if the Discount is later edited or deleted.
+  discountCode    String?
+  discountAmount  Float         @default(0)
   items           OrderItem[]
   shippingAddress Json?
   paymentMethod   String?
@@ -230,6 +234,31 @@ model Setting {
   key       String   @unique
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+enum DiscountType {
+  PERCENTAGE // `value` is a percent off the subtotal (0–100)
+  FIXED // `value` is a fixed amount off the subtotal (order currency)
+  FREE_SHIPPING // zeroes the shipping cost; `value` ignored
+}
+
+/// A checkout discount code. Validated server-side on every order: active, within
+/// its date window, under its redemption cap and meeting the minimum subtotal.
+model Discount {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  type           DiscountType @default(PERCENTAGE)
+  value          Float        @default(0)
+  /// Minimum order subtotal required to apply (null = no minimum).
+  minSubtotal    Float?
+  /// Total times the code may be redeemed (null = unlimited).
+  maxRedemptions Int?
+  redemptions    Int          @default(0)
+  isActive       Boolean      @default(true)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model RateLimitHit {

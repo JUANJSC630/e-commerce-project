@@ -3,6 +3,7 @@ import "server-only"
 import { Prisma, type PaymentStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { loadAllSettings } from "@/lib/settings"
+import { consumeDiscountInTx } from "@/lib/discounts"
 import { sendAbandonedOrderEmail, sendOrderPaidEmail } from "@/lib/email"
 import type { ShippingData } from "@/lib/validation"
 
@@ -44,6 +45,8 @@ export interface CreateOrderInput {
   paymentMethod: string
   /** Links the order to a logged-in customer account; omitted for guests. */
   userId?: string
+  /** Optional discount code; re-validated and consumed server-side. */
+  discountCode?: string
 }
 
 export interface CreateOrderResult {
@@ -68,7 +71,7 @@ async function nextOrderNumber(tx: Prisma.TransactionClient): Promise<string> {
 }
 
 export async function createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {
-  const { items, customer, paymentMethod, userId } = input
+  const { items, customer, paymentMethod, userId, discountCode } = input
   if (items.length === 0) throw new OrderError("EMPTY_CART", "El carrito está vacío")
 
   const { shipping } = await loadAllSettings()
@@ -170,6 +173,13 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0)
           const shippingCost = shippingCostFor(subtotal, shipping)
 
+          // Re-validate + atomically consume the discount. An invalid code is
+          // treated as "no discount" so the order still goes through.
+          const discount = discountCode
+            ? await consumeDiscountInTx(tx, discountCode, subtotal, shippingCost)
+            : null
+          const discountAmount = discount?.amount ?? 0
+
           return tx.order.create({
             data: {
               orderNumber: await nextOrderNumber(tx),
@@ -178,7 +188,9 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
               customerEmail: customer.email,
               subtotal,
               shippingCost,
-              total: subtotal + shippingCost,
+              discountCode: discount?.code ?? null,
+              discountAmount,
+              total: subtotal + shippingCost - discountAmount,
               paymentMethod,
               shippingAddress: customer as unknown as Prisma.InputJsonValue,
               items: { create: lineItems },
@@ -225,6 +237,8 @@ export interface OrderConfirmationDTO {
   paymentInFlight: boolean
   subtotal: number
   shippingCost: number
+  discountCode: string | null
+  discountAmount: number
   total: number
   createdAt: Date
   shippingAddress: ShippingData | null
@@ -242,6 +256,8 @@ const ORDER_DETAIL_SELECT = {
   paymentProviderId: true,
   subtotal: true,
   shippingCost: true,
+  discountCode: true,
+  discountAmount: true,
   total: true,
   createdAt: true,
   shippingAddress: true,
@@ -272,6 +288,8 @@ function toConfirmationDTO(order: OrderDetailRow): OrderConfirmationDTO {
       (order.paymentStatus === "PENDING" || order.paymentStatus === "PROCESSING"),
     subtotal: order.subtotal,
     shippingCost: order.shippingCost,
+    discountCode: order.discountCode,
+    discountAmount: order.discountAmount,
     total: order.total,
     createdAt: order.createdAt,
     shippingAddress: (order.shippingAddress as ShippingData | null) ?? null,

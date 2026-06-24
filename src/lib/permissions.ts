@@ -2,6 +2,7 @@ export type Resource =
   | "dashboard"
   | "products"
   | "categories"
+  | "discounts"
   | "orders"
   | "users"
   | "roles"
@@ -25,6 +26,7 @@ export const ALL_RESOURCES: Resource[] = [
   "dashboard",
   "products",
   "categories",
+  "discounts",
   "orders",
   "users",
   "roles",
@@ -56,6 +58,7 @@ export function getResourceLabel(resource: Resource): string {
     dashboard: "Dashboard",
     products: "Productos",
     categories: "Categorías",
+    discounts: "Descuentos",
     orders: "Pedidos",
     users: "Usuarios",
     roles: "Roles",

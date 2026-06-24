@@ -1,7 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
-import { Minus, Plus, Trash2 } from "lucide-react"
+import { Minus, Plus, Trash2, Tag, X } from "lucide-react"
+import { toast } from "sonner"
 import { useSettings, useFormatPrice } from "@/components/providers/settings-provider"
 import type { CartItem } from "@/lib/types"
 
@@ -11,11 +13,22 @@ interface CartSummaryItem extends Omit<CartItem, "selectedSize" | "selectedColor
   color?: string
 }
 
+/** A discount the customer applied at checkout (validated server-side). */
+export interface AppliedDiscount {
+  code: string
+  amount: number
+  freeShipping: boolean
+}
+
 interface CartSummaryProps {
   items: CartSummaryItem[]
   onUpdateQuantity: (id: string, quantity: number, size?: string, color?: string) => void
   onRemoveItem: (id: string, size?: string, color?: string) => void
   isEditable?: boolean
+  /** When true, shows the discount-code field and surfaces the applied code. */
+  enableDiscount?: boolean
+  discount?: AppliedDiscount | null
+  onDiscountChange?: (discount: AppliedDiscount | null) => void
 }
 
 export function CartSummary({
@@ -23,12 +36,44 @@ export function CartSummary({
   onUpdateQuantity,
   onRemoveItem,
   isEditable = true,
+  enableDiscount = false,
+  discount = null,
+  onDiscountChange,
 }: CartSummaryProps) {
   const { shipping } = useSettings()
   const formatPrice = useFormatPrice()
+  const [code, setCode] = useState("")
+  const [applying, setApplying] = useState(false)
+
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shippingCost = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
-  const total = subtotal + shippingCost
+  const baseShipping = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
+  const freeShipping = discount?.freeShipping ?? false
+  const shippingCost = freeShipping ? 0 : baseShipping
+  // Free-shipping codes zero the shipping line; others take an amount off subtotal.
+  const discountValue = discount && !discount.freeShipping ? discount.amount : 0
+  const total = subtotal + shippingCost - discountValue
+
+  async function applyDiscount() {
+    if (!code.trim()) return
+    setApplying(true)
+    try {
+      const res = await fetch("/api/discounts/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal }),
+      })
+      const data = await res.json()
+      if (!data.ok) {
+        toast.error(data.message ?? "Código inválido")
+        return
+      }
+      onDiscountChange?.({ code: data.code, amount: data.amount, freeShipping: data.freeShipping })
+      setCode("")
+      toast.success("Código aplicado")
+    } finally {
+      setApplying(false)
+    }
+  }
 
   return (
     <div className="bg-brand-surface-alt/50 rounded-2xl p-6 text-foreground">
@@ -98,22 +143,72 @@ export function CartSummary({
           </div>
         ))}
       </div>
+      {enableDiscount && (
+        <div className="border-t border-border pt-4 mb-2">
+          {discount ? (
+            <div className="flex items-center justify-between rounded-lg bg-green-50 px-3 py-2 text-sm">
+              <span className="flex items-center gap-1.5 font-medium text-green-700">
+                <Tag className="w-3.5 h-3.5" />
+                {discount.code}
+              </span>
+              <button
+                type="button"
+                onClick={() => onDiscountChange?.(null)}
+                aria-label="Quitar código"
+                className="text-green-700 hover:text-green-900"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    applyDiscount()
+                  }
+                }}
+                placeholder="Código de descuento"
+                className="flex-1 px-3 py-2 rounded-lg border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-brand-base/40"
+              />
+              <button
+                type="button"
+                onClick={applyDiscount}
+                disabled={applying || !code.trim()}
+                className="px-4 py-2 rounded-lg border border-brand-base text-brand-base text-sm font-medium hover:bg-brand-base hover:text-brand-on-base transition-colors disabled:opacity-50"
+              >
+                {applying ? "…" : "Aplicar"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       <div className="border-t border-border pt-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Subtotal</span>
           <span className="font-medium">{formatPrice(subtotal)}</span>
         </div>
+        {discountValue > 0 && (
+          <div className="flex justify-between text-sm text-green-600">
+            <span>Descuento ({discount?.code})</span>
+            <span className="font-medium">−{formatPrice(discountValue)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Envío</span>
           <span className="font-medium">
             {shippingCost === 0 ? "Gratis" : formatPrice(shippingCost)}
           </span>
         </div>
-        {shippingCost === 0 && (
+        {shippingCost === 0 && !freeShipping && (
           <p className="text-xs text-green-600">
             ¡Envío gratis por compras superiores a {formatPrice(shipping.freeThreshold)}!
           </p>
         )}
+        {freeShipping && <p className="text-xs text-green-600">¡Envío gratis con tu código!</p>}
         <div className="flex justify-between text-lg font-semibold pt-2 border-t border-border">
           <span>Total</span>
           <span className="text-brand-base">{formatPrice(total)}</span>

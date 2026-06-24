@@ -2874,7 +2874,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 **🟠 Fase B — Conversión y operación**
 
 ```
-[ ] B.1 Cupones / descuentos (modelo Discount: %, fijo, envío gratis) + UI checkout
+[x] B.1 Cupones / descuentos (Discount: %, fijo, envío gratis) + UI checkout  ✅ 2026-06-24
 [ ] B.2 Reviews reales (modelo Review; recalcular rating/reviewCount)
 [ ] B.3 Zonas de envío + IVA configurables
 [ ] B.4 Número de guía/tracking en pedido + email "enviado"
@@ -2964,6 +2964,42 @@ producto), y guarda `variantId` en el `OrderItem`. El restock en `markOrderFaile
 con stock → **201** y stock de esa variante 3→2 (las otras intactas); pedido de
 variante agotada → **400 OUT_OF_STOCK**; `OrderItem` guardó `variantId` y el
 **precio de la variante** (39.000, no el base 20.000). type-check + lint limpios.
+
+### B.1 — Cupones / descuentos ✅ (2026-06-24)
+
+> Códigos de descuento aplicables en el checkout: **% , monto fijo y envío
+> gratis**. Validados y consumidos **server-side** (nunca se confía en el cliente).
+
+**Modelo**: `Discount { code @unique, type (enum PERCENTAGE/FIXED/FREE_SHIPPING),
+value, minSubtotal?, maxRedemptions?, redemptions, isActive, startsAt?, endsAt? }`
+
+- `Order.discountCode/discountAmount` (snapshot auditable). Migración
+  `add_discounts`. Nuevo recurso de permisos `discounts` (otorgado a super_admin y
+  admin en seed + BD).
+
+**Lógica** (`src/lib/discounts.ts`): `validateDiscount` (read-only, para el
+preview) y `consumeDiscountInTx` (revalida + incrementa `redemptions` con guard
+`updateMany ... redemptions < max` dentro de la transacción del pedido, así un
+código con tope no se sobre-canjea). `computeDiscount` puro calcula el monto
+(% sobre subtotal, fijo topado al subtotal, o el costo de envío para envío gratis).
+
+**Checkout/pedidos** (`orders.ts`): `createOrder` acepta `discountCode`, lo
+consume server-side y guarda `discountCode`/`discountAmount`; `total = subtotal +
+envío − descuento`. Un código inválido se trata como "sin descuento" (no rompe el
+pedido). El DTO de confirmación y `OrderSummary` muestran la línea de descuento.
+
+**Storefront**: `checkout/cart-summary.tsx` tiene campo de código que llama a
+`POST /api/discounts/validate` (preview) y muestra la línea de descuento + total
+ajustado; el checkout envía `discountCode` en el pedido.
+
+**Admin**: nueva sección `/admin/descuentos` (en el sidebar, gated por permiso
+`discounts`) — crear códigos, activar/desactivar, ver usos y eliminar. APIs
+`/api/admin/discounts` (+`[id]`) con whitelist `pickDiscountInput` y 409 en código
+duplicado.
+
+**Verificado E2E**: validación 10% de 100.000 → 10.000; pedido real con código →
+**201**, `subtotal 40.000 + envío 10.000 − 4.000 = total 46.000`, `discountCode`
+guardado y `redemptions` 0→1. type-check + lint limpios.
 
 ---
 

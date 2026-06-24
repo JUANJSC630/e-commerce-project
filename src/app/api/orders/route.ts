@@ -12,6 +12,7 @@ interface OrderRequestBody {
   items?: unknown
   customer?: unknown
   paymentMethod?: unknown
+  discountCode?: unknown
 }
 
 function parseItems(raw: unknown): CreateOrderItemInput[] | null {
@@ -52,13 +53,14 @@ export async function POST(request: Request) {
   }
 
   const paymentMethod = typeof body.paymentMethod === "string" ? body.paymentMethod : "unknown"
+  const discountCode = typeof body.discountCode === "string" ? body.discountCode : undefined
 
   // Link the order to a logged-in customer so it shows in their history.
   const session = await getServerSession(authOptions)
   const userId = session && isCustomer(session.user.role.slug) ? session.user.id : undefined
 
   try {
-    const result = await createOrder({ items, customer, paymentMethod, userId })
+    const result = await createOrder({ items, customer, paymentMethod, userId, discountCode })
     // Send the "order received" email after responding so checkout stays fast.
     after(async () => {
       const order = await getOrderForConfirmation(result.id)

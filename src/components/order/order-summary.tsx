@@ -62,6 +62,12 @@ export async function OrderSummary({ order, showShipping = true }: OrderSummaryP
             <dt className="text-brand-muted">Subtotal</dt>
             <dd>{price(order.subtotal)}</dd>
           </div>
+          {order.discountAmount > 0 && (
+            <div className="flex justify-between text-green-600">
+              <dt>Descuento{order.discountCode ? ` (${order.discountCode})` : ""}</dt>
+              <dd>−{price(order.discountAmount)}</dd>
+            </div>
+          )}
           <div className="flex justify-between">
             <dt className="text-brand-muted">Envío</dt>
             <dd>{order.shippingCost === 0 ? "Gratis" : price(order.shippingCost)}</dd>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { CheckoutProgress } from "@/components/checkout/checkout-progress"
-import { CartSummary } from "@/components/checkout/cart-summary"
+import { CartSummary, type AppliedDiscount } from "@/components/checkout/cart-summary"
 import { ShippingForm } from "@/components/checkout/shipping-form"
 import { PaymentForm } from "@/components/checkout/payment-form"
 import { OrderConfirmation } from "@/components/checkout/order-confirmation"
@@ -37,6 +37,7 @@ export default function CheckoutPage() {
   const [shippingErrors, setShippingErrors] = useState<Record<string, string>>({})
   const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [discount, setDiscount] = useState<AppliedDiscount | null>(null)
 
   // Create cart item objects with the structure expected by CartSummary component
   const cartItemsForSummary = items.map((item) => ({
@@ -94,6 +95,7 @@ export default function CheckoutPage() {
             size: item.selectedSize,
             color: item.selectedColor,
           })),
+          discountCode: discount?.code,
           customer: shippingData,
           paymentMethod: paymentData.method,
         }),
@@ -151,6 +153,9 @@ export default function CheckoutPage() {
                       onUpdateQuantity={handleUpdateQuantity}
                       onRemoveItem={handleRemoveItem}
                       isEditable={true}
+                      enableDiscount
+                      discount={discount}
+                      onDiscountChange={setDiscount}
                     />
                     <div className="mt-6">
                       <Button onClick={() => setCurrentStep(2)} className="w-full" size="lg">
@@ -224,6 +229,9 @@ export default function CheckoutPage() {
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemoveItem={handleRemoveItem}
                 isEditable={false}
+                enableDiscount
+                discount={discount}
+                onDiscountChange={setDiscount}
               />
             </div>
           </div>

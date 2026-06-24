@@ -138,8 +138,10 @@ async function main() {
   for (const setting of settings) {
     const { node, broken } = repairJson(setting.value)
     if (broken.length === 0) continue
-    for (const from of broken) fixes.push({ scope: `setting:${setting.key}`, label: setting.key, from })
-    if (APPLY) await prisma.setting.update({ where: { key: setting.key }, data: { value: node as object } })
+    for (const from of broken)
+      fixes.push({ scope: `setting:${setting.key}`, label: setting.key, from })
+    if (APPLY)
+      await prisma.setting.update({ where: { key: setting.key }, data: { value: node as object } })
   }
 
   // --- Reporte ------------------------------------------------------------

@@ -1,3 +1,9 @@
+/** A single gallery photo as the storefront consumes it. */
+export interface ProductImageDto {
+  url: string
+  alt?: string
+}
+
 export interface Product {
   id: string
   name: string
@@ -5,6 +11,8 @@ export interface Product {
   image: string
   /** Alt text for the image (a11y/SEO). Falls back to the product name when empty. */
   imageAlt?: string
+  /** Additional gallery photos (ordered). The detail page shows the cover first, then these. */
+  images?: ProductImageDto[]
   originalPrice?: number
   rating?: number
   reviewCount?: number

@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-13 (Bloque 14 completo salvo E2E; auditorías Sec.4/5 hechas; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-24 (Bloque 15 iniciado — paridad Shopify; A.1 galería ✅. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -27,14 +27,16 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ### Storefront → Backend (alta prioridad)
 
-| Problema                         | Detalle                                                                             |
-| -------------------------------- | ----------------------------------------------------------------------------------- |
-| ~~Productos desde mock-data~~ ✅ | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`      |
-| ~~Checkout no guarda pedido~~ ✅ | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                  |
-| Imágenes placeholder             | Todos los productos usan imágenes locales o `/placeholder.svg`                      |
-| ~~Sin stock real~~ ✅            | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB         |
-| ~~Categorías hardcoded~~ ✅      | Resuelto: modelo `Category` + admin CRUD + `/category/[slug]` dinámico (Bloque 9.6) |
-| ~~Tema editado no se aplica~~ ✅ | Resuelto: `ThemeStyle` inyecta el tema de la DB (scopeado, validado) — Bloque 9.7   |
+| Problema                          | Detalle                                                                             |
+| --------------------------------- | ----------------------------------------------------------------------------------- |
+| ~~Productos desde mock-data~~ ✅  | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`      |
+| ~~Checkout no guarda pedido~~ ✅  | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                  |
+| ~~1 sola imagen por producto~~ ✅ | Resuelto: portada + galería `ProductImage[]` (Bloque 15 A.1)                        |
+| Sin variantes reales              | `sizes[]`/`colors[]` sueltos + stock global → riesgo de sobreventa (Bloque 15 A.2)  |
+| Imágenes placeholder              | Faltan fotos reales de productos (Bloque 15 A.3)                                    |
+| ~~Sin stock real~~ ✅             | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB         |
+| ~~Categorías hardcoded~~ ✅       | Resuelto: modelo `Category` + admin CRUD + `/category/[slug]` dinámico (Bloque 9.6) |
+| ~~Tema editado no se aplica~~ ✅  | Resuelto: `ThemeStyle` inyecta el tema de la DB (scopeado, validado) — Bloque 9.7   |
 
 ### Código con bugs menores
 
@@ -2826,6 +2828,99 @@ shipping-DB, pago-fallido, rate-limit, polling PSE, ownership, login-claiming,
 PaymentLog UI, stock bajo, simulate gate, dead code, Media Manager, paginación),
 auditorías Sec.4 (admin APIs + fix mass-assignment) y Sec.5 (flujo de pagos, sin
 hallazgos), e infraestructura de emails transaccionales (4/5).
+
+---
+
+## 🛍️ Bloque 15 — Paridad con Shopify (catálogo, conversión, operación)
+
+> Iniciado 2026-06-24. Investigación de features de Shopify cruzada contra el
+> código actual para cerrar brechas y dar más facilidades a clientes y admins.
+> Se ejecuta **por fases en orden**; cada fase se documenta aquí al cerrarse.
+
+### Análisis de brechas (resumen)
+
+**Referencia Shopify** (fuentes: help.shopify.com, shopify.com/blog 2026):
+
+- **Imágenes**: hasta **250 medios** por producto (imágenes + video + 3D); **1
+  imagen por variante** (al elegir color cambia la foto).
+- **Variantes**: hasta **2.048 variantes** y **3 opciones** por producto; cada
+  variante con su propio stock, precio, SKU y código de barras.
+- **Inventario**: multi-ubicación, order routing, transferencias, stock por
+  ubicación.
+- **Organización**: colecciones manuales **y** automáticas (smart, por
+  condiciones), tags, metafields (datos estructurados).
+- **Checkout**: cupones (código) y descuentos automáticos (%, fijo, BXGY, envío
+  gratis), combinables; gift cards multi-moneda.
+- **Storefront**: reviews 1-5★, wishlist, back-in-stock/preorder.
+- **Envíos/impuestos**: zonas y tarifas por región/peso/precio, IVA/landed cost.
+- **Marketing**: carrito abandonado (email/SMS), segmentación, automatizaciones.
+
+### Brecha más grande detectada: **no hay variantes reales**
+
+`Product.sizes[]`/`colors[]` son listas de texto sueltas y `stock` es **único y
+global**. No se puede saber cuántas unidades quedan por talla×color → riesgo de
+**sobreventa**. Es el cimiento a construir (Fase A.2).
+
+### Plan por fases
+
+**🔴 Fase A — Cimientos del catálogo**
+
+```
+[x] A.1 Galería de imágenes (ProductImage[])  ✅ Completado 2026-06-24
+[ ] A.2 Variantes reales (ProductVariant: talla×color, stock/precio/SKU/imagen propios)
+[ ] A.3 Cargar imágenes reales de productos (migrar de placeholder)
+```
+
+**🟠 Fase B — Conversión y operación**
+
+```
+[ ] B.1 Cupones / descuentos (modelo Discount: %, fijo, envío gratis) + UI checkout
+[ ] B.2 Reviews reales (modelo Review; recalcular rating/reviewCount)
+[ ] B.3 Zonas de envío + IVA configurables
+[ ] B.4 Número de guía/tracking en pedido + email "enviado"
+[ ] B.5 Acciones masivas en admin de pedidos + import/export CSV de productos
+[ ] B.6 Back-in-stock ("avísame cuando vuelva")
+```
+
+**🟢 Fase C — Crecimiento**
+
+```
+[ ] C.1 Colecciones automáticas (smart, por condiciones)
+[ ] C.2 Analytics GA4 + Meta Pixel + OG por producto (= Bloque 12)
+[ ] C.3 Gift cards, multi-ubicación, preventa, guía de tallas, metafields/tags
+```
+
+### A.1 — Galería de imágenes ✅ (2026-06-24)
+
+> El producto pasó de **1 imagen** a **portada + galería ordenada**. Retro-
+> compatible: `Product.image` sigue siendo la portada (thumbnail de las cards);
+> la galería son fotos adicionales del detalle.
+
+**Modelo**: nuevo `ProductImage { id, productId, url, alt?, position }` (cascade
+on delete del producto) + relación `Product.images`. Migración
+`20260624212405_add_product_images`.
+
+**Data layer** (`src/lib/products.ts`): `STOREFRONT_SELECT` incluye `images`
+(ordenadas por `position`); `toProduct` las mapea a `Product.images` (tipo
+`ProductImageDto` en `types.ts`).
+
+**Storefront** (`product-detail.tsx`): galería compuesta `[portada, ...extra]`
+deduplicada por URL; imagen principal + tira de miniaturas (solo si hay >1 foto),
+con estado de imagen activa y accesibilidad (`aria-pressed`, labels).
+
+**Admin**: nuevo `GalleryUploadField` (subir varias vía UploadThing, elegir de la
+biblioteca, reordenar con flechas, quitar; ignora duplicados). El `ProductForm`
+maneja `images: string[]` y lo envía en el body.
+
+**API** (`/api/admin/products` POST + `[id]` PUT/PATCH/DELETE): `pickGalleryUrls`
+parsea el array; create usa nested `images.create`; update reemplaza las filas en
+transacción (`deleteMany` + `createMany`) y **limpia de UploadThing** las fotos
+huérfanas (portada reemplazada + galería ya no referenciada); delete borra los
+archivos de portada + galería.
+
+**Verificado**: type-check + lint limpios; detalle de producto HTTP 200; prueba
+con 2 imágenes insertadas → renderiza 3 miniaturas (portada + 2). Pendiente real:
+cargar fotos reales desde el admin (A.3).
 
 ---
 

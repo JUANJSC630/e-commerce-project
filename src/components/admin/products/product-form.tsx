@@ -3,8 +3,9 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import type { Product } from "@prisma/client"
+import type { Product, ProductImage } from "@prisma/client"
 import { ImageUploadField } from "@/components/admin/media/image-upload-field"
+import { GalleryUploadField } from "@/components/admin/media/gallery-upload-field"
 
 interface CategoryOption {
   id: string
@@ -13,7 +14,7 @@ interface CategoryOption {
 }
 
 interface ProductFormProps {
-  product?: Product
+  product?: (Product & { images?: ProductImage[] }) | null
   categories: CategoryOption[]
 }
 
@@ -37,6 +38,14 @@ export function ProductForm({ product, categories }: ProductFormProps) {
     isFeatured: product?.isFeatured ?? false,
     isPublished: product?.isPublished ?? true,
   })
+
+  // Extra gallery photos (ordered URLs), kept separate from the form scalar fields.
+  const [gallery, setGallery] = useState<string[]>(
+    (product?.images ?? [])
+      .slice()
+      .sort((a, b) => a.position - b.position)
+      .map((img) => img.url),
+  )
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -74,6 +83,8 @@ export function ProductForm({ product, categories }: ProductFormProps) {
       isNew: form.isNew,
       isFeatured: form.isFeatured,
       isPublished: form.isPublished,
+      // Gallery is a relation; the API replaces ProductImage rows from this list.
+      images: gallery,
     }
 
     const url = isEditing ? `/api/admin/products/${product!.id}` : "/api/admin/products"
@@ -180,6 +191,10 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               placeholder="Descripción de la imagen (vacío = usar el nombre del producto)"
               className={inputClass}
             />
+          </Field>
+
+          <Field label="Galería (imágenes adicionales)">
+            <GalleryUploadField value={gallery} onChange={setGallery} />
           </Field>
 
           <Field label="Descripción">

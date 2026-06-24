@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
-import { pickProductInput } from "@/lib/product-input"
+import { pickProductInput, pickGalleryUrls } from "@/lib/product-input"
 import { revalidateProducts } from "@/lib/products"
 
 export async function GET() {
@@ -35,7 +35,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nombre y precio son requeridos" }, { status: 400 })
   }
 
-  const product = await prisma.product.create({ data: pickProductInput(body) })
+  const gallery = pickGalleryUrls(body) ?? []
+  const product = await prisma.product.create({
+    data: {
+      ...pickProductInput(body),
+      images: { create: gallery.map((url, position) => ({ url, position })) },
+    },
+  })
   revalidateProducts()
   return NextResponse.json(product, { status: 201 })
 }

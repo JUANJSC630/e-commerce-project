@@ -34,3 +34,22 @@ export function pickProductInput(body: unknown): Prisma.ProductUncheckedCreateIn
   }
   return data as Prisma.ProductUncheckedCreateInput
 }
+
+/**
+ * Parses the gallery field (`body.images`) into an ordered, de-duplicated list of
+ * image URLs. Accepts an array of strings or `{ url }` objects; ignores anything
+ * else. The cover (`image`) is handled separately — these are only the extras.
+ * Returns `null` when `images` is absent, signalling "leave the gallery untouched".
+ */
+export function pickGalleryUrls(body: unknown): string[] | null {
+  const source = (typeof body === "object" && body !== null ? body : {}) as Record<string, unknown>
+  if (!("images" in source)) return null
+  const raw = source.images
+  if (!Array.isArray(raw)) return []
+  const urls: string[] = []
+  for (const item of raw) {
+    const url = typeof item === "string" ? item : (item as { url?: unknown })?.url
+    if (typeof url === "string" && url.trim() && !urls.includes(url)) urls.push(url.trim())
+  }
+  return urls
+}

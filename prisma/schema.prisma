@@ -111,8 +111,26 @@ model Product {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   orderItems    OrderItem[]
+  // Gallery shown on the product detail page. `image` above stays the cover
+  // (card thumbnail); these are the additional ordered photos.
+  images        ProductImage[]
 
   @@index([categoryId])
+}
+
+/// Additional gallery photos for a product, ordered by `position`. The product's
+/// `image` column remains the cover/thumbnail; the storefront detail page renders
+/// the cover first, then these. Deleted in cascade with the product.
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
 }
 
 model Order {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -38,6 +38,21 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
   const [selectedSize, setSelectedSize] = useState<string | undefined>(product.sizes?.[0])
   const [selectedColor, setSelectedColor] = useState<string | undefined>(product.colors?.[0])
   const [quantity, setQuantity] = useState(1)
+
+  // Cover first, then the ordered gallery (deduped by URL). Falls back to a
+  // single image when the product has no extra photos.
+  const gallery = useMemo(() => {
+    const cover = {
+      url: product.image || "/placeholder.svg",
+      alt: product.imageAlt || product.name,
+    }
+    const extra = (product.images ?? [])
+      .filter((img) => img.url && img.url !== cover.url)
+      .map((img) => ({ url: img.url, alt: img.alt || product.name }))
+    return [cover, ...extra]
+  }, [product])
+  const [activeImage, setActiveImage] = useState(0)
+  const active = gallery[activeImage] ?? gallery[0]
 
   const discountPct = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -95,26 +110,55 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
 
         {/* Main product grid */}
         <div className="grid md:grid-cols-2 gap-8 lg:gap-14 items-start">
-          {/* Image */}
-          <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-brand-surface shadow-sm border border-border">
-            {product.isNew && (
-              <Badge variant="new" className="absolute top-4 left-4 z-10">
-                Nuevo
-              </Badge>
+          {/* Gallery */}
+          <div className="flex flex-col gap-3">
+            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-brand-surface shadow-sm border border-border">
+              {product.isNew && (
+                <Badge variant="new" className="absolute top-4 left-4 z-10">
+                  Nuevo
+                </Badge>
+              )}
+              {product.isOnSale && discountPct > 0 && (
+                <Badge variant="discount" className="absolute top-4 left-4 z-10">
+                  -{discountPct}%
+                </Badge>
+              )}
+              <Image
+                src={active.url}
+                alt={active.alt}
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
+
+            {/* Thumbnails — only when there's more than one photo */}
+            {gallery.length > 1 && (
+              <div
+                className="grid grid-cols-5 gap-2"
+                role="group"
+                aria-label="Imágenes del producto"
+              >
+                {gallery.map((img, i) => (
+                  <button
+                    key={img.url + i}
+                    type="button"
+                    onClick={() => setActiveImage(i)}
+                    aria-label={`Ver imagen ${i + 1}`}
+                    aria-pressed={i === activeImage}
+                    className={cn(
+                      "relative aspect-square rounded-lg overflow-hidden border-2 transition-all bg-brand-surface",
+                      i === activeImage
+                        ? "border-brand-base ring-1 ring-brand-base"
+                        : "border-border hover:border-brand-muted",
+                    )}
+                  >
+                    <Image src={img.url} alt={img.alt} fill className="object-cover" sizes="80px" />
+                  </button>
+                ))}
+              </div>
             )}
-            {product.isOnSale && discountPct > 0 && (
-              <Badge variant="discount" className="absolute top-4 left-4 z-10">
-                -{discountPct}%
-              </Badge>
-            )}
-            <Image
-              src={product.image || "/placeholder.svg"}
-              alt={product.imageAlt || product.name}
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
           </div>
 
           {/* Info */}

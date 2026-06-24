@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import type { Product } from "@prisma/client"
-import { Pencil, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { Pencil, Trash2, Search, ChevronLeft, ChevronRight, Download, Upload } from "lucide-react"
 import { isLowStock, isOutOfStock } from "@/lib/inventory"
 
 type StockFilter = "low" | "out"
@@ -40,6 +40,8 @@ export function ProductsTable({
   const [isPending, startTransition] = useTransition()
   const totalPages = Math.ceil(total / perPage)
 
+  const [importMsg, setImportMsg] = useState<string | null>(null)
+
   function navigate(overrides: { q?: string; stock?: StockFilter; page?: number }) {
     const params = new URLSearchParams()
     const q = overrides.q ?? search
@@ -72,6 +74,23 @@ export function ProductsTable({
       body: JSON.stringify({ [field]: !current }),
     })
     startTransition(() => router.refresh())
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImportMsg(null)
+    const form = new FormData()
+    form.append("file", file)
+    const res = await fetch("/api/admin/products/import", { method: "POST", body: form })
+    const data = await res.json()
+    if (res.ok) {
+      setImportMsg(`Importación: ${data.created} creados, ${data.updated} actualizados`)
+      startTransition(() => router.refresh())
+    } else {
+      setImportMsg(`Error: ${data.error}`)
+    }
+    e.target.value = ""
   }
 
   return (
@@ -107,8 +126,30 @@ export function ProductsTable({
               {tab.label}
             </button>
           ))}
+          <span className="w-px bg-slate-200 mx-1" />
+          <a
+            href="/api/admin/products/export"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            download
+          >
+            <Download className="h-3.5 w-3.5" /> CSV
+          </a>
+          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
+            <Upload className="h-3.5 w-3.5" /> Importar
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleImport}
+              className="sr-only"
+            />
+          </label>
         </div>
       </div>
+      {importMsg && (
+        <p className={`text-sm px-1 ${importMsg.startsWith("Error") ? "text-red-600" : "text-green-600"}`}>
+          {importMsg}
+        </p>
+      )}
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { hasPermission } from "@/lib/permissions"
 import type { Permissions } from "@/lib/permissions"
+import { OrdersBulkTable } from "@/components/admin/orders/orders-bulk-table"
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "Pendiente",
@@ -93,105 +94,43 @@ export default async function AdminPedidosPage({
         ))}
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Pedido</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Cliente</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Items</th>
-                <th className="text-right px-4 py-3 font-medium text-slate-500">Total</th>
-                <th className="text-center px-4 py-3 font-medium text-slate-500">Estado</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Fecha</th>
-                {canUpdate && (
-                  <th className="text-right px-4 py-3 font-medium text-slate-500">Acciones</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {orders.length === 0 ? (
-                <tr>
-                  <td colSpan={canUpdate ? 7 : 6} className="text-center py-10 text-slate-400">
-                    No hay pedidos
-                  </td>
-                </tr>
-              ) : (
-                orders.map((order, i) => (
-                  <tr
-                    key={order.id}
-                    className={`hover:bg-slate-50 transition-colors ${i !== orders.length - 1 ? "border-b border-slate-100" : ""}`}
-                  >
-                    <td className="px-4 py-3 font-mono text-xs text-slate-600">
-                      {order.orderNumber}
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-slate-900">
-                        {order.customerName ?? "Sin nombre"}
-                      </p>
-                      <p className="text-xs text-slate-400">{order.customerEmail}</p>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500">
-                      {order._count.items} {order._count.items === 1 ? "ítem" : "ítems"}
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900">
-                      ${order.total.toLocaleString("es-AR")}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full ${STATUS_COLORS[order.status]}`}
-                      >
-                        {STATUS_LABELS[order.status]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-400 text-xs">
-                      {new Date(order.createdAt).toLocaleDateString("es-AR")}
-                    </td>
-                    {canUpdate && (
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/admin/pedidos/${order.id}`}
-                          className="text-xs text-indigo-600 hover:underline font-medium"
-                        >
-                          Ver →
-                        </Link>
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* Orders table with bulk actions */}
+      <OrdersBulkTable
+        orders={orders.map((o) => ({
+          ...o,
+          createdAt: o.createdAt.toISOString(),
+        }))}
+        canUpdate={canUpdate}
+        statusLabels={STATUS_LABELS}
+        statusColors={STATUS_COLORS}
+      />
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-500">
-              {(page - 1) * take + 1}–{Math.min(page * take, total)} de {total}
-            </p>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/admin/pedidos?${validStatus ? `status=${validStatus}&` : ""}page=${page - 1}`}
-                  className="px-3 py-1 text-xs border border-slate-200 rounded-lg hover:bg-slate-50"
-                >
-                  ← Anterior
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/admin/pedidos?${validStatus ? `status=${validStatus}&` : ""}page=${page + 1}`}
-                  className="px-3 py-1 text-xs border border-slate-200 rounded-lg hover:bg-slate-50"
-                >
-                  Siguiente →
-                </Link>
-              )}
-            </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="px-4 py-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
+          <p className="text-xs text-slate-500">
+            {(page - 1) * take + 1}–{Math.min(page * take, total)} de {total}
+          </p>
+          <div className="flex gap-2">
+            {page > 1 && (
+              <Link
+                href={`/admin/pedidos?${validStatus ? `status=${validStatus}&` : ""}page=${page - 1}`}
+                className="px-3 py-1 text-xs border border-slate-200 rounded-lg hover:bg-slate-50"
+              >
+                ← Anterior
+              </Link>
+            )}
+            {page < totalPages && (
+              <Link
+                href={`/admin/pedidos?${validStatus ? `status=${validStatus}&` : ""}page=${page + 1}`}
+                className="px-3 py-1 text-xs border border-slate-200 rounded-lg hover:bg-slate-50"
+              >
+                Siguiente →
+              </Link>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

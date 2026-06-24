@@ -2877,8 +2877,8 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] B.1 Cupones / descuentos (Discount: %, fijo, envío gratis) + UI checkout  ✅ 2026-06-24
 [x] B.2 Reviews reales (modelo Review; recalcula rating/reviewCount)  ✅ 2026-06-24
 [x] B.3 Zonas de envío + IVA configurables  ✅ 2026-06-24
-[ ] B.4 Número de guía/tracking en pedido + email "enviado"
-[ ] B.5 Acciones masivas en admin de pedidos + import/export CSV de productos
+[x] B.4 Número de guía/tracking en pedido + email "enviado"  ✅ 2026-06-24
+[x] B.5 Acciones masivas en admin de pedidos + import/export CSV de productos  ✅ 2026-06-24
 [ ] B.6 Back-in-stock ("avísame cuando vuelva")
 ```
 

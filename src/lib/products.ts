@@ -143,6 +143,42 @@ export const getFeaturedProducts = unstable_cache(
   CACHE,
 )
 
+/**
+ * Best sellers ranked by real units sold (sum of OrderItem quantities). When
+ * there aren't enough products with sales yet, the list is padded with featured
+ * then newest products so the section is never sparse on a young store.
+ */
+export const getBestSellingProducts = unstable_cache(
+  async (limit = 8): Promise<Product[]> => {
+    const grouped = await prisma.orderItem.groupBy({
+      by: ["productId"],
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: "desc" } },
+      take: limit,
+    })
+    const rankedIds = grouped.map((g) => g.productId)
+
+    // Fetch the ranked products and restore the sales order (queryProducts also
+    // drops any that became unpublished).
+    const ranked = rankedIds.length ? await getProductsByIds(rankedIds) : []
+    const byId = new Map(ranked.map((p) => [p.id, p]))
+    const ordered = rankedIds.map((id) => byId.get(id)).filter((p): p is Product => Boolean(p))
+
+    if (ordered.length >= limit) return ordered.slice(0, limit)
+
+    // Pad with featured-then-newest products not already shown.
+    const have = new Set(ordered.map((p) => p.id))
+    const fillers = await queryProducts({
+      where: { id: { notIn: ordered.length ? [...have] : ["__none__"] } },
+      orderBy: [{ isFeatured: "desc" }, NEWEST_FIRST],
+      take: limit - ordered.length,
+    })
+    return [...ordered, ...fillers].slice(0, limit)
+  },
+  ["best-selling-products"],
+  CACHE,
+)
+
 const getRelatedBySlug = unstable_cache(
   (slug: string, excludeId: string, limit: number): Promise<Product[]> =>
     queryProducts({

@@ -3038,7 +3038,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] E.1 WhatsApp flotante (botón fijo bottom-right, link wa.me con mensaje pre-escrito)  ✅ 2026-06-24
 [x] E.2 Badge % descuento en product cards (badge -XX% cuando hay ahorro real)  ✅ 2026-06-24
 [x] E.3 Hover swap en product cards (muestra 2da imagen de galería al hover)  ✅ 2026-06-24
-[ ] E.4 Sección "Más Vendidos" en home (ordenar por ventas/popularidad)
+[x] E.4 Sección "Más Vendidos" en home (ordenar por ventas/popularidad)  ✅ 2026-06-24
 [ ] E.5 Quick add-to-cart en product cards (botón "Agregar" directo, sin ir al detalle)
 [ ] E.6 Cookie consent banner (cumplimiento legal Colombia, localStorage)
 [ ] E.7 Instagram feed embebido en home (API o embed estático)
@@ -3068,6 +3068,9 @@ price`), consistente con el precio tachado (antes exigía además `isOnSale`).
 - **E.3 Hover swap** ✅ — `ProductCard` superpone la primera foto de galería
   distinta de la portada (`product.images`) con fade en `group-hover`; sin
   galería se comporta igual que antes (solo zoom de la portada).
+- **E.4 Más vendidos** ✅ — `getBestSellingProducts` rankea por unidades vendidas
+  reales (`groupBy` de `OrderItem._sum.quantity`) y rellena con destacados/
+  recientes si faltan; sección `BestSellers` en la home entre destacados y género.
 
 ### A.1 — Galería de imágenes ✅ (2026-06-24)
 

@@ -5,10 +5,11 @@ import { CategoryPills } from "@/components/home/category-pills"
 import { CategoriesSection } from "@/components/home/categories-section"
 import { BrandPromise } from "@/components/home/brand-promise"
 import { FeaturedProducts } from "@/components/home/featured-products"
+import { BestSellers } from "@/components/home/best-sellers"
 import { GenderSection } from "@/components/home/gender-section"
 import { SeoContent } from "@/components/home/seo-content"
 import { routes } from "@/config/store.config"
-import { getFeaturedProducts, getProductsByCategory } from "@/lib/products"
+import { getBestSellingProducts, getFeaturedProducts, getProductsByCategory } from "@/lib/products"
 import { loadAllSettings } from "@/lib/settings"
 import { getActiveCategories } from "@/lib/categories"
 import { pageMetadata } from "@/lib/seo"
@@ -23,8 +24,9 @@ export default async function HomePage() {
   const { heroBanners, featuredCategories, homeFeatures, copy } = homeContent
   const { hero, categories, promise, products } = copy
 
-  const [featuredProducts, boysProducts, girlsProducts] = await Promise.all([
+  const [featuredProducts, bestSellers, boysProducts, girlsProducts] = await Promise.all([
     getFeaturedProducts(products.limit),
+    getBestSellingProducts(8),
     getProductsByCategory("boys"),
     getProductsByCategory("girls"),
   ])
@@ -64,6 +66,7 @@ export default async function HomePage() {
         viewAllLabel={products.viewAllLabel}
         viewAllMobileLabel={products.viewAllMobileLabel}
       />
+      <BestSellers products={bestSellers} />
       <GenderSection
         title="Esenciales por Género"
         tabs={[

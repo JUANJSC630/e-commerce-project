@@ -12,6 +12,7 @@ import { ThemeStyle } from "@/components/theme/theme-style"
 import { FontStyle } from "@/components/theme/font-style"
 import { NewsletterPopup } from "@/components/home/newsletter-popup"
 import { WhatsAppFloat } from "@/components/layout/whatsapp-float"
+import { CookieConsent } from "@/components/layout/cookie-consent"
 
 const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
 
@@ -40,6 +41,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             <Footer navItems={navItems} />
             <NewsletterPopup />
             <WhatsAppFloat />
+            <CookieConsent />
           </FavoritesProvider>
         </CartProvider>
       </div>

@@ -3040,7 +3040,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] E.3 Hover swap en product cards (muestra 2da imagen de galería al hover)  ✅ 2026-06-24
 [x] E.4 Sección "Más Vendidos" en home (ordenar por ventas/popularidad)  ✅ 2026-06-24
 [x] E.5 Quick add-to-cart en product cards (botón "Agregar" directo, sin ir al detalle)  ✅ 2026-06-24
-[ ] E.6 Cookie consent banner (cumplimiento legal Colombia, localStorage)
+[x] E.6 Cookie consent banner (cumplimiento legal Colombia, localStorage)  ✅ 2026-06-24
 [ ] E.7 Instagram feed embebido en home (API o embed estático)
 [ ] E.8 Blog básico (modelo Post + /blog + 2-3 artículos SEO de crianza)
 [ ] E.9 Logos de métodos de pago en footer (Visa, MC, AmEx, MercadoPago, PSE)
@@ -3075,6 +3075,9 @@ price`), consistente con el precio tachado (antes exigía además `isOnSale`).
   mini-cart) cuando el producto no tiene variantes/tallas/colores y hay stock;
   si requiere elegir → CTA "Elegir opciones" al detalle (no se elige talla por el
   cliente en silencio); agotado → "Ver producto".
+- **E.6 Cookie consent** ✅ — `CookieConsent` (banner inferior, client-only tras
+  mount para evitar hydration mismatch) recuerda la aceptación en localStorage;
+  copy referencia la Ley 1581/2012. Montado en el layout de tienda.
 
 ### A.1 — Galería de imágenes ✅ (2026-06-24)
 

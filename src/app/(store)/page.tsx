@@ -7,6 +7,7 @@ import { BrandPromise } from "@/components/home/brand-promise"
 import { FeaturedProducts } from "@/components/home/featured-products"
 import { BestSellers } from "@/components/home/best-sellers"
 import { GenderSection } from "@/components/home/gender-section"
+import { InstagramFeed } from "@/components/home/instagram-feed"
 import { SeoContent } from "@/components/home/seo-content"
 import { routes } from "@/config/store.config"
 import { getBestSellingProducts, getFeaturedProducts, getProductsByCategory } from "@/lib/products"
@@ -20,7 +21,7 @@ export function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const [settings, activeCategories] = await Promise.all([loadAllSettings(), getActiveCategories()])
-  const { homeContent, brand } = settings
+  const { homeContent, brand, social } = settings
   const { heroBanners, featuredCategories, homeFeatures, copy } = homeContent
   const { hero, categories, promise, products } = copy
 
@@ -36,6 +37,15 @@ export default async function HomePage() {
     label: cat.name,
     href: `${routes.categoryBase}/${cat.slug}`,
   }))
+
+  // Shoppable Instagram tiles from real product photos (deduped, no placeholders).
+  const instagramPosts = [...bestSellers, ...featuredProducts]
+    .filter(
+      (p, i, arr) =>
+        p.image && p.image !== "/placeholder.svg" && arr.findIndex((q) => q.id === p.id) === i,
+    )
+    .slice(0, 6)
+    .map((p) => ({ image: p.image, href: `/products/${p.id}`, alt: p.name }))
 
   return (
     <main>
@@ -74,6 +84,7 @@ export default async function HomePage() {
           { label: "Niñas", products: girlsProducts },
         ]}
       />
+      <InstagramFeed instagram={social.instagram} posts={instagramPosts} />
       <SeoContent brandName={brand.name} />
     </main>
   )

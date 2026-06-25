@@ -3041,7 +3041,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] E.4 Sección "Más Vendidos" en home (ordenar por ventas/popularidad)  ✅ 2026-06-24
 [x] E.5 Quick add-to-cart en product cards (botón "Agregar" directo, sin ir al detalle)  ✅ 2026-06-24
 [x] E.6 Cookie consent banner (cumplimiento legal Colombia, localStorage)  ✅ 2026-06-24
-[ ] E.7 Instagram feed embebido en home (API o embed estático)
+[x] E.7 Instagram feed embebido en home (grid shoppable + CTA al perfil)  ✅ 2026-06-24
 [ ] E.8 Blog básico (modelo Post + /blog + 2-3 artículos SEO de crianza)
 [ ] E.9 Logos de métodos de pago en footer (Visa, MC, AmEx, MercadoPago, PSE)
 [ ] E.10 Testimonios con foto en home (extraer reseñas destacadas con imagen)
@@ -3078,6 +3078,10 @@ price`), consistente con el precio tachado (antes exigía además `isOnSale`).
 - **E.6 Cookie consent** ✅ — `CookieConsent` (banner inferior, client-only tras
   mount para evitar hydration mismatch) recuerda la aceptación en localStorage;
   copy referencia la Ley 1581/2012. Montado en el layout de tienda.
+- **E.7 Instagram feed** ✅ — `InstagramFeed` (grid "shoppable" de fotos reales de
+  producto que enlazan al producto + CTA al perfil de `social.instagram`,
+  parseando handle o URL). Se oculta sin handle o sin fotos reales (se activa con
+  A.3). Sin API externa: honesto, sin posts falsos.
 
 ### A.1 — Galería de imágenes ✅ (2026-06-24)
 

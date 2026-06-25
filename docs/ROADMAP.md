@@ -1,6 +1,6 @@
 # Roadmap - Dulce Infancia Shop
 
-> Actualizado: 2026-06-24 (Bloque 15 - paridad Shopify; Fase A ✅ (A.1/A.2), Fase B ✅, **Fase C ✅** (C.1 smart collections, C.2 analytics, C.3a/b/c; gift cards/multi-ubicación/metafields = bloques futuros), Fase D ✅, Fase E ✅. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅ | Build prod ✅ 94/94
+> Actualizado: 2026-06-25 (Bloque 15 - paridad Shopify completo: Fase A ✅ (A.1/A.2), B ✅, C ✅, D ✅, E ✅. Sesión de pulido UI+Admin (logos pago, galería con lupa/expandir, cards configurables, health-check de pagos). Backlog: UX-9/UX-10, Bloque 16 escalabilidad. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅ | Build prod ✅ 94/94
 > **Objetivo final**: e-commerce 100% administrable - productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -3347,6 +3347,57 @@ de IVA; `OrderSummary` muestra IVA en la confirmación.
 IVA 19% incluido → `taxAmount 6.387` (=40.000−40.000/1,19), `total 45.000`
 (subtotal+envío, IVA no se suma). type-check + lint limpios. Config de prueba
 reseteada a defaults (sin zonas, IVA 0).
+
+---
+
+## ✨ Sesión de pulido UI + Admin — 2026-06-25
+
+> Ajustes de diseño/UX a partir de feedback visual y verificación de pagos.
+> Todo verificado (type-check + lint + build) y commiteado en `master`.
+
+**Storefront — catálogo y producto:**
+
+- **Medios de pago como logos** ✅ — el footer pasó de chips de texto a logos de
+  marca en sus colores (Visa, círculos de Mastercard, Amex, Mercado Pago, PSE,
+  Nequi) vía marcas inline (sin assets de terceros). Extraído a componente
+  reutilizable **`LogoBadge`** (`ui/`, `className` mergeable con `cn`).
+- **Bloque SEO del home rediseñado** ✅ — mismo contenido y encabezados (H2/H3,
+  valor SEO intacto) pero con header centrado + gradiente/acentos + tarjetas con
+  iconos (antes era texto plano apilado).
+- **Product cards simplificadas** ✅ — se quitaron las filas etiquetadas "Tallas:"
+  (chips +N) y "Colores:"; quedan categoría · nombre · rating · precio · swatches
+  sutiles de color · CTA. Tipografía escalada/responsiva.
+- **Ancho de cards configurable en todo el storefront** ✅ — el setting
+  Configuración→Tema "Tamaño de tarjetas" ahora aplica también al home
+  (destacados/más vendidos/género) y a ofertas/favoritos/búsqueda (antes solo
+  categorías/productos). Mapeos de columnas ensanchados (medium default: xl 4→3).
+- **Galería de producto** ✅ — nuevo componente reutilizable **`ProductGallery`**:
+  imagen compacta (columna 23rem, ajustada por feedback) con **efecto lupa** al
+  hover (zoom hacia el cursor), **botón expandir** → lightbox a pantalla completa,
+  y tira de miniaturas controlada (sincronizada con la variante). Acota el ancho
+  para que fotos de baja resolución no se escalen y se vean borrosas.
+
+**Admin:**
+
+- **Health-check de pagos** ✅ — panel "Estado de pagos" en Configuración→Pagos:
+  chequeo en vivo del proveedor activo; para MercadoPago hace `GET /users/me` y
+  muestra Conectado/No conectado, modo Test/Producción (por prefijo del token),
+  checklist de credenciales y la cuenta. `lib/payments/health.ts` server-only, no
+  lanza, no expone secretos. **Verificado**: MercadoPago conectado en modo TEST
+  (sandbox), cuenta `JUANJSC630 · MCO`.
+
+**Estándares:**
+
+- **Patrón de componente reutilizable** añadido a `STANDARDS.md` §2: todo
+  componente generalizable se crea en su propio archivo (`ui/` o dominio) con API
+  tipada+documentada, `className` mergeable, sin acoplar a su primer uso,
+  accesibilidad incluida y server por defecto. Referencia: `LogoBadge`.
+
+**Notas/backlog agregadas al ROADMAP:**
+
+- **[UX-9]** mejorar campo de Colores del form de producto (swatches + color picker).
+- **[UX-10]** separar clientes de staff en `/admin/usuarios` (vistas/tabs distintas).
+- **Bloque 16** plan de escalabilidad y pruebas de carga (ver abajo).
 
 ---
 

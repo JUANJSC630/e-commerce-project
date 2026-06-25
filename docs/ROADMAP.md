@@ -2886,7 +2886,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 ```
 [x] C.1 Colecciones automáticas (smart, por condiciones)  ✅ 2026-06-24
-[ ] C.2 Analytics GA4 + Meta Pixel + OG por producto (= Bloque 12)
+[x] C.2 Analytics GA4 + Meta Pixel + OG por producto (= Bloque 12)  ✅ 2026-06-24
 [ ] C.3 Gift cards, multi-ubicación, preventa, guía de tallas, metafields/tags
 ```
 
@@ -3067,6 +3067,16 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
   en `CategoryForm` (toggle + condiciones); `normalize` limpia las reglas y
   create/update revalidan también el tag `products`. Verificado E2E: colección
   con regla `onSale=true` lista exactamente los 5 productos en oferta.
+
+- **C.2 Analytics GA4 + Meta Pixel + OG** ✅ — `lib/analytics.ts` (dispatch a
+  `gtag`/`fbq`, no-op si no hay IDs) + `AnalyticsScripts` (inyecta GA4 gtag.js y
+  Meta Pixel vía `next/script afterInteractive` cuando hay env vars; trackea page
+  views en cambios de ruta App Router). Eventos cableados: `view_item`
+  (product-detail), `add_to_cart` (cart-provider), `begin_checkout`
+  (checkout-flow, una vez), `purchase` (order-success, solo si PAID, fire-once).
+  IDs por env: `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_META_PIXEL_ID` (en `.env.example`).
+  OG por producto ya existía en `products/[id]` generateMetadata. Verificado: con
+  IDs se inyecta el script de GA4; sin IDs, 0 scripts.
 
 #### Log de implementación Fase E
 

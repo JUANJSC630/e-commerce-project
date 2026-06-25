@@ -4,6 +4,7 @@ import "../styles/globals.css"
 import { Nunito, Atkinson_Hyperlegible } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import { RadixThemeProvider } from "@/components/theme-provider"
+import { AnalyticsScripts } from "@/components/analytics/analytics-scripts"
 import { rootMetadata } from "@/lib/seo"
 import { loadAllSettings } from "@/lib/settings"
 
@@ -39,6 +40,7 @@ export default async function RootLayout({
       className={`${displayFont.variable} ${bodyFont.variable}`}
     >
       <body>
+        <AnalyticsScripts />
         <RadixThemeProvider>
           {children}
           <Toaster position={theme.toastPosition} richColors={theme.toastRichColors} closeButton />

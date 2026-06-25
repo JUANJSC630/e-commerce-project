@@ -4,6 +4,7 @@ import { createContext, useState, useEffect, useCallback, useRef, type ReactNode
 import type { CartItem, Product, CartContextType } from "@/lib/types"
 import { toast } from "sonner"
 import Image from "next/image"
+import { trackAddToCart } from "@/lib/analytics"
 
 export const CartContext = createContext<CartContextType | undefined>(undefined)
 
@@ -71,6 +72,14 @@ export function CartProvider({ children }: CartProviderProps) {
           )
         }
         return [...prevItems, { ...product, quantity, selectedSize, selectedColor, variantId }]
+      })
+
+      trackAddToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity,
+        category: product.category?.name,
       })
 
       toast.success(`${product.name} añadido al carrito!`, {

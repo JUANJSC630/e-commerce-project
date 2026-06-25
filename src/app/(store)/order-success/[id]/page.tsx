@@ -9,6 +9,7 @@ import { routes } from "@/config/store.config"
 import { privatePageMetadata } from "@/lib/seo"
 import { OrderSummary } from "@/components/order/order-summary"
 import { PaymentStatusPoller } from "@/components/payment/payment-status-poller"
+import { PurchaseTracker } from "@/components/analytics/purchase-tracker"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -41,6 +42,19 @@ export default async function OrderSuccessPage({ params }: PageProps) {
         orderNumber={order.orderNumber}
         customerEmail={order.customerEmail}
       />
+
+      {order.paymentStatus === "PAID" && (
+        <PurchaseTracker
+          orderId={order.id}
+          total={order.total}
+          items={order.items.map((i) => ({
+            id: i.productId,
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity,
+          }))}
+        />
+      )}
 
       <OrderSummary order={order} />
 

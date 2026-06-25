@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { CheckoutProgress } from "@/components/checkout/checkout-progress"
 import { CartSummary, type AppliedDiscount } from "@/components/checkout/cart-summary"
 import { ShippingForm } from "@/components/checkout/shipping-form"
@@ -13,6 +13,7 @@ import { useCart } from "@/hooks/use-cart"
 import { routes } from "@/config/store.config"
 import { useSettings } from "@/components/providers/settings-provider"
 import { validateShippingData, validatePaymentData, type PaymentData } from "@/lib/validation"
+import { trackBeginCheckout } from "@/lib/analytics"
 
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
 
@@ -38,6 +39,22 @@ export default function CheckoutPage() {
   const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [discount, setDiscount] = useState<AppliedDiscount | null>(null)
+
+  // Fire begin_checkout once when the checkout loads with items in the cart.
+  const beganCheckout = useRef(false)
+  useEffect(() => {
+    if (beganCheckout.current || items.length === 0) return
+    beganCheckout.current = true
+    trackBeginCheckout(
+      items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        category: item.category?.name,
+      })),
+    )
+  }, [items])
 
   // Create cart item objects with the structure expected by CartSummary component
   const cartItemsForSummary = items.map((item) => ({

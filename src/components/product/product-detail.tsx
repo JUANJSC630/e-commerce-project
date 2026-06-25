@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -23,6 +23,7 @@ import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
 import { routes } from "@/config/store.config"
 import { useSettings } from "@/components/providers/settings-provider"
+import { trackViewItem } from "@/lib/analytics"
 import type { Product } from "@/lib/types"
 
 interface ProductDetailProps {
@@ -97,6 +98,16 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
   const discountPct = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
+
+  // Fire view_item once per product view.
+  useEffect(() => {
+    trackViewItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      category: product.category?.name,
+    })
+  }, [product.id, product.name, product.price, product.category?.name])
 
   const handleAddToCart = () => {
     if (outOfStock || mustSelectVariant) return

@@ -219,6 +219,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
 
 export interface OrderConfirmationItem {
   id: string
+  productId: string
   name: string
   image: string
   price: number
@@ -271,6 +272,7 @@ const ORDER_DETAIL_SELECT = {
   items: {
     select: {
       id: true,
+      productId: true,
       quantity: true,
       price: true,
       size: true,
@@ -305,6 +307,7 @@ function toConfirmationDTO(order: OrderDetailRow): OrderConfirmationDTO {
     shippingAddress: (order.shippingAddress as ShippingData | null) ?? null,
     items: order.items.map((item) => ({
       id: item.id,
+      productId: item.productId,
       name: item.product.name,
       image: item.product.image,
       price: item.price,

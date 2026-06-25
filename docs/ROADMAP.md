@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-24 (Bloque 15 — paridad Shopify; Fase A ✅ (A.1/A.2), Fase B ✅, Fase D ✅, **Fase E ✅ completa**; Fase C pendiente. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-24 (Bloque 15 — paridad Shopify; Fase A ✅ (A.1/A.2), Fase B ✅, **Fase C ✅** (C.1 smart collections, C.2 analytics, C.3a/b/c; gift cards/multi-ubicación/metafields = bloques futuros), Fase D ✅, Fase E ✅. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅ | Build prod ✅ 94/94
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---

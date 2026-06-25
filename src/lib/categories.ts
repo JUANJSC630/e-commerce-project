@@ -5,6 +5,8 @@ import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { specialNavItems } from "@/config/store.config"
 import { deleteReplacedImage, deleteUploadedImages } from "@/lib/media-cleanup"
+import { parseRules } from "@/lib/collection-rules"
+import { revalidateProducts } from "@/lib/products"
 
 /**
  * Category data-access layer. Categories are admin-managed (DB), so the
@@ -25,6 +27,8 @@ export interface Category {
   metaTitle: string | null
   metaDescription: string | null
   parentId: string | null
+  /** Smart-collection rules (null = manual category). */
+  rules: Prisma.JsonValue | null
 }
 
 /** A category with its (recursively nested) active subcategories. */
@@ -42,6 +46,7 @@ const SELECT = {
   metaTitle: true,
   metaDescription: true,
   parentId: true,
+  rules: true,
 } satisfies Prisma.CategorySelect
 
 const ORDER = [
@@ -138,6 +143,8 @@ export interface CategoryInput {
   order?: number
   isActive?: boolean
   parentId?: string | null
+  /** Smart-collection rules; cleaned via parseRules (invalid → null = manual). */
+  rules?: unknown
 }
 
 /** Normalizes a string into a URL-safe slug. */
@@ -187,6 +194,10 @@ function normalize(input: CategoryInput) {
     order: Number.isFinite(input.order) ? Number(input.order) : 0,
     isActive: input.isActive ?? true,
     parentId: input.parentId?.trim() || null,
+    // Store cleaned rules (or DbNull) so a smart collection never persists junk.
+    rules: parseRules(input.rules)
+      ? (parseRules(input.rules) as unknown as Prisma.InputJsonValue)
+      : Prisma.DbNull,
   }
 }
 
@@ -209,6 +220,7 @@ export async function createCategory(input: CategoryInput): Promise<{ id: string
   try {
     const category = await prisma.category.create({ data: normalize(input), select: { id: true } })
     revalidateCategories()
+    revalidateProducts() // smart-collection listings depend on product reads
     return category
   } catch (err) {
     throw toCategoryError(err)
@@ -223,6 +235,7 @@ export async function updateCategory(id: string, input: CategoryInput): Promise<
     await prisma.category.update({ where: { id }, data })
     await deleteReplacedImage(prev?.image, data.image)
     revalidateCategories()
+    revalidateProducts()
   } catch (err) {
     throw toCategoryError(err)
   }

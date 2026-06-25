@@ -2,7 +2,8 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { CategoryPage } from "@/components/category/category-page"
 import { getActiveCategorySlugs, getCategoryBySlug } from "@/lib/categories"
-import { getProductsByCategoryId } from "@/lib/products"
+import { getProductsByCategoryId, getProductsByRules } from "@/lib/products"
+import { parseRules } from "@/lib/collection-rules"
 import { loadAllSettings } from "@/lib/settings"
 
 // ISR: served statically, refreshed periodically; the admin also revalidates the
@@ -33,7 +34,11 @@ export default async function CategoryBySlugPage({ params }: PageProps) {
   const category = await getCategoryBySlug(slug)
   if (!category) notFound()
 
-  const products = await getProductsByCategoryId(category.id)
+  // Smart collection: list by rules; otherwise by manual assignment.
+  const rules = parseRules(category.rules)
+  const products = rules
+    ? await getProductsByRules(rules)
+    : await getProductsByCategoryId(category.id)
 
   return (
     <CategoryPage

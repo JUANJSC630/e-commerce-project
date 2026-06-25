@@ -4,6 +4,7 @@ import { unstable_cache, revalidateTag } from "next/cache"
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import type { Product } from "@/lib/types"
+import { rulesToWhere, type CollectionRules } from "@/lib/collection-rules"
 
 /**
  * Storefront product data-access layer.
@@ -127,6 +128,14 @@ export const getProductsByCategoryId = unstable_cache(
   (categoryId: string): Promise<Product[]> =>
     queryProducts({ where: { categoryId }, orderBy: NEWEST_FIRST }),
   ["products-by-category-id"],
+  CACHE,
+)
+
+/** Products matched by a smart-collection's rules (not manual assignment). */
+export const getProductsByRules = unstable_cache(
+  (rules: CollectionRules): Promise<Product[]> =>
+    queryProducts({ where: rulesToWhere(rules), orderBy: NEWEST_FIRST }),
+  ["products-by-rules"],
   CACHE,
 )
 

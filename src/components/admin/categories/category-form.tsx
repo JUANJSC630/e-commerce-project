@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ImageUploadField } from "@/components/admin/media/image-upload-field"
+import { CollectionRulesEditor } from "@/components/admin/categories/collection-rules-editor"
+import { parseRules, type CollectionRules } from "@/lib/collection-rules"
 
 export interface CategoryFormData {
   id: string
@@ -17,6 +19,7 @@ export interface CategoryFormData {
   order: number
   isActive: boolean
   parentId: string | null
+  rules: unknown
 }
 
 export interface ParentOption {
@@ -56,6 +59,7 @@ export function CategoryForm({
     isActive: category?.isActive ?? true,
     parentId: category?.parentId ?? "",
   })
+  const [rules, setRules] = useState<CollectionRules | null>(parseRules(category?.rules))
   // Track whether the slug was hand-edited so we stop auto-deriving it.
   const [slugTouched, setSlugTouched] = useState(isEditing)
   const [loading, setLoading] = useState(false)
@@ -85,6 +89,7 @@ export function CategoryForm({
       order: parseInt(form.order, 10) || 0,
       isActive: form.isActive,
       parentId: form.parentId || null,
+      rules,
     }
 
     const url = isEditing ? `/api/admin/categories/${category!.id}` : "/api/admin/categories"
@@ -223,6 +228,8 @@ export function CategoryForm({
           </Field>
         </div>
       </div>
+
+      <CollectionRulesEditor value={rules} onChange={setRules} />
 
       {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg">{error}</p>}
 

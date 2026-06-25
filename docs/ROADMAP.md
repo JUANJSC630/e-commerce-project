@@ -2885,7 +2885,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 **🟢 Fase C — Crecimiento**
 
 ```
-[ ] C.1 Colecciones automáticas (smart, por condiciones)
+[x] C.1 Colecciones automáticas (smart, por condiciones)  ✅ 2026-06-24
 [ ] C.2 Analytics GA4 + Meta Pixel + OG por producto (= Bloque 12)
 [ ] C.3 Gift cards, multi-ubicación, preventa, guía de tallas, metafields/tags
 ```
@@ -3054,6 +3054,19 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 | 🔴 Alta (hacer ya)   | E.1, E.2, E.3, E.6 | Bajo esfuerzo, alto impacto conversión, 4/5 competidores lo tienen |
 | 🟠 Media             | E.4, E.5, E.9      | Impacto medio, esfuerzo moderado                                   |
 | 🟡 Baja (planificar) | E.7, E.8, E.10     | Mayor esfuerzo o dependencias externas (API Instagram, contenido)  |
+
+#### Log de implementación Fase C
+
+- **C.1 Colecciones automáticas (smart)** ✅ — `Category.rules` (Json, migración
+  `add_category_rules`): cuando tiene condiciones, la categoría lista productos
+  por reglas en vez de asignación manual. Motor puro `lib/collection-rules.ts`
+  (`parseRules` + `rulesToWhere`) con condiciones onSale/new/featured/priceMin/
+  priceMax/category y `match` all|any; reglas inválidas → filtro que no matchea
+  (no muestra todo el catálogo). `getProductsByRules` en el data layer; el page
+  `/category/[slug]` branchea (smart vs manual). Admin: `CollectionRulesEditor`
+  en `CategoryForm` (toggle + condiciones); `normalize` limpia las reglas y
+  create/update revalidan también el tag `products`. Verificado E2E: colección
+  con regla `onSale=true` lista exactamente los 5 productos en oferta.
 
 #### Log de implementación Fase E
 

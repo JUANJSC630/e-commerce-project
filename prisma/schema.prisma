@@ -78,6 +78,9 @@ model Category {
   metaDescription String?
   order           Int        @default(0)
   isActive        Boolean    @default(true)
+  // Smart-collection rules. When set with conditions, the storefront lists
+  // products matched by these rules instead of the manual `products` relation.
+  rules           Json?
   // Self-relation for subcategories. A null parent = top-level category.
   parentId        String?
   parent          Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)

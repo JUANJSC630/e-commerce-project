@@ -2889,7 +2889,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] C.2 Analytics GA4 + Meta Pixel + OG por producto (= Bloque 12)  ✅ 2026-06-24
 [x] C.3a Guía de tallas (modal con tabla bebés/niños)  ✅ 2026-06-24
 [x] C.3b Tags de producto (+ condición de tag en colecciones smart)  ✅ 2026-06-24
-[ ] C.3c Preventa (preorder: vender agotados marcados)
+[x] C.3c Preventa (preorder: vender agotados marcados)  ✅ 2026-06-24
 [ ] C.3d Gift cards  — bloque futuro dedicado (instrumento de pago con saldo)
 [ ] C.3e Multi-ubicación de inventario  — bloque futuro dedicado (overhaul de stock)
 [ ] C.3f Metafields  — bloque futuro (datos estructurados arbitrarios)
@@ -3073,6 +3073,13 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
   create/update revalidan también el tag `products`. Verificado E2E: colección
   con regla `onSale=true` lista exactamente los 5 productos en oferta.
 
+- **C.3c Preventa (preorder)** ✅ — `Product.isPreorder` (migración
+  `add_product_preorder`): permite comprar más allá del stock (backorder). En el
+  detalle, CTA "Reservar (preventa)" + nota cuando está agotado pero en preventa
+  (sin formulario de back-in-stock). En `orders.ts` (ruta crítica), los productos/
+  variantes en preventa hacen decremento **sin guard** (stock puede ir negativo);
+  los normales mantienen el guard anti-sobreventa. Verificado E2E: preventa con
+  stock 0 → pedido 201, stock −1; producto normal con stock 0 → 400 OUT_OF_STOCK.
 - **C.3b Tags** ✅ — `Product.tags String[]` (migración `add_product_tags`) en el
   whitelist + data layer + tipo; campo de tags en el form admin; nueva condición
   `tag` en colecciones smart (`tags has`). Verificado E2E: colección por tag

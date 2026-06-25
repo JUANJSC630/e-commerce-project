@@ -111,6 +111,8 @@ model Product {
   isNew         Boolean     @default(false)
   isFeatured    Boolean     @default(false)
   isPublished   Boolean     @default(true)
+  // Preorder: can be bought past zero stock (stock may go negative = backorder).
+  isPreorder    Boolean     @default(false)
   stock         Int         @default(0)
   rating        Float?
   reviewCount   Int         @default(0)

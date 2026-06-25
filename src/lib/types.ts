@@ -39,6 +39,8 @@ export interface Product {
   description?: string
   isOnSale?: boolean
   isNew?: boolean
+  /** Can be purchased past zero stock (backorder). */
+  isPreorder?: boolean
   /** Units available. `undefined` means stock is not tracked for this product. */
   stock?: number
 }

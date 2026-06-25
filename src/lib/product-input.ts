@@ -23,6 +23,7 @@ const EDITABLE_FIELDS = [
   "isNew",
   "isFeatured",
   "isPublished",
+  "isPreorder",
   "stock",
 ] as const
 

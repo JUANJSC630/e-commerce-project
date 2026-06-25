@@ -75,6 +75,9 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
   const effectivePrice = selectedVariant?.price ?? product.price
   const effectiveStock = hasVariants ? (selectedVariant?.stock ?? 0) : product.stock
   const outOfStock = isOutOfStock(effectiveStock)
+  // Preorder products can be bought past zero stock (backorder).
+  const canPreorder = product.isPreorder === true
+  const blocked = outOfStock && !canPreorder
   // With variants, a valid combo must be picked before adding to the cart.
   const mustSelectVariant = hasVariants && !selectedVariant
 
@@ -111,7 +114,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
   }, [product.id, product.name, product.price, product.category?.name])
 
   const handleAddToCart = () => {
-    if (outOfStock || mustSelectVariant) return
+    if (blocked || mustSelectVariant) return
     // Carry the variant's price + image on the cart line so totals are correct.
     const cartProduct = selectedVariant
       ? { ...product, price: effectivePrice, image: selectedVariant.imageUrl || product.image }
@@ -362,14 +365,16 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
                 size="lg"
                 className="btn-cta flex-1"
                 onClick={handleAddToCart}
-                disabled={outOfStock || mustSelectVariant}
+                disabled={blocked || mustSelectVariant}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" aria-hidden="true" />
                 {mustSelectVariant
                   ? "Selecciona talla y color"
-                  : outOfStock
+                  : blocked
                     ? "Agotado"
-                    : "Agregar al carrito"}
+                    : outOfStock && canPreorder
+                      ? "Reservar (preventa)"
+                      : "Agregar al carrito"}
               </Button>
               <button
                 onClick={toggleFavorite}
@@ -386,8 +391,13 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
               </button>
             </div>
 
-            {/* Back-in-stock alert */}
-            {outOfStock && <StockAlertForm productId={product.id} />}
+            {/* Preorder note, or back-in-stock alert for plain out-of-stock items */}
+            {outOfStock && canPreorder && (
+              <p className="text-sm text-brand-base font-medium">
+                Producto en preventa: resérvalo ahora y te lo enviamos cuando llegue.
+              </p>
+            )}
+            {blocked && <StockAlertForm productId={product.id} />}
 
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">

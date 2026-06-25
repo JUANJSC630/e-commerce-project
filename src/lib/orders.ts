@@ -77,7 +77,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           const productIds = [...new Set(items.map((i) => i.productId))]
           const products = await tx.product.findMany({
             where: { id: { in: productIds }, isPublished: true },
-            select: { id: true, name: true, price: true },
+            select: { id: true, name: true, price: true, isPreorder: true },
           })
           const byId = new Map(products.map((p) => [p.id, p]))
 
@@ -122,8 +122,16 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           }
 
           // Guarded decrement: only succeeds while enough stock remains, so
-          // concurrent checkouts can't drive stock negative.
+          // concurrent checkouts can't drive stock negative — except preorder
+          // products, which are allowed to backorder (stock may go negative).
           for (const [productId, qty] of qtyByProduct) {
+            if (byId.get(productId)?.isPreorder) {
+              await tx.product.update({
+                where: { id: productId },
+                data: { stock: { decrement: qty } },
+              })
+              continue
+            }
             const { count } = await tx.product.updateMany({
               where: { id: productId, stock: { gte: qty } },
               data: { stock: { decrement: qty } },
@@ -136,12 +144,19 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
             }
           }
           for (const [variantId, qty] of qtyByVariant) {
+            const productId = variantById.get(variantId)?.productId
+            if (productId && byId.get(productId)?.isPreorder) {
+              await tx.productVariant.update({
+                where: { id: variantId },
+                data: { stock: { decrement: qty } },
+              })
+              continue
+            }
             const { count } = await tx.productVariant.updateMany({
               where: { id: variantId, stock: { gte: qty } },
               data: { stock: { decrement: qty } },
             })
             if (count === 0) {
-              const productId = variantById.get(variantId)?.productId
               throw new OrderError(
                 "OUT_OF_STOCK",
                 `Sin stock suficiente para "${byId.get(productId ?? "")?.name ?? "un producto"}"`,

@@ -39,6 +39,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
     isNew: product?.isNew ?? false,
     isFeatured: product?.isFeatured ?? false,
     isPublished: product?.isPublished ?? true,
+    isPreorder: product?.isPreorder ?? false,
   })
 
   // Extra gallery photos (ordered URLs), kept separate from the form scalar fields.
@@ -105,6 +106,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
       isNew: form.isNew,
       isFeatured: form.isFeatured,
       isPublished: form.isPublished,
+      isPreorder: form.isPreorder,
       // Gallery is a relation; the API replaces ProductImage rows from this list.
       images: gallery,
       // Variants are a relation; the API replaces ProductVariant rows. Drop fully
@@ -284,6 +286,11 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               },
               { field: "isNew", label: "Nuevo", desc: "Muestra la etiqueta NUEVO" },
               { field: "isOnSale", label: "En oferta", desc: "Muestra la etiqueta OFERTA" },
+              {
+                field: "isPreorder",
+                label: "Preventa",
+                desc: "Permite comprar aunque no haya stock",
+              },
             ] as const
           ).map(({ field, label, desc }) => (
             <label key={field} className="flex items-center gap-3 cursor-pointer group">

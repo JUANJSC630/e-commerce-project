@@ -7,10 +7,13 @@ import { useAllFavoriteIds } from "@/hooks/use-favorites"
 import { ProductCard } from "@/components/product/product-card"
 import { ProductGridSkeleton } from "@/components/product/product-grid-skeleton"
 import { BreadcrumbNav } from "@/components/layout/breadcrumbs"
+import { useSettings } from "@/components/providers/settings-provider"
+import { PRODUCT_GRID_CLASS } from "@/lib/theme"
 import { routes } from "@/config/store.config"
 import type { Product } from "@/lib/types"
 
 export function FavoritesList() {
+  const { theme } = useSettings()
   const ids = useAllFavoriteIds()
   const idsKey = ids.join(",")
   // `null` = still loading the catalog for the saved ids.
@@ -59,7 +62,7 @@ export function FavoritesList() {
         <ProductGridSkeleton count={ids.length || 4} />
       ) : products.length > 0 ? (
         <section aria-label="Productos favoritos">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          <div className={`grid ${PRODUCT_GRID_CLASS[theme.cardSize]} gap-4 md:gap-6`}>
             {products.map((product, index) => (
               <ProductCard key={product.id} product={product} priority={index < 4} />
             ))}

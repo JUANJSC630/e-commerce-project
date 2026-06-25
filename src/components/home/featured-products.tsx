@@ -11,6 +11,8 @@ interface FeaturedProductsProps {
   viewAllHref: string
   viewAllLabel: string
   viewAllMobileLabel: string
+  /** Grid column classes from the active card-size setting. */
+  gridClassName?: string
 }
 
 export function FeaturedProducts({
@@ -20,6 +22,7 @@ export function FeaturedProducts({
   viewAllHref,
   viewAllLabel,
   viewAllMobileLabel,
+  gridClassName = "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3",
 }: FeaturedProductsProps) {
   if (products.length === 0) return null
 
@@ -49,7 +52,7 @@ export function FeaturedProducts({
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className={`grid ${gridClassName} gap-4 md:gap-6`}>
           {products.map((product, index) => (
             <ProductCard key={product.id} product={product} priority={index < 4} />
           ))}

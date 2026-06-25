@@ -12,9 +12,15 @@ interface GenderTab {
 interface GenderSectionProps {
   title: string
   tabs: GenderTab[]
+  /** Grid column classes from the active card-size setting. */
+  gridClassName?: string
 }
 
-export function GenderSection({ title, tabs }: GenderSectionProps) {
+export function GenderSection({
+  title,
+  tabs,
+  gridClassName = "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3",
+}: GenderSectionProps) {
   const [activeIdx, setActiveIdx] = useState(0)
 
   if (tabs.length === 0) return null
@@ -43,7 +49,7 @@ export function GenderSection({ title, tabs }: GenderSectionProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className={`grid ${gridClassName} gap-4 md:gap-6`}>
           {activeProducts.slice(0, 4).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

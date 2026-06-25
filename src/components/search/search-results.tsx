@@ -5,6 +5,8 @@ import { useState } from "react"
 import { Search } from "lucide-react"
 import { ProductCard } from "@/components/product/product-card"
 import { BreadcrumbNav } from "@/components/layout/breadcrumbs"
+import { useSettings } from "@/components/providers/settings-provider"
+import { PRODUCT_GRID_CLASS } from "@/lib/theme"
 import { routes } from "@/config/store.config"
 import type { Product } from "@/lib/types"
 
@@ -14,6 +16,7 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ query, results }: SearchResultsProps) {
+  const { theme } = useSettings()
   const router = useRouter()
   const [inputValue, setInputValue] = useState(query)
 
@@ -83,7 +86,7 @@ export function SearchResults({ query, results }: SearchResultsProps) {
 
       {results.length > 0 && (
         <section aria-label="Resultados de búsqueda">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          <div className={`grid ${PRODUCT_GRID_CLASS[theme.cardSize]} gap-4 md:gap-6`}>
             {results.map((product, index) => (
               <ProductCard key={product.id} product={product} priority={index < 4} />
             ))}

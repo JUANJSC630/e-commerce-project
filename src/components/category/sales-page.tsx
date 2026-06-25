@@ -1,5 +1,7 @@
 import { ProductCard } from "@/components/product/product-card"
 import { BreadcrumbNav } from "@/components/layout/breadcrumbs"
+import { loadAllSettings } from "@/lib/settings"
+import { PRODUCT_GRID_CLASS } from "@/lib/theme"
 import { routes } from "@/config/store.config"
 import type { Product } from "@/lib/types"
 
@@ -10,7 +12,13 @@ interface SalesPageProps {
   emptyMessage?: string
 }
 
-export function SalesPageComponent({ products, title, description, emptyMessage }: SalesPageProps) {
+export async function SalesPageComponent({
+  products,
+  title,
+  description,
+  emptyMessage,
+}: SalesPageProps) {
+  const { theme } = await loadAllSettings()
   return (
     <div className="container mx-auto px-4 py-8">
       <BreadcrumbNav segments={[{ label: "Inicio", href: routes.home }, { label: title }]} />
@@ -21,7 +29,7 @@ export function SalesPageComponent({ products, title, description, emptyMessage 
       </header>
 
       {products.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className={`grid ${PRODUCT_GRID_CLASS[theme.cardSize]} gap-4 md:gap-6`}>
           {products.map((product, index) => (
             <ProductCard key={product.id} product={product} priority={index < 4} />
           ))}

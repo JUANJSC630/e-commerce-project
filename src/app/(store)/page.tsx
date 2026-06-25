@@ -13,6 +13,7 @@ import { SeoContent } from "@/components/home/seo-content"
 import { routes } from "@/config/store.config"
 import { getBestSellingProducts, getFeaturedProducts, getProductsByCategory } from "@/lib/products"
 import { getFeaturedReviews } from "@/lib/reviews"
+import { PRODUCT_GRID_CLASS } from "@/lib/theme"
 import { loadAllSettings } from "@/lib/settings"
 import { getActiveCategories } from "@/lib/categories"
 import { pageMetadata } from "@/lib/seo"
@@ -23,8 +24,10 @@ export function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const [settings, activeCategories] = await Promise.all([loadAllSettings(), getActiveCategories()])
-  const { homeContent, brand, social } = settings
+  const { homeContent, brand, social, theme } = settings
   const { heroBanners, featuredCategories, homeFeatures, copy } = homeContent
+  // Product grids across the home honor the admin "card size" setting.
+  const productGrid = PRODUCT_GRID_CLASS[theme.cardSize]
   const { hero, categories, promise, products } = copy
 
   const [featuredProducts, bestSellers, boysProducts, girlsProducts, testimonials] =
@@ -79,14 +82,16 @@ export default async function HomePage() {
         viewAllHref={routes.products}
         viewAllLabel={products.viewAllLabel}
         viewAllMobileLabel={products.viewAllMobileLabel}
+        gridClassName={productGrid}
       />
-      <BestSellers products={bestSellers} />
+      <BestSellers products={bestSellers} gridClassName={productGrid} />
       <GenderSection
         title="Esenciales por Género"
         tabs={[
           { label: "Niños", products: boysProducts },
           { label: "Niñas", products: girlsProducts },
         ]}
+        gridClassName={productGrid}
       />
       <Testimonials testimonials={testimonials} />
       <InstagramFeed instagram={social.instagram} posts={instagramPosts} />

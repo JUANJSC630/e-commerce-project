@@ -127,7 +127,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </p>
         )}
 
-        <h3 className="font-display font-semibold text-foreground line-clamp-2 leading-tight h-10">
+        <h3 className="font-display font-semibold text-sm md:text-[15px] text-foreground line-clamp-2 leading-snug min-h-[2.4rem]">
           {product.name}
         </h3>
 
@@ -152,9 +152,11 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         )}
 
         <div className="flex items-baseline gap-2">
-          <span className="font-bold text-lg text-foreground">{formatPrice(product.price)}</span>
+          <span className="font-bold text-base md:text-lg text-foreground">
+            {formatPrice(product.price)}
+          </span>
           {product.originalPrice && (
-            <span className="text-sm text-muted-foreground line-through">
+            <span className="text-xs md:text-sm text-muted-foreground line-through">
               {formatPrice(product.originalPrice)}
             </span>
           )}

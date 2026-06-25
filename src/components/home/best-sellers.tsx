@@ -6,6 +6,8 @@ interface BestSellersProps {
   products: Product[]
   eyebrow?: string
   heading?: string
+  /** Grid column classes from the active card-size setting. */
+  gridClassName?: string
 }
 
 /** Home section showcasing the best-selling products (ranked by real sales). */
@@ -13,6 +15,7 @@ export function BestSellers({
   products,
   eyebrow = "Lo más pedido",
   heading = "Más vendidos",
+  gridClassName = "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3",
 }: BestSellersProps) {
   if (products.length === 0) return null
 
@@ -32,7 +35,7 @@ export function BestSellers({
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className={`grid ${gridClassName} gap-4 md:gap-6`}>
           {products.map((product, index) => (
             <ProductCard key={product.id} product={product} priority={index < 4} />
           ))}

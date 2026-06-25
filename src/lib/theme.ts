@@ -60,9 +60,9 @@ export type CardSize = (typeof CARD_SIZES)[number]
 
 /** Product grid columns per card size - denser size = smaller cards. */
 export const PRODUCT_GRID_CLASS: Record<CardSize, string> = {
-  small: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
-  medium: "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-  large: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3",
+  small: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4",
+  medium: "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3",
+  large: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2",
 }
 
 /** Semantic colors + behavioural options layered on top of the 6-color palette. */

@@ -3350,4 +3350,126 @@ reseteada a defaults (sin zonas, IVA 0).
 
 ---
 
+## 🚀 Bloque 16 — Escalabilidad y pruebas de carga (alto tráfico)
+
+> ⏳ Pendiente. Plan para asegurar que la tienda aguante picos altos (campaña
+> viral, Black Friday, mención de un influencer). Aterrizado en el stack actual:
+> **Next.js 15 serverless (Vercel) + Prisma Postgres pooled + ISR/unstable_cache**.
+> Objetivo: saber **dónde se rompe primero** y endurecerlo antes de que pase.
+
+### 16.1 — SLOs objetivo (qué significa "aguantar")
+
+| Métrica                           | Objetivo                                        |
+| --------------------------------- | ----------------------------------------------- |
+| p95 de carga de página (TTFB)     | < 500 ms con tráfico nominal                    |
+| p95 de `POST /api/orders`         | < 1 s bajo carga                                |
+| Tasa de error (5xx)               | < 0.1 %                                         |
+| Throughput sostenido              | definir (ej. 500 req/s lectura, 50 checkouts/s) |
+| Sin **sobreventa** ni doble cobro | 0 casos bajo concurrencia                       |
+
+### 16.2 — Cuellos de botella ya identificados en el código
+
+Riesgos reales propios de esta base (a verificar/medir, no asumir):
+
+1. **🔴 Numeración de pedidos** (`orders.ts::nextOrderNumber`): usa
+   `tx.order.count()` + reintento ante choque `P2002`. Bajo muchos checkouts
+   concurrentes esto **serializa y reintenta** (contención + latencia).
+   → Migrar a una **secuencia Postgres** o tabla contador atómica por año.
+2. **🔴 Descuento de stock guardado** (`updateMany ... stock >= qty`): correcto
+   contra sobreventa, pero en un **producto caliente** (flash sale) todas las
+   compras compiten por **la misma fila** → se serializan. Medir y, si hace
+   falta, estrategia de inventario por lotes/reservas.
+3. **🟠 Pool de conexiones serverless**: cada instancia abre `max: 5`
+   (`prisma.ts`). Con muchas instancias Vercel = `instancias × 5` contra el
+   límite de Postgres. Validar el límite del plan de Prisma Postgres y el
+   pooler; ajustar `max`/`idleTimeout` o usar el pooler dedicado.
+4. **🟠 Rate limiting en DB** (`RateLimitHit`): escribe una fila por intento de
+   login/registro. Bajo ataque o pico, es **carga de escritura** en la DB.
+   → Considerar Redis/Upstash o rate limiting en el edge (middleware) para auth.
+5. **🟠 Descuentos con tope** (`consumeDiscountInTx`): un cupón viral golpea la
+   **misma fila** `Discount` con el guard de redenciones → contención.
+6. **🟡 Stampede de caché**: al expirar `unstable_cache`/ISR de un recurso muy
+   visitado (home, producto top), varias requests pueden recalcular a la vez.
+7. **🟡 Webhooks de pago**: idempotencia ya cubierta (`idempotencyKey` único,
+   guard en `markOrderPaid`), pero verificar bajo **entregas duplicadas masivas**.
+8. **🟡 Emails/cron**: Resend es best-effort (no bloquea), `after()` no debe
+   acumular trabajo pesado por request.
+
+### 16.3 — Plan de pruebas de carga
+
+**Herramienta:** [k6](https://k6.io) (scriptable, escenarios realistas) o Artillery.
+Correr contra un **entorno de staging** con datos sembrados (no producción).
+
+**Tipos de prueba:**
+
+- **Load test** — carga esperada sostenida (ej. 30 min al throughput objetivo).
+- **Stress test** — subir carga hasta que algo falle → encontrar el techo y el
+  primer componente que cede.
+- **Spike test** — salto brusco (0 → pico en segundos), simula viralización.
+- **Soak/endurance** — carga media por horas → detecta fugas de memoria/
+  conexiones y degradación de la DB.
+
+**Escenarios (modelar el funnel real, con pesos):**
+
+```
+70%  Navegación: home, /products, /category/[slug], /products/[id]   (lectura, ISR)
+15%  Búsqueda: /search?q=…                                            (lectura no cacheada)
+10%  Add-to-cart + ver carrito                                        (cliente, sin DB)
+ 4%  Checkout completo: POST /api/orders → pago (mock/sandbox)        (escritura crítica)
+ 1%  Webhook de pago entrante                                         (escritura crítica)
+```
+
+**Casos de concurrencia crítica (correctitud bajo carga):**
+
+- N compradores simultáneos del **último ítem en stock** → exactamente 1 gana,
+  el resto recibe `OUT_OF_STOCK` (nunca stock negativo en no-preorder).
+- N redenciones simultáneas de un cupón con `maxRedemptions` → nunca se pasa.
+- Webhook duplicado ×100 del mismo pago → un solo `markOrderPaid`.
+- Numeración de pedidos sin huecos/duplicados bajo ráfaga.
+
+**Qué medir:** p50/p95/p99 por endpoint, error rate, throughput, latencia y
+conexiones de la DB, % de reintentos de transacción (P2028/P2002), uso de
+funciones serverless (cold starts, duración, concurrencia).
+
+### 16.4 — Endurecimiento por capa (según hallazgos)
+
+- **DB:** secuencia para `orderNumber`; índices revisados (ya hay en
+  `Order.createdAt/status`); revisar planes de queries calientes; connection
+  pooling adecuado al plan.
+- **App:** mantener todo lectura en ISR/`unstable_cache`; mover trabajo no
+  crítico a `after()`/colas; evitar N+1 en includes.
+- **Caché/CDN:** ISR + tags ya implementado; CDN de UploadThing para imágenes;
+  evaluar `stale-while-revalidate` y proteger contra stampede.
+- **Infra:** Vercel escala funciones automáticamente, pero la **DB no** → es el
+  límite real; considerar réplicas de lectura si la lectura no cacheada crece.
+- **Resiliencia:** timeouts y reintentos acotados (ya en `$transaction`),
+  degradación elegante (si email/analytics fallan, la compra no se cae — ya es así).
+
+### 16.5 — Observabilidad (prerequisito para escalar)
+
+- Métricas y trazas: Vercel Analytics/Speed Insights + logs estructurados;
+  considerar Sentry (errores) y un APM para latencia de DB.
+- Dashboards de los SLOs de 16.1 + alertas (error rate, p95, conexiones DB).
+- Sin observabilidad no se puede saber "dónde se rompe" → es el **paso 1**.
+
+### 16.6 — Orden de ejecución sugerido
+
+```
+[ ] 1. Observabilidad mínima (errores + latencia DB + métricas Vercel)
+[ ] 2. Staging con datos sembrados a escala (miles de productos/pedidos)
+[ ] 3. Scripts k6 de los escenarios 16.3 + casos de concurrencia
+[ ] 4. Load + spike test → identificar el primer cuello (probable: orderNumber / fila de stock)
+[ ] 5. Fix de orderNumber (secuencia) y revisión del pool de conexiones
+[ ] 6. Re-test; iterar sobre el siguiente cuello hasta cumplir los SLOs
+[ ] 7. Runbook de incidentes (qué hacer si la DB se satura en un pico)
+```
+
+> **Resumen para el dueño:** la app (Next/Vercel) escala sola; **el límite real
+> es la base de datos**. Los dos primeros puntos a romper bajo alta concurrencia
+> serán la **numeración de pedidos** (count+retry) y la **fila de stock de un
+> producto caliente**. El plan: instrumentar → probar con k6 → arreglar esos dos
+> → re-probar. Hacer esto **antes** de una campaña grande, no durante.
+
+---
+
 _Para estándares de calidad y arquitectura de datos ver `STANDARDS.md`. Para visión de negocio ver `PROJECT.md`._

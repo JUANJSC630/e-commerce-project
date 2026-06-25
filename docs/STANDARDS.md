@@ -76,12 +76,36 @@ Un componente solo lleva `"use client"` si usa: `useState`, `useEffect`, `useRef
 
 ### Reglas de extracción
 
-| Condición                                                    | Acción                     |
-| ------------------------------------------------------------ | -------------------------- |
-| Un bloque JSX se repite 2+ veces con el mismo propósito      | Extraer a componente       |
-| Un archivo supera ~150 líneas de JSX                         | Revisar si puede dividirse |
-| Una función de más de 15 líneas vive dentro de un componente | Moverla a `lib/`           |
-| Un hook maneja más de un concepto de dominio                 | Dividir en hooks separados |
+| Condición                                                    | Acción                                              |
+| ------------------------------------------------------------ | --------------------------------------------------- |
+| Un bloque JSX se repite 2+ veces con el mismo propósito      | Extraer a componente                                |
+| **Un componente puede generalizarse / reutilizarse**         | **Crearlo en su propio archivo** (ver patrón abajo) |
+| Un archivo supera ~150 líneas de JSX                         | Revisar si puede dividirse                          |
+| Una función de más de 15 líneas vive dentro de un componente | Moverla a `lib/`                                    |
+| Un hook maneja más de un concepto de dominio                 | Dividir en hooks separados                          |
+
+### Patrón de componente reutilizable (obligatorio)
+
+Todo componente que **pueda volverse reutilizable** se crea **separado** (un archivo propio), nunca como helper local dentro de otro componente. Ubicación:
+
+- **`ui/`** si es un primitivo genérico de presentación, agnóstico del dominio
+  (ej. `LogoBadge`, badges, cards, wrappers).
+- **carpeta de dominio** (`product/`, `cart/`, `order/`…) si encapsula lógica o
+  datos de ese dominio.
+
+El componente debe cumplir:
+
+1. **API tipada y documentada** — `interface Props` con JSDoc en las props no obvias.
+2. **`className` mergeable** con `cn` (tailwind-merge), para que el consumidor
+   pueda sobrescribir cualquier utilidad por defecto (`bg-[...]`, tamaños, etc.).
+3. **Sin acoplar a su primer caso de uso** — recibe su contenido/datos por props;
+   nada hardcodeado del lugar donde nació.
+4. **Accesibilidad incluida** — labels/roles opcionales pero soportados.
+5. **Server por defecto** — sin `"use client"` salvo que necesite estado/efectos.
+
+> Referencia canónica: `src/components/ui/logo-badge.tsx` (`LogoBadge`) — tarjeta
+> para enmarcar un logo de marca; `label` opcional (role+aria), `className`
+> fusionado con `cn`. `PaymentMethods` lo consume sin redefinirlo.
 
 ### Estructura de carpetas
 

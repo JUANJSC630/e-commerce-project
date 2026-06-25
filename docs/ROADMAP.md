@@ -3043,7 +3043,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] E.6 Cookie consent banner (cumplimiento legal Colombia, localStorage)  ✅ 2026-06-24
 [x] E.7 Instagram feed embebido en home (grid shoppable + CTA al perfil)  ✅ 2026-06-24
 [x] E.8 Blog básico (modelo Post + /blog + 3 artículos SEO de crianza)  ✅ 2026-06-24
-[ ] E.9 Logos de métodos de pago en footer (Visa, MC, AmEx, MercadoPago, PSE)
+[x] E.9 Logos de métodos de pago en footer (Visa, MC, AmEx, MercadoPago, PSE, Nequi)  ✅ 2026-06-24
 [ ] E.10 Testimonios con foto en home (extraer reseñas destacadas con imagen)
 ```
 
@@ -3082,6 +3082,9 @@ price`), consistente con el precio tachado (antes exigía además `isOnSale`).
   producto que enlazan al producto + CTA al perfil de `social.instagram`,
   parseando handle o URL). Se oculta sin handle o sin fotos reales (se activa con
   A.3). Sin API externa: honesto, sin posts falsos.
+- **E.9 Medios de pago** ✅ — fila de chips wordmark (Visa, Mastercard, Amex,
+  MercadoPago, PSE, Nequi) en el footer; sin assets de logos de terceros para
+  evitar uso indebido de marcas.
 - **E.8 Blog** ✅ — modelo `Post` (migración `add_blog_posts`) + `lib/blog.ts`
   (cacheado tag `posts`) + páginas `/blog` (lista) y `/blog/[slug]` (ISR,
   generateMetadata + OG, contenido HTML con tipografía vía `[&_h2]`…); 3 artículos

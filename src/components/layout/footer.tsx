@@ -158,6 +158,21 @@ export function Footer({ navItems }: { navItems: NavItem[] }) {
         </div>
       </div>
 
+      {/* Payment methods */}
+      <div className="border-t border-brand-surface/10">
+        <div className="container mx-auto px-4 py-4 flex flex-wrap items-center justify-center gap-2">
+          <span className="text-xs text-brand-surface/50 mr-1">Medios de pago:</span>
+          {PAYMENT_METHODS.map((name) => (
+            <span
+              key={name}
+              className="inline-flex items-center rounded-md border border-brand-surface/20 bg-brand-surface/5 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-brand-surface/80"
+            >
+              {name}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* Bottom bar */}
       <div className="border-t border-brand-surface/10">
         <div className="container mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-brand-surface/50">
@@ -173,6 +188,9 @@ export function Footer({ navItems }: { navItems: NavItem[] }) {
     </footer>
   )
 }
+
+/** Accepted payment methods shown as wordmark chips (no third-party logo assets). */
+const PAYMENT_METHODS = ["Visa", "Mastercard", "Amex", "MercadoPago", "PSE", "Nequi"]
 
 function SocialLink({
   href,

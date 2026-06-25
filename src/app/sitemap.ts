@@ -1,15 +1,24 @@
 import type { MetadataRoute } from "next"
 import { getAllProductIds } from "@/lib/products"
 import { getActiveCategorySlugs } from "@/lib/categories"
+import { getAllPostSlugs } from "@/lib/blog"
 import { routes } from "@/config/store.config"
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dulceinfancia.com"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [productIds, categorySlugs] = await Promise.all([
+  const [productIds, categorySlugs, postSlugs] = await Promise.all([
     getAllProductIds(),
     getActiveCategorySlugs(),
+    getAllPostSlugs(),
   ])
+
+  const postEntries: MetadataRoute.Sitemap = postSlugs.map((slug) => ({
+    url: `${BASE_URL}/blog/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }))
 
   const productEntries: MetadataRoute.Sitemap = productIds.map((id) => ({
     url: `${BASE_URL}${routes.products}/${id}`,
@@ -39,7 +48,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.8,
     },
+    {
+      url: `${BASE_URL}/blog`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    },
     ...categoryEntries,
     ...productEntries,
+    ...postEntries,
   ]
 }

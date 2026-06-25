@@ -19,7 +19,8 @@
     "verify:categories": "node scripts/verify-categories-admin.mjs",
     "verify:admin-guard": "node scripts/verify-admin-guard.mjs",
     "verify:payments": "node scripts/verify-payments.mjs",
-    "db:clean-images": "tsx scripts/clean-broken-images.ts"
+    "db:clean-images": "tsx scripts/clean-broken-images.ts",
+    "db:seed-blog": "tsx scripts/seed-blog.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

@@ -102,6 +102,7 @@ export function Footer({ navItems }: { navItems: NavItem[] }) {
             ))}
             <FooterLink href={routes.products}>Todos los productos</FooterLink>
             <FooterLink href={routes.favorites}>Mis favoritos</FooterLink>
+            <FooterLink href="/blog">Blog</FooterLink>
           </FooterColumn>
 
           {/* Account */}

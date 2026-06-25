@@ -291,6 +291,23 @@ model Discount {
   updatedAt      DateTime     @updatedAt
 }
 
+/// SEO blog article. Content is trusted HTML (admin/seed authored). When a public
+/// editor is added it must be sanitized before storage.
+model Post {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String?
+  content     String
+  coverImage  String?
+  isPublished Boolean  @default(true)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+
 model RateLimitHit {
   id         String   @id @default(cuid())
   action     String

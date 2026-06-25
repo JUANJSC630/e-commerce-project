@@ -3,11 +3,13 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
-import { Heart, Eye, Star } from "lucide-react"
+import { Heart, Eye, Star, ShoppingCart } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { StockBadge } from "@/components/product/stock-badge"
 import { useFavorites } from "@/hooks/use-favorites"
+import { useCart } from "@/hooks/use-cart"
+import { isOutOfStock } from "@/lib/inventory"
 import { useFormatPrice } from "@/components/providers/settings-provider"
 import type { Product } from "@/lib/types"
 
@@ -21,6 +23,20 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const formatPrice = useFormatPrice()
   const [isImageLoaded, setIsImageLoaded] = useState(false)
   const { isFavorite, toggleFavorite } = useFavorites(product.id)
+  const { addItem } = useCart()
+
+  // Quick-add only when there's nothing to choose: no variants, sizes or colors,
+  // and stock available. Anything else routes to the detail page to pick options.
+  const outOfStock = isOutOfStock(product.stock)
+  const needsSelection =
+    (product.variants?.length ?? 0) > 0 ||
+    (product.sizes?.length ?? 0) > 0 ||
+    (product.colors?.length ?? 0) > 0
+  const canQuickAdd = !needsSelection && !outOfStock
+
+  const handleQuickAdd = () => {
+    addItem(product, 1)
+  }
 
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -183,13 +199,24 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </div>
         )}
 
-        <Link
-          href={`/products/${product.id}`}
-          className="btn-cta mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          Ver producto
-          <Eye className="h-4 w-4" aria-hidden="true" />
-        </Link>
+        {canQuickAdd ? (
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            className="btn-cta mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            Agregar al carrito
+            <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+          </button>
+        ) : (
+          <Link
+            href={`/products/${product.id}`}
+            className="btn-cta mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            {outOfStock ? "Ver producto" : needsSelection ? "Elegir opciones" : "Ver producto"}
+            <Eye className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        )}
       </div>
     </div>
   )

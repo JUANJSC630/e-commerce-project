@@ -160,42 +160,21 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           )}
         </div>
 
-        {product.sizes && product.sizes.length > 0 && (
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground">Tallas:</span>
-            <div className="flex gap-1 flex-wrap">
-              {product.sizes.slice(0, 3).map((size) => (
-                <span
-                  key={size}
-                  className="text-xs px-1.5 py-0.5 bg-brand-surface rounded text-foreground border border-brand-muted/50"
-                >
-                  {size}
-                </span>
-              ))}
-              {product.sizes.length > 3 && (
-                <span className="text-xs text-muted-foreground">+{product.sizes.length - 3}</span>
-              )}
-            </div>
-          </div>
-        )}
-
+        {/* Color options shown as subtle swatches (no label) — talla/color full
+            selection lives on the detail page to keep the card clean. */}
         {product.colors && product.colors.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Colores:</span>
-            <div className="flex gap-1">
-              {product.colors.slice(0, 3).map((color, i) => (
-                <div
-                  key={`${color}-${i}`}
-                  className="w-3 h-3 rounded-full border border-border"
-                  style={{ backgroundColor: color }}
-                  title={color}
-                  aria-hidden="true"
-                />
-              ))}
-              {product.colors.length > 3 && (
-                <span className="text-xs text-muted-foreground">+{product.colors.length - 3}</span>
-              )}
-            </div>
+          <div className="flex items-center gap-1" aria-hidden="true">
+            {product.colors.slice(0, 4).map((color, i) => (
+              <span
+                key={`${color}-${i}`}
+                className="h-3.5 w-3.5 rounded-full border border-border"
+                style={{ backgroundColor: color }}
+                title={color}
+              />
+            ))}
+            {product.colors.length > 4 && (
+              <span className="text-xs text-muted-foreground">+{product.colors.length - 4}</span>
+            )}
           </div>
         )}
 

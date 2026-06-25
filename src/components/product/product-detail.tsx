@@ -169,9 +169,9 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
 
         {/* Main product grid — compact gallery column (hover-zoom + expand) so
             low-res photos don't upscale into blur; info column takes the rest. */}
-        <div className="grid md:grid-cols-[21rem_1fr] gap-8 lg:gap-14 items-start">
+        <div className="grid md:grid-cols-[23rem_1fr] gap-8 lg:gap-14 items-start">
           {/* Gallery */}
-          <div className="w-full md:max-w-[21rem] mx-auto md:mx-0 md:sticky md:top-24">
+          <div className="w-full md:max-w-[23rem] mx-auto md:mx-0 md:sticky md:top-24">
             <ProductGallery
               images={gallery}
               activeIndex={activeImage}

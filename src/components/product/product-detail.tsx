@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils"
 import { ProductCard } from "@/components/product/product-card"
 import { StockBadge } from "@/components/product/stock-badge"
 import { StockAlertForm } from "@/components/product/stock-alert-form"
+import { SizeGuideModal } from "@/components/product/size-guide-modal"
 import { isOutOfStock } from "@/lib/inventory"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
@@ -305,9 +306,12 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
             {/* Size selector */}
             {sizeOptions.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-brand-ink mb-2">
-                  Talla: <span className="font-normal text-muted-foreground">{selectedSize}</span>
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-brand-ink">
+                    Talla: <span className="font-normal text-muted-foreground">{selectedSize}</span>
+                  </p>
+                  <SizeGuideModal />
+                </div>
                 <div className="flex gap-2 flex-wrap" role="group" aria-label="Seleccionar talla">
                   {sizeOptions.map((size) => (
                     <button

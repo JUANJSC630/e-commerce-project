@@ -2887,7 +2887,12 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 ```
 [x] C.1 Colecciones automáticas (smart, por condiciones)  ✅ 2026-06-24
 [x] C.2 Analytics GA4 + Meta Pixel + OG por producto (= Bloque 12)  ✅ 2026-06-24
-[ ] C.3 Gift cards, multi-ubicación, preventa, guía de tallas, metafields/tags
+[x] C.3a Guía de tallas (modal con tabla bebés/niños)  ✅ 2026-06-24
+[ ] C.3b Tags de producto (+ condición de tag en colecciones smart)
+[ ] C.3c Preventa (preorder: vender agotados marcados)
+[ ] C.3d Gift cards  — bloque futuro dedicado (instrumento de pago con saldo)
+[ ] C.3e Multi-ubicación de inventario  — bloque futuro dedicado (overhaul de stock)
+[ ] C.3f Metafields  — bloque futuro (datos estructurados arbitrarios)
 ```
 
 **✅ Fase D — UX & Conversión (análisis competidores)** — 2026-06-24
@@ -3068,6 +3073,9 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
   create/update revalidan también el tag `products`. Verificado E2E: colección
   con regla `onSale=true` lista exactamente los 5 productos en oferta.
 
+- **C.3a Guía de tallas** ✅ — `SizeGuideModal` (autocontenido, Escape/click-fuera,
+  scroll-lock) con tablas de referencia bebés/niños (talla·edad·estatura·peso);
+  trigger junto al selector de talla en el detalle.
 - **C.2 Analytics GA4 + Meta Pixel + OG** ✅ — `lib/analytics.ts` (dispatch a
   `gtag`/`fbq`, no-op si no hay IDs) + `AnalyticsScripts` (inyecta GA4 gtag.js y
   Meta Pixel vía `next/script afterInteractive` cuando hay env vars; trackea page

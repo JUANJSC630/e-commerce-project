@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { cn } from "@/lib/utils"
 
 /**
  * Accepted payment methods as small brand-colored logo badges. Built with inline
@@ -28,21 +29,33 @@ export function PaymentMethods() {
       <Badge label="PSE">
         <span className="text-[12px] font-extrabold tracking-tight text-[#0B4DA2]">PSE</span>
       </Badge>
-      <Badge label="Nequi">
-        <span className="text-[12px] font-extrabold tracking-tight text-[#DA0081]">Nequi</span>
+      <Badge label="Nequi" className="bg-[#00C853]">
+        <span className="text-[12px] font-extrabold tracking-tight text-[#ffffff]">Nequi</span>
       </Badge>
     </div>
   )
 }
 
 /** White rounded card so each colored logo reads clearly on the dark footer. */
-function Badge({ label, children }: { label: string; children: ReactNode }) {
+function Badge({
+  label,
+  children,
+  className,
+}: {
+  label: string
+  children: ReactNode
+  /** Extra classes; e.g. `bg-[#00C853]` overrides the default white card. */
+  className?: string
+}) {
   return (
     <span
       role="img"
       aria-label={label}
       title={label}
-      className="inline-flex h-7 min-w-[40px] items-center justify-center rounded-md bg-white px-2 shadow-sm"
+      className={cn(
+        "inline-flex h-7 min-w-[40px] items-center justify-center rounded-md bg-white px-2 shadow-sm",
+        className,
+      )}
     >
       {children}
     </span>

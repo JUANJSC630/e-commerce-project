@@ -2698,6 +2698,27 @@ son los que más frecuentemente fallan en producción.
 - Archivos: `src/components/admin/products/product-form.tsx` (+ nuevo
   `colors-field.tsx`).
 
+**[UX-10] Admin Usuarios: mezcla clientes con staff en una sola tabla** ⏳
+
+- Hoy `/admin/usuarios` lista en la misma tabla a los **clientes** (rol Cliente,
+  que se registran solos en la tienda) y al **staff del sistema** (Super Admin,
+  Admin, Manager, Soporte). Conceptualmente son dos audiencias distintas y se
+  gestionan diferente; verlos juntos es confuso y no escala (con cientos de
+  clientes, el staff se pierde).
+- **Mejora propuesta (rediseño de la sección):**
+  - **Separar en dos vistas/tabs:** "Clientes" vs "Equipo / Staff" (filtrando por
+    `role.slug === 'customer'` vs el resto). Default a una u otra según el caso.
+  - **Clientes:** tabla optimizada para volumen — búsqueda por nombre/email,
+    paginación, columnas relevantes (n.º de pedidos, total gastado, último pedido,
+    fecha de registro); el rol NO debería ser un `<select>` editable suelto (un
+    cliente no se "asciende" a admin desde un dropdown sin fricción).
+  - **Staff:** gestión de equipo — invitar miembro, asignar rol (Admin/Manager/
+    Soporte), activar/desactivar; con confirmación al cambiar roles sensibles
+    (ya existe el guard de auto-escalada en `roles:update`).
+  - Mantener el guard de permisos y la propagación de rol JWT (A-5).
+- Archivos: `src/app/admin/usuarios/page.tsx`,
+  `src/components/admin/users/*` (tabla actual con el `<select>` de rol).
+
 ---
 
 ### 14.6 - Deuda Técnica & Arquitectura

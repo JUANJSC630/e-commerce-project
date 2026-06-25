@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import {
   Star,
@@ -16,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { ProductCard } from "@/components/product/product-card"
+import { ProductGallery } from "@/components/product/product-gallery"
 import { StockBadge } from "@/components/product/stock-badge"
 import { StockAlertForm } from "@/components/product/stock-alert-form"
 import { SizeGuideModal } from "@/components/product/size-guide-modal"
@@ -167,58 +167,32 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
           </ol>
         </nav>
 
-        {/* Main product grid — gallery column capped so low-res photos don't
-            upscale into blur on big screens; info column takes the rest. */}
-        <div className="grid md:grid-cols-[minmax(0,22rem)_1fr] gap-8 lg:gap-14 items-start">
+        {/* Main product grid — compact gallery column (hover-zoom + expand) so
+            low-res photos don't upscale into blur; info column takes the rest. */}
+        <div className="grid md:grid-cols-[16rem_1fr] gap-8 lg:gap-14 items-start">
           {/* Gallery */}
-          <div className="flex flex-col gap-3 w-full max-w-sm mx-auto md:mx-0 md:sticky md:top-24">
-            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-brand-surface shadow-sm border border-border">
-              {product.isNew && (
-                <Badge variant="new" className="absolute top-4 left-4 z-10">
-                  Nuevo
-                </Badge>
-              )}
-              {discountPct > 0 && (
-                <Badge variant="discount" className="absolute top-4 left-4 z-10">
-                  -{discountPct}%
-                </Badge>
-              )}
-              <Image
-                src={active.url}
-                alt={active.alt}
-                fill
-                priority
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 24rem"
-              />
-            </div>
-
-            {/* Thumbnails - only when there's more than one photo */}
-            {gallery.length > 1 && (
-              <div
-                className="grid grid-cols-5 gap-2"
-                role="group"
-                aria-label="Imágenes del producto"
-              >
-                {gallery.map((img, i) => (
-                  <button
-                    key={img.url + i}
-                    type="button"
-                    onClick={() => setActiveImage(i)}
-                    aria-label={`Ver imagen ${i + 1}`}
-                    aria-pressed={i === activeImage}
-                    className={cn(
-                      "relative aspect-square rounded-lg overflow-hidden border-2 transition-all bg-brand-surface",
-                      i === activeImage
-                        ? "border-brand-base ring-1 ring-brand-base"
-                        : "border-border hover:border-brand-muted",
-                    )}
-                  >
-                    <Image src={img.url} alt={img.alt} fill className="object-cover" sizes="80px" />
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="w-full md:max-w-[16rem] mx-auto md:mx-0 md:sticky md:top-24">
+            <ProductGallery
+              images={gallery}
+              activeIndex={activeImage}
+              onSelect={setActiveImage}
+              displayUrl={active.url}
+              displayAlt={active.alt}
+              badges={
+                <>
+                  {product.isNew && (
+                    <Badge variant="new" className="absolute top-4 left-4 z-10">
+                      Nuevo
+                    </Badge>
+                  )}
+                  {discountPct > 0 && (
+                    <Badge variant="discount" className="absolute top-4 left-4 z-10">
+                      -{discountPct}%
+                    </Badge>
+                  )}
+                </>
+              }
+            />
           </div>
 
           {/* Info */}

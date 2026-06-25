@@ -54,7 +54,7 @@ export default async function PaymentPage({ params }: PageProps) {
     )
   }
 
-  // Simulated gateway — only exists while the mock provider is active.
+  // Simulated gateway - only exists while the mock provider is active.
   if (!isMockPaymentsEnabled()) notFound()
 
   return (

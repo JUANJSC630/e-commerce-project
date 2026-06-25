@@ -128,7 +128,7 @@ export function PseForm({ orderId }: PseFormProps) {
       const result = (await res.json()) as { redirectUrl?: string; error?: string }
 
       if (res.ok && result.redirectUrl) {
-        // Off to the bank — pse-return verifies the outcome when they're back.
+        // Off to the bank - pse-return verifies the outcome when they're back.
         window.location.assign(result.redirectUrl)
         return
       }

@@ -20,11 +20,11 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const [post, { brand }] = await Promise.all([getPostBySlug(slug), loadAllSettings()])
-  if (!post) return { title: `Artículo no encontrado — ${brand.name}` }
+  if (!post) return { title: `Artículo no encontrado - ${brand.name}` }
 
   const description = post.excerpt ?? `Lee "${post.title}" en el blog de ${brand.name}.`
   return {
-    title: `${post.title} — ${brand.name}`,
+    title: `${post.title} - ${brand.name}`,
     description,
     openGraph: {
       title: post.title,

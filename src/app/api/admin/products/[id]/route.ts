@@ -29,8 +29,8 @@ export async function GET(_: Request, { params }: Params) {
 /**
  * Shared update path for PUT and PATCH. Writes the scalar product fields and, if
  * the request carries an `images` array, replaces the gallery (delete-then-create
- * in a transaction). UploadThing files orphaned by the edit — the replaced cover
- * plus any gallery photo no longer referenced — are cleaned up best-effort.
+ * in a transaction). UploadThing files orphaned by the edit - the replaced cover
+ * plus any gallery photo no longer referenced - are cleaned up best-effort.
  */
 async function updateProduct(id: string, body: unknown) {
   const prev = await prisma.product.findUnique({

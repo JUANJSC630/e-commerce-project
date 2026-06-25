@@ -1,5 +1,5 @@
 /**
- * E2E — B.4 Tracking/guía de envío.
+ * E2E - B.4 Tracking/guía de envío.
  *
  * Prueba:
  *   1. Crea un pedido vía POST /api/orders.
@@ -16,7 +16,7 @@ const BASE = process.env.BASE_URL ?? "http://localhost:3000"
 const results = []
 const check = (name, ok, extra = "") => {
   results.push({ name, ok: !!ok })
-  console.log(`${ok ? "✅" : "❌"} ${name}${extra ? ` — ${extra}` : ""}`)
+  console.log(`${ok ? "✅" : "❌"} ${name}${extra ? ` - ${extra}` : ""}`)
 }
 
 const ADMIN_EMAIL = "admin@dulceinfancia.com"

@@ -126,7 +126,7 @@ export function DiscountsManager({ initial, canCreate, canUpdate, canDelete }: P
               value={form.value}
               onChange={(e) => setForm({ ...form, value: e.target.value })}
               disabled={form.type === "FREE_SHIPPING"}
-              placeholder={form.type === "FREE_SHIPPING" ? "—" : "10"}
+              placeholder={form.type === "FREE_SHIPPING" ? "-" : "10"}
               className={inputClass}
             />
           </Field>
@@ -190,7 +190,7 @@ export function DiscountsManager({ initial, canCreate, canUpdate, canDelete }: P
                       ? `${d.value}%`
                       : d.type === "FIXED"
                         ? `$${d.value.toLocaleString("es-CO")}`
-                        : "—"}
+                        : "-"}
                   </td>
                   <td className="px-4 py-3 text-slate-600">
                     {d.redemptions}

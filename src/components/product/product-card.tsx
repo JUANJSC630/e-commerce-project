@@ -42,7 +42,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
 
-  // First gallery photo distinct from the cover — revealed on hover (E.3).
+  // First gallery photo distinct from the cover - revealed on hover (E.3).
   const hoverImage = product.images?.find((img) => img.url && img.url !== product.image)?.url
 
   return (

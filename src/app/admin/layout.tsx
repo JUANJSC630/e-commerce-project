@@ -10,7 +10,7 @@ import { authOptions } from "@/lib/auth-options"
 import { isCustomer } from "@/lib/permissions"
 
 export const metadata: Metadata = {
-  title: "Admin — Dulce Infancia",
+  title: "Admin - Dulce Infancia",
   robots: { index: false, follow: false },
 }
 

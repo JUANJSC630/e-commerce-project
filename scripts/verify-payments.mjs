@@ -1,5 +1,5 @@
 /**
- * E2E del Bloque 10 — pagos con MercadoPago (Checkout API).
+ * E2E del Bloque 10 - pagos con MercadoPago (Checkout API).
  *
  * Levanta un servidor que imita el API de MercadoPago (el provider apunta a él
  * vía MERCADOPAGO_BASE_URL) y un `next dev` con PAYMENT_PROVIDER=mercadopago.
@@ -27,7 +27,7 @@ const WEBHOOK_SECRET = "e2e-webhook-secret"
 const results = []
 const check = (name, ok, extra = "") => {
   results.push({ name, ok: !!ok })
-  console.log(`${ok ? "✅" : "❌"} ${name}${extra ? ` — ${extra}` : ""}`)
+  console.log(`${ok ? "✅" : "❌"} ${name}${extra ? ` - ${extra}` : ""}`)
 }
 
 // ─── Mock del API de MercadoPago ──────────────────────────────────────────────
@@ -237,7 +237,7 @@ try {
   })
   check("Tarjeta aprobada → initiate responde approved", r1.body.status === "approved")
   check(
-    "Monto manipulado ignorado — se cobra el total de la DB",
+    "Monto manipulado ignorado - se cobra el total de la DB",
     mockState.lastAmount === order1Before.total,
     `cobrado=${mockState.lastAmount}, DB=${order1Before.total}`,
   )
@@ -307,7 +307,7 @@ try {
   await new Promise((r) => setTimeout(r, 2000))
   const order3Final = await getOrder(order3.id)
   check(
-    "Duplicado es no-op — pedido sigue PAID",
+    "Duplicado es no-op - pedido sigue PAID",
     order3Final.paymentStatus === "PAID" && order3Final.status === "CONFIRMED",
   )
 

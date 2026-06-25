@@ -192,7 +192,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
               />
             </div>
 
-            {/* Thumbnails — only when there's more than one photo */}
+            {/* Thumbnails - only when there's more than one photo */}
             {gallery.length > 1 && (
               <div
                 className="grid grid-cols-5 gap-2"

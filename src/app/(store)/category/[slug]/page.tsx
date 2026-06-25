@@ -22,9 +22,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const [category, { brand }] = await Promise.all([getCategoryBySlug(slug), loadAllSettings()])
-  if (!category) return { title: `Categoría no encontrada — ${brand.name}` }
+  if (!category) return { title: `Categoría no encontrada - ${brand.name}` }
 
-  const title = category.metaTitle ?? `${category.name} — ${brand.name}`
+  const title = category.metaTitle ?? `${category.name} - ${brand.name}`
   const description = category.metaDescription ?? category.description ?? brand.tagline
   return { title, description, openGraph: { title, description, type: "website" } }
 }

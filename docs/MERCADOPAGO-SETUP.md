@@ -1,4 +1,4 @@
-# Guía de configuración manual — MercadoPago
+# Guía de configuración manual - MercadoPago
 
 > Pasos manuales para activar los pagos reales del Bloque 10 (código ya
 > implementado y verificado: `yarn verify:payments`, 15/15). Corroborado con la
@@ -11,21 +11,21 @@
 
 ---
 
-## Fase 1 — Crear la aplicación en MercadoPago
+## Fase 1 - Crear la aplicación en MercadoPago
 
 1. Crea (o usa) una cuenta de MercadoPago Colombia en [mercadopago.com.co](https://www.mercadopago.com.co)
 2. Entra a [mercadopago.com.co/developers](https://www.mercadopago.com.co/developers/es) → **Tus integraciones** (arriba a la derecha)
 3. **Crear aplicación**:
    - Nombre: ej. "Dulce Infancia Shop"
    - Tipo de solución: **Pagos online**
-   - Plataforma: **CheckoutAPI** (no Checkout Pro — la integración es API con CardForm)
+   - Plataforma: **CheckoutAPI** (no Checkout Pro - la integración es API con CardForm)
 
 ---
 
-## Fase 2 — Credenciales de prueba
+## Fase 2 - Credenciales de prueba
 
 > **Organización de archivos env**: `.env` guarda solo `DATABASE_URL` (es el
-> único archivo que lee Prisma CLI). Todo lo demás —auth, pagos, URLs— vive en
+> único archivo que lee Prisma CLI). Todo lo demás -auth, pagos, URLs- vive en
 > `.env.local`, que tiene prioridad sobre `.env` en Next.js. No pongas
 > comentarios en la misma línea del valor; usa líneas separadas.
 
@@ -41,15 +41,15 @@ MERCADOPAGO_ACCESS_TOKEN=TEST-xxxx...
 NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=TEST-xxxx...
 ```
 
-> ⚠️ El código rechaza tokens `APP_USR-` (producción) en desarrollo — es un
+> ⚠️ El código rechaza tokens `APP_USR-` (producción) en desarrollo - es un
 > guard intencional en `src/lib/payments/mercadopago/client.ts`. En dev solo
 > funcionan los `TEST-`.
 
 ---
 
-## Fase 3 — Configurar el webhook
+## Fase 3 - Configurar el webhook
 
-El webhook necesita una **URL pública** — MP no acepta `localhost`. Para desarrollo:
+El webhook necesita una **URL pública** - MP no acepta `localhost`. Para desarrollo:
 
 1. Expón tu local: `ngrok http 3000` (o `cloudflared tunnel`) → te da `https://abc123.ngrok.io`
 2. En el panel: tu aplicación → **Webhooks → Configurar notificaciones**
@@ -66,11 +66,11 @@ MERCADOPAGO_WEBHOOK_SECRET=tu-clave-secreta-del-panel
 
 6. Verifica con el botón **Simular** del panel: elige la URL de prueba, evento
    `payment`, un ID cualquiera → debe responder 200 (o 401 si la firma no
-   corresponde — eso también confirma que la verificación funciona).
+   corresponde - eso también confirma que la verificación funciona).
 
 ---
 
-## Fase 4 — Cuentas de prueba (recomendado para PSE)
+## Fase 4 - Cuentas de prueba (recomendado para PSE)
 
 Para probar el flujo completo como lo vería un cliente:
 
@@ -80,7 +80,7 @@ Para probar el flujo completo como lo vería un cliente:
    - Máximo 15 cuentas; no se pueden borrar
 3. A la de comprador agrégale saldo ficticio
 4. Para el flujo más fiel: inicia sesión con la cuenta vendedor de prueba en una
-   ventana de incógnito, crea una aplicación ahí y usa _sus_ credenciales — así
+   ventana de incógnito, crea una aplicación ahí y usa _sus_ credenciales - así
    compras con la cuenta compradora de prueba contra el vendedor de prueba
 
 > Para tarjetas, con las credenciales TEST de tu cuenta real basta. Las cuentas
@@ -88,7 +88,7 @@ Para probar el flujo completo como lo vería un cliente:
 
 ---
 
-## Fase 5 — Probar en sandbox
+## Fase 5 - Probar en sandbox
 
 **Qué funciona con qué credenciales** (verificado contra el API real):
 
@@ -98,14 +98,14 @@ Para probar el flujo completo como lo vería un cliente:
 | PSE      | ❌ `Invalid users involved` (2034)   | ✅ Única forma de probarlo                    |
 
 > En localhost el código **omite `notification_url`** automáticamente (MP
-> rechaza URLs no públicas con error 4020 — rompería todos los pagos). El
+> rechaza URLs no públicas con error 4020 - rompería todos los pagos). El
 > resultado de tarjeta llega síncrono y PSE se verifica al volver del banco
 > (`pse-return` consulta el API), así que puedes probar sin ngrok. El webhook
 > solo hace falta para validar la entrega asíncrona (usa ngrok +
 > `NEXT_PUBLIC_APP_URL` con la URL del túnel + webhook del panel, y reinicia
 > `yarn dev`).
 
-### 5a — Tarjetas (con tus credenciales TEST-, sin ngrok)
+### 5a - Tarjetas (con tus credenciales TEST-, sin ngrok)
 
 Haz una compra en `/checkout-flow`. En `/pago/[orderId]` usa las tarjetas
 oficiales de prueba:
@@ -132,9 +132,9 @@ El **resultado lo controla el nombre del titular**:
 
 Documento: `123456789` · Email: cualquiera que **no** sea el de tu cuenta MP
 (ej. `comprador_prueba@example.com`). No uses el email de una cuenta de prueba
-del panel con estas credenciales — MP lo rechaza (`Payer email forbidden`).
+del panel con estas credenciales - MP lo rechaza (`Payer email forbidden`).
 
-### 5b — PSE (requiere credenciales del vendedor de prueba)
+### 5b - PSE (requiere credenciales del vendedor de prueba)
 
 PSE en sandbox **no funciona** con las credenciales TEST- de tu cuenta real
 (error 2034 `Invalid users involved`, sin importar el email). El camino:
@@ -143,7 +143,7 @@ PSE en sandbox **no funciona** con las credenciales TEST- de tu cuenta real
    [mercadopago.com.co](https://www.mercadopago.com.co) con la cuenta
    **vendedor de prueba** (usuario `TESTUSER...` + contraseña del panel)
 2. Entra a su panel de developers y **crea una aplicación** ahí
-3. Copia sus credenciales — son `APP_USR-...` (las cuentas de prueba no tienen
+3. Copia sus credenciales - son `APP_USR-...` (las cuentas de prueba no tienen
    pestaña de credenciales TEST: todo su universo ya es sandbox)
 4. En `.env.local`:
 
@@ -176,7 +176,7 @@ MERCADOPAGO_ALLOW_PROD_TOKEN_IN_DEV=true
 
 ---
 
-## Fase 6 — Pasar a producción
+## Fase 6 - Pasar a producción
 
 1. **Activar credenciales productivas**: panel → **Credenciales de producción**
    → completa industria, URL del sitio, acepta términos + reCAPTCHA. Puede
@@ -208,7 +208,7 @@ NEXT_PUBLIC_APP_URL=https://dulceinfancia.co
 - [ ] `prisma migrate deploy` aplicado (incluye `idempotencyKey @unique` y `PaymentLog`)
 - [ ] Compra real de prueba completada y reembolsada
 - [ ] `/api/payments/webhook/mercadopago` accesible sin sesión (el middleware ya
-      lo excluye — no agregar `/api` al matcher)
+      lo excluye - no agregar `/api` al matcher)
 - [ ] `PaymentLog` registró la primera transacción real
 - [ ] Notificaciones de contracargos activadas
 
@@ -228,7 +228,7 @@ NEXT_PUBLIC_APP_URL=https://dulceinfancia.co
 ## Verificación sin credenciales (ya disponible)
 
 ```bash
-yarn verify:payments   # E2E 15/15 — usa un mock del API de MP, no toca MP real
+yarn verify:payments   # E2E 15/15 - usa un mock del API de MP, no toca MP real
 ```
 
 Y para demos sin pasarela: `PAYMENT_PROVIDER=mock` activa el simulador de pago

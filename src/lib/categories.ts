@@ -54,7 +54,7 @@ const ORDER = [
   { name: "asc" },
 ] satisfies Prisma.CategoryOrderByWithRelationInput[]
 
-/** Active categories for the nav and listings — cached + tag-revalidated. */
+/** Active categories for the nav and listings - cached + tag-revalidated. */
 export const getActiveCategories = unstable_cache(
   (): Promise<Category[]> =>
     prisma.category.findMany({ where: { isActive: true }, orderBy: ORDER, select: SELECT }),
@@ -157,7 +157,7 @@ export function slugify(value: string): string {
     .replace(/^-+|-+$/g, "")
 }
 
-/** All categories (incl. inactive) with product counts — admin list. */
+/** All categories (incl. inactive) with product counts - admin list. */
 export async function getAdminCategories(): Promise<AdminCategory[]> {
   const rows = await prisma.category.findMany({
     orderBy: ORDER,

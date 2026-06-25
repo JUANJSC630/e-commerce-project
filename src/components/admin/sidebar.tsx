@@ -69,7 +69,7 @@ export function AdminSidebar() {
 
   const visibleItems = [
     ...NAV_ITEMS.filter((item) => hasPermission(permissions, item.resource, "read")),
-    // Media isn't a granular Resource — any image-editing role may manage it.
+    // Media isn't a granular Resource - any image-editing role may manage it.
     ...(canMedia ? [MEDIA_ITEM] : []),
   ]
 
@@ -183,7 +183,7 @@ export function AdminSidebar() {
         <SidebarContent />
       </aside>
 
-      {/* Desktop sidebar — sticky so it stays in view while content scrolls. */}
+      {/* Desktop sidebar - sticky so it stays in view while content scrolls. */}
       <aside className="hidden md:flex flex-col w-64 shrink-0 bg-white border-r border-slate-200 sticky top-0 h-screen overflow-y-auto">
         <SidebarContent />
       </aside>

@@ -1,4 +1,4 @@
-# Dulce Infancia — E-Commerce
+# Dulce Infancia - E-Commerce
 
 Tienda en línea de ropa infantil para el mercado colombiano. Storefront público, panel de administración multi-rol y pagos reales con MercadoPago (tarjeta + PSE).
 
@@ -6,7 +6,7 @@ Tienda en línea de ropa infantil para el mercado colombiano. Storefront públic
 
 |             |                                         |
 | ----------- | --------------------------------------- |
-| Framework   | Next.js 15.3.3 — App Router + Turbopack |
+| Framework   | Next.js 15.3.3 - App Router + Turbopack |
 | Lenguaje    | TypeScript strict                       |
 | Estilos     | Tailwind CSS v4 + OKLCH tokens          |
 | Componentes | shadcn/ui                               |

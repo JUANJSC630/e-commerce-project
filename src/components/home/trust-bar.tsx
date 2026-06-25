@@ -24,7 +24,7 @@ export function TrustBar({ features }: TrustBarProps) {
               <Icon className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
               <span>{item.title}</span>
               {item.description && (
-                <span className="text-brand-on-base/55 font-normal">— {item.description}</span>
+                <span className="text-brand-on-base/55 font-normal">- {item.description}</span>
               )}
               <span className="ml-5 text-brand-on-base/30" aria-hidden="true">
                 ·

@@ -12,7 +12,7 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
   const [{ q }, { brand }] = await Promise.all([searchParams, loadAllSettings()])
   const { title, description } = pageSeo.search(brand)
   if (q?.trim()) {
-    return { title: `"${q}" — Búsqueda en ${brand.name}`, description }
+    return { title: `"${q}" - Búsqueda en ${brand.name}`, description }
   }
   return { title, description }
 }

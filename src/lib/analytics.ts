@@ -4,8 +4,8 @@
  * No-ops when a provider isn't configured, so it's always safe to call.
  *
  * IDs come from env vars (deploy-level config):
- *   NEXT_PUBLIC_GA_ID         — GA4 measurement id (G-XXXXXXX)
- *   NEXT_PUBLIC_META_PIXEL_ID — Meta Pixel id
+ *   NEXT_PUBLIC_GA_ID         - GA4 measurement id (G-XXXXXXX)
+ *   NEXT_PUBLIC_META_PIXEL_ID - Meta Pixel id
  */
 
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? ""
@@ -30,7 +30,7 @@ function fbq(event: string, name: string, params?: Record<string, unknown>): voi
   if (typeof window !== "undefined" && window.fbq) window.fbq(event, name, params)
 }
 
-/** SPA page view — GA4 `page_view` + Meta `PageView`. */
+/** SPA page view - GA4 `page_view` + Meta `PageView`. */
 export function trackPageView(url: string): void {
   if (GA_ID) gtag("event", "page_view", { page_path: url })
   if (META_PIXEL_ID) fbq("track", "PageView")
@@ -64,7 +64,7 @@ function value(items: EcommerceItem[]): number {
 
 const CURRENCY = "COP"
 
-/** Product detail viewed — GA4 `view_item` + Meta `ViewContent`. */
+/** Product detail viewed - GA4 `view_item` + Meta `ViewContent`. */
 export function trackViewItem(item: EcommerceItem): void {
   if (GA_ID)
     gtag("event", "view_item", { currency: CURRENCY, value: value([item]), items: gaItems([item]) })
@@ -76,7 +76,7 @@ export function trackViewItem(item: EcommerceItem): void {
     })
 }
 
-/** Added to cart — GA4 `add_to_cart` + Meta `AddToCart`. */
+/** Added to cart - GA4 `add_to_cart` + Meta `AddToCart`. */
 export function trackAddToCart(item: EcommerceItem): void {
   if (GA_ID)
     gtag("event", "add_to_cart", {
@@ -92,7 +92,7 @@ export function trackAddToCart(item: EcommerceItem): void {
     })
 }
 
-/** Checkout started — GA4 `begin_checkout` + Meta `InitiateCheckout`. */
+/** Checkout started - GA4 `begin_checkout` + Meta `InitiateCheckout`. */
 export function trackBeginCheckout(items: EcommerceItem[]): void {
   if (GA_ID)
     gtag("event", "begin_checkout", {
@@ -108,7 +108,7 @@ export function trackBeginCheckout(items: EcommerceItem[]): void {
     })
 }
 
-/** Purchase completed — GA4 `purchase` + Meta `Purchase`. */
+/** Purchase completed - GA4 `purchase` + Meta `Purchase`. */
 export function trackPurchase(orderId: string, total: number, items: EcommerceItem[]): void {
   if (GA_ID)
     gtag("event", "purchase", {

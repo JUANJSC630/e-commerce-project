@@ -30,7 +30,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   BRAND TOKENS — These values come from src/config/theme.config.ts
+   BRAND TOKENS - These values come from src/config/theme.config.ts
    To retheme: update theme.config.ts and mirror the oklch values here.
    ═══════════════════════════════════════════════════════════════════ */
 :root {
@@ -38,7 +38,7 @@ body {
   --brand-base: oklch(0.68 0.08 145);
   /* Text on top of brand-base backgrounds */
   --brand-on-base: oklch(0.98 0 0);
-  /* Beige claro — page background, card fills */
+  /* Beige claro - page background, card fills */
   --brand-surface: oklch(0.95 0.022 80);
   /* Slightly deeper beige for sections and inputs */
   --brand-surface-alt: oklch(0.91 0.028 78);
@@ -165,7 +165,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   Fase 4 — Outline button style. When the admin picks "outline", the
+   Fase 4 - Outline button style. When the admin picks "outline", the
    storefront wrapper carries [data-button-style="outline"] and primary
    CTAs (marked `.btn-cta`) render as outlined. Unlayered so it beats the
    `bg-brand-base` utility; solid (default) leaves CTAs untouched.

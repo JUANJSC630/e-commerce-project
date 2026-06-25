@@ -11,7 +11,7 @@ interface MercadoPagoCheckoutProps {
   orderId: string
   orderNumber: string
   amount: number
-  /** Method chosen during checkout — preselects the matching tab. */
+  /** Method chosen during checkout - preselects the matching tab. */
   preferredMethod?: string
 }
 

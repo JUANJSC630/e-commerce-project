@@ -33,7 +33,7 @@ export async function logPaymentEvent(entry: {
 
 /**
  * Serializes a gateway error for the audit trail. Gateway API errors carry
- * the HTTP status and response body — without them a logged failure is
+ * the HTTP status and response body - without them a logged failure is
  * undiagnosable (a bare "MercadoPago API 400" says nothing).
  */
 export function paymentErrorPayload(err: unknown): Record<string, unknown> {

@@ -12,7 +12,7 @@ import { rulesToWhere, type CollectionRules } from "@/lib/collection-rules"
  * Single source of truth for reading the catalog from Postgres. Server
  * Components and the public `/api/products` routes both depend on these
  * functions (never on Prisma directly), so the storefront stays decoupled
- * from the persistence schema — swap the ORM here without touching the UI.
+ * from the persistence schema - swap the ORM here without touching the UI.
  *
  * Every query is scoped to published products and maps the Prisma row to the
  * lean domain `Product` the UI consumes (dropping admin-only columns).
@@ -28,7 +28,7 @@ const CACHE = { tags: [PRODUCTS_TAG], revalidate: 300 }
 /** Only published products are ever visible to shoppers. */
 const PUBLISHED = { isPublished: true } satisfies Prisma.ProductWhereInput
 
-/** Columns the storefront actually renders — avoids over-fetching admin fields. */
+/** Columns the storefront actually renders - avoids over-fetching admin fields. */
 const STOREFRONT_SELECT = {
   id: true,
   name: true,
@@ -235,7 +235,7 @@ export const getAllProductIds = unstable_cache(
   CACHE,
 )
 
-/** Variable, user-driven reads — not worth caching (would explode the key space). */
+/** Variable, user-driven reads - not worth caching (would explode the key space). */
 export function getProductsByIds(ids: string[]): Promise<Product[]> {
   if (ids.length === 0) return Promise.resolve([])
   return queryProducts({ where: { id: { in: ids } } })
@@ -256,7 +256,7 @@ export function searchProducts(query: string): Promise<Product[]> {
   })
 }
 
-/** Invalidate every cached catalog read — call after any product mutation. */
+/** Invalidate every cached catalog read - call after any product mutation. */
 export function revalidateProducts(): void {
   revalidateTag(PRODUCTS_TAG)
 }

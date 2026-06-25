@@ -5,7 +5,7 @@
  * ║  into globals.css as CSS custom properties at build time.   ║
  * ║                                                             ║
  * ║  Color format: oklch(lightness chroma hue)                  ║
- * ║  Tool: https://oklch.com — pick your color visually        ║
+ * ║  Tool: https://oklch.com - pick your color visually        ║
  * ╚══════════════════════════════════════════════════════════════╝
  */
 
@@ -23,22 +23,22 @@
  * Tip: keep chroma low (<0.05) for neutrals, medium (0.08-0.15) for accents.
  */
 export const brandColors = {
-  /** Primary accent — buttons, active states, price highlights */
+  /** Primary accent - buttons, active states, price highlights */
   base: "oklch(0.68 0.08 145)", // verde salvia
 
   /** Foreground on top of base (e.g. button label) */
   onBase: "oklch(0.98 0 0)", // white
 
-  /** Beige claro — page background, card fills */
+  /** Beige claro - page background, card fills */
   surface: "oklch(0.95 0.022 80)", // beige claro
 
-  /** Slightly deeper beige — section backgrounds, input backgrounds */
+  /** Slightly deeper beige - section backgrounds, input backgrounds */
   surfaceAlt: "oklch(0.91 0.028 78)", // beige medio
 
-  /** Muted tones — borders, secondary text, subtle icons */
+  /** Muted tones - borders, secondary text, subtle icons */
   muted: "oklch(0.58 0.012 120)", // gris oliva suave
 
-  /** Dark ink — headings, body text, footer background */
+  /** Dark ink - headings, body text, footer background */
   ink: "oklch(0.20 0.012 145)", // verde muy oscuro / casi negro
 }
 

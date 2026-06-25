@@ -1,6 +1,6 @@
 /**
  * ╔══════════════════════════════════════════════════════════════╗
- * ║              STORE CONFIGURATION — Edit this file           ║
+ * ║              STORE CONFIGURATION - Edit this file           ║
  * ║   All brand-specific values live here. To clone for a new   ║
  * ║   client, update this file + src/config/theme.config.ts     ║
  * ╚══════════════════════════════════════════════════════════════╝
@@ -38,9 +38,9 @@ export interface FeatureItem {
 }
 
 export interface CategoryConfig {
-  /** Internal key — must match product.category values in your data */
+  /** Internal key - must match product.category values in your data */
   key: string
-  /** URL slug — must match /app/category/[slug]/page.tsx filename */
+  /** URL slug - must match /app/category/[slug]/page.tsx filename */
   slug: string
   /** Display title shown on the category page header */
   title: string
@@ -276,7 +276,7 @@ export const categories: CategoryConfig[] = [
     title: "Colección Bebés",
     description: "Ropa adorable y cómoda para tus pequeños (0-24 meses).",
     emptyMessage: "Aún no hay productos en esta categoría. ¡Vuelve pronto!",
-    metaTitle: `Ropa para Bebés (0-24m) — ${brand.name}`,
+    metaTitle: `Ropa para Bebés (0-24m) - ${brand.name}`,
     metaDescription: `Descubre ropa adorable y cómoda para bebés de 0 a 24 meses en ${brand.name}. Bodys, ranitas, conjuntos y más.`,
   },
   {
@@ -285,7 +285,7 @@ export const categories: CategoryConfig[] = [
     title: "Moda Niñas",
     description: "Atuendos elegantes y divertidos para cada pequeña princesa.",
     emptyMessage: "Aún no hay productos en esta categoría. ¡Vuelve pronto!",
-    metaTitle: `Ropa para Niñas — ${brand.name}`,
+    metaTitle: `Ropa para Niñas - ${brand.name}`,
     metaDescription: `Vestidos, faldas, chaquetas y más para niñas en ${brand.name}. Moda infantil con estilo y calidad.`,
   },
   {
@@ -294,7 +294,7 @@ export const categories: CategoryConfig[] = [
     title: "Moda Niños",
     description: "Looks frescos y cómodos para los más activos.",
     emptyMessage: "Aún no hay productos en esta categoría. ¡Vuelve pronto!",
-    metaTitle: `Ropa para Niños — ${brand.name}`,
+    metaTitle: `Ropa para Niños - ${brand.name}`,
     metaDescription: `Camisetas, pantalones, sudaderas y más para niños en ${brand.name}. Ropa cómoda y duradera para los más activos.`,
   },
   {
@@ -303,7 +303,7 @@ export const categories: CategoryConfig[] = [
     title: "Ofertas",
     description: "Las mejores prendas a precios increíbles.",
     emptyMessage: "No hay artículos en oferta en este momento. ¡Vuelve más tarde!",
-    metaTitle: `Ofertas de Ropa Infantil — ${brand.name}`,
+    metaTitle: `Ofertas de Ropa Infantil - ${brand.name}`,
     metaDescription: `Aprovecha los mejores descuentos en ropa para bebés, niñas y niños en ${brand.name}. Calidad a precios increíbles.`,
   },
 ]
@@ -332,23 +332,23 @@ export const seo = (b: BrandInfo) => ({
  */
 export const pageSeo = {
   home: (b: BrandInfo): SeoCopy => ({
-    title: `${b.name} — Ropa infantil adorable`,
+    title: `${b.name} - Ropa infantil adorable`,
     description: `${b.description} Descubre bebés, niñas, niños y esenciales.`,
   }),
   products: (b: BrandInfo): SeoCopy => ({
-    title: `Todos los Productos — ${b.name}`,
+    title: `Todos los Productos - ${b.name}`,
     description: `Explora el catálogo completo de prendas adorables para bebés, niñas y niños en ${b.name}.`,
   }),
   essentials: (b: BrandInfo): SeoCopy => ({
-    title: `Esenciales — ${b.name}`,
+    title: `Esenciales - ${b.name}`,
     description: `Básicos cómodos, duraderos y versátiles para el armario de tu hijo/a. Selección de esenciales en ${b.name}.`,
   }),
   search: (b: BrandInfo): SeoCopy => ({
-    title: `Buscar — ${b.name}`,
+    title: `Buscar - ${b.name}`,
     description: `Encuentra prendas para bebés, niñas y niños en ${b.name}.`,
   }),
   favorites: (b: BrandInfo): SeoCopy => ({
-    title: `Mis Favoritos — ${b.name}`,
+    title: `Mis Favoritos - ${b.name}`,
     description: `Tus prendas guardadas en ${b.name}. Revísalas y añádelas al carrito cuando quieras.`,
   }),
 } as const
@@ -399,7 +399,7 @@ export const homePageContent = {
   },
   promise: {
     quote:
-      "Cada prenda que ves aquí fue elegida a mano — como si fuera para nuestra propia familia.",
+      "Cada prenda que ves aquí fue elegida a mano - como si fuera para nuestra propia familia.",
     subtext: "No tenemos el catálogo más grande. Tenemos el que tiene sentido.",
     ctaLabel: "Conocer la selección",
   },

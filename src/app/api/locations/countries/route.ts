@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getCountries } from "@/lib/locations"
 
-// Reference data — render once and cache hard.
+// Reference data - render once and cache hard.
 export const dynamic = "force-static"
 
 export function GET() {

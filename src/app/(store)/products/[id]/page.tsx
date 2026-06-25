@@ -26,10 +26,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const [product, { brand }] = await Promise.all([getProductById(id), loadAllSettings()])
 
   if (!product) {
-    return { title: `Producto no encontrado — ${brand.name}` }
+    return { title: `Producto no encontrado - ${brand.name}` }
   }
 
-  const title = `${product.name} — ${brand.name}`
+  const title = `${product.name} - ${brand.name}`
   const description =
     product.description ??
     `Compra ${product.name} en ${brand.name}. Ropa infantil de calidad con envío a todo el país.`

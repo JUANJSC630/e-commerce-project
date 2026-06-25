@@ -3,7 +3,7 @@
  *
  * Powers the admin font picker AND the storefront font loader. Choices are
  * validated against this list (`isGoogleFont`) so only known family names ever
- * reach a Google Fonts URL or an injected CSS variable — no arbitrary input.
+ * reach a Google Fonts URL or an injected CSS variable - no arbitrary input.
  */
 
 export type FontCategory = "sans" | "serif" | "display" | "mono" | "handwriting"

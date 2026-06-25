@@ -1,4 +1,4 @@
-# PROJECT — Dulce Infancia Shop
+# PROJECT - Dulce Infancia Shop
 
 > Documento vivo de visión, propósito y alcance del proyecto  
 > Última actualización: 2026-06-06
@@ -58,16 +58,16 @@ El objetivo principal es **establecer una marca confiable** en el mercado hispan
 | Niños                     | ✅ Activa      | Conjuntos, pantalones, camisetas                         |
 | Ofertas / Sales           | ✅ Activa      | Productos con `isOnSale: true` y descuento visible       |
 | Esenciales                | ✅ Activa      | Prendas básicas de alta rotación                         |
-| Accesorios para celulares | 🔲 Planificada | Fase 2 — Capas de tendencia viral                        |
-| Artículos para el hogar   | 🔲 Planificada | Fase 2 — Alta demanda en redes sociales                  |
-| Productos virales         | 🔲 Planificada | Fase 3 — Selección curada de tendencias TikTok/Instagram |
+| Accesorios para celulares | 🔲 Planificada | Fase 2 - Capas de tendencia viral                        |
+| Artículos para el hogar   | 🔲 Planificada | Fase 2 - Alta demanda en redes sociales                  |
+| Productos virales         | 🔲 Planificada | Fase 3 - Selección curada de tendencias TikTok/Instagram |
 
 ### Propuesta de valor diferenciadora
 
-1. **Curación de productos de tendencia** — No catálogo genérico, sino selección basada en viralidad y demanda real.
-2. **Marca confiable** — Diseño profesional, pagos seguros, tracking de pedidos, empaque especial.
-3. **Experiencia móvil primero** — El 70%+ de compras en categorías de tendencia ocurre desde celular.
-4. **Escalabilidad** — Arquitectura diseñada para agregar categorías y productos sin refactorización.
+1. **Curación de productos de tendencia** - No catálogo genérico, sino selección basada en viralidad y demanda real.
+2. **Marca confiable** - Diseño profesional, pagos seguros, tracking de pedidos, empaque especial.
+3. **Experiencia móvil primero** - El 70%+ de compras en categorías de tendencia ocurre desde celular.
+4. **Escalabilidad** - Arquitectura diseñada para agregar categorías y productos sin refactorización.
 
 ---
 
@@ -134,8 +134,8 @@ Confirmación / Post-compra                                           │
 
 **Estado actual**: ✅ Implementado.
 
-- Menú hamburger con Sheet/Drawer — resuelto
-- Touch targets 44×44px — resuelto
+- Menú hamburger con Sheet/Drawer - resuelto
+- Touch targets 44×44px - resuelto
 - Hero mobile: imagen arriba + texto sobre beige abajo (stacked, sin overlay oscuro)
 - Checkout funcional en móvil (forms nativos, teclado numérico en campos de tarjeta)
 - Pendiente: validar en 320px y medir LCP real con imágenes reales
@@ -214,11 +214,11 @@ Fase 4             → Microservicios: inventario, pedidos, pagos separados
 
 **Principios de diseño para escalar**:
 
-- `store.config.ts` centraliza toda la configuración — agregar categoría = 1 objeto en el array
-- Tipos TypeScript estrictos en `types.ts` — cualquier nueva propiedad de producto se propaga automáticamente
-- Componentes sin acoplamiento a datos específicos — `ProductCard` recibe `Product` genérico
-- CSS con sistema de tokens — cambiar el tema completo = cambiar 6 variables OKLCH
-- Rutas dinámicas (`/category/[slug]`, `/products/[id]`) — nuevas categorías sin nuevos archivos de página
+- `store.config.ts` centraliza toda la configuración - agregar categoría = 1 objeto en el array
+- Tipos TypeScript estrictos en `types.ts` - cualquier nueva propiedad de producto se propaga automáticamente
+- Componentes sin acoplamiento a datos específicos - `ProductCard` recibe `Product` genérico
+- CSS con sistema de tokens - cambiar el tema completo = cambiar 6 variables OKLCH
+- Rutas dinámicas (`/category/[slug]`, `/products/[id]`) - nuevas categorías sin nuevos archivos de página
 
 ---
 
@@ -228,12 +228,12 @@ Fase 4             → Microservicios: inventario, pedidos, pagos separados
 
 | Token                 | Valor                   | Uso                                    |
 | --------------------- | ----------------------- | -------------------------------------- |
-| `--brand-base`        | `oklch(0.68 0.08 145)`  | Verde Salvia — botones, trust bar, CTA |
-| `--brand-on-base`     | `oklch(0.98 0 0)`       | Blanco — texto sobre botones verdes    |
-| `--brand-surface`     | `oklch(0.95 0.022 80)`  | Beige claro — fondo de página, cards   |
-| `--brand-surface-alt` | `oklch(0.91 0.028 78)`  | Beige medio — secciones alternadas     |
-| `--brand-muted`       | `oklch(0.58 0.012 120)` | Gris oliva — texto secundario, bordes  |
-| `--brand-ink`         | `oklch(0.20 0.012 145)` | Verde muy oscuro — headings, cuerpo    |
+| `--brand-base`        | `oklch(0.68 0.08 145)`  | Verde Salvia - botones, trust bar, CTA |
+| `--brand-on-base`     | `oklch(0.98 0 0)`       | Blanco - texto sobre botones verdes    |
+| `--brand-surface`     | `oklch(0.95 0.022 80)`  | Beige claro - fondo de página, cards   |
+| `--brand-surface-alt` | `oklch(0.91 0.028 78)`  | Beige medio - secciones alternadas     |
+| `--brand-muted`       | `oklch(0.58 0.012 120)` | Gris oliva - texto secundario, bordes  |
+| `--brand-ink`         | `oklch(0.20 0.012 145)` | Verde muy oscuro - headings, cuerpo    |
 
 ### Tipografía aplicada
 
@@ -244,10 +244,10 @@ Fase 4             → Microservicios: inventario, pedidos, pagos separados
 
 ### Tono de comunicación
 
-- **Cálido y cercano** — hablar de "tu pequeño", "prendas adorables", "diseñado con cariño"
-- **Confiable** — énfasis en calidad garantizada, pagos seguros, envíos rápidos
-- **Sin exceso de diminutivos** — el tono es adulto (le habla a padres/madres, no a niños)
-- **Español neutro con colombianismos suaves** — comprensible en todo el mercado hispanohablante
+- **Cálido y cercano** - hablar de "tu pequeño", "prendas adorables", "diseñado con cariño"
+- **Confiable** - énfasis en calidad garantizada, pagos seguros, envíos rápidos
+- **Sin exceso de diminutivos** - el tono es adulto (le habla a padres/madres, no a niños)
+- **Español neutro con colombianismos suaves** - comprensible en todo el mercado hispanohablante
 
 ---
 
@@ -278,11 +278,11 @@ Fase 4             → Microservicios: inventario, pedidos, pagos separados
 
 ## Fases del Proyecto
 
-### Fase 0 — Fundación ✅
+### Fase 0 - Fundación ✅
 
 Scaffolding con Next.js 15, sistema de diseño con tokens OKLCH, carrito funcional, checkout multi-paso con validación Luhn, categorías con mock-data.
 
-### Fase 1 — MVP Técnico ✅
+### Fase 1 - MVP Técnico ✅
 
 Todo el flujo funciona y el código es de calidad de producción:
 
@@ -297,7 +297,7 @@ Todo el flujo funciona y el código es de calidad de producción:
 - ⏳ Imágenes reales de productos (placeholder.svg en la mayoría)
 - ⏳ Deploy en Vercel con dominio real
 
-### Fase 2 — Backend real + administrable ✅ (en gran parte)
+### Fase 2 - Backend real + administrable ✅ (en gran parte)
 
 - ✅ Backend propio: Prisma + PostgreSQL (productos, pedidos, usuarios, settings)
 - ✅ Panel admin `/admin` multi-rol (CRUD productos, pedidos, usuarios, roles, settings)
@@ -310,7 +310,7 @@ Todo el flujo funciona y el código es de calidad de producción:
 - ⏳ Cargar contenido/imágenes reales · Deploy en Vercel con dominio propio
 - ⏳ Aplicar todos los Settings de la DB al storefront (audit de hardcoded, Bloque 9.8)
 
-### Fase 3 — Crecimiento
+### Fase 3 - Crecimiento
 
 - ✅ Cuenta de cliente: registro/login, `/cuenta`, historial de pedidos, favoritos en DB
 - ✅ Wishlist `/favoritos` (sincronizada a la cuenta)
@@ -320,14 +320,14 @@ Todo el flujo funciona y el código es de calidad de producción:
 - ⏳ Analytics (GA4 + Meta Pixel)
 - ⏳ Reviews y calificaciones en detalle de producto
 
-### Fase 4 — Escala
+### Fase 4 - Escala
 
 - Nuevas categorías (accesorios para celulares, artículos para el hogar, productos virales)
 - Programa de referidos
 - Notificaciones push (back-in-stock, ofertas flash)
 - Búsqueda con IA (recomendaciones personalizadas)
 
-### Fase 5 — Optimización
+### Fase 5 - Optimización
 
 - A/B testing en hero, CTA, checkout
 - Personalización por comportamiento

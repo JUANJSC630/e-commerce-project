@@ -71,7 +71,7 @@ interface ImageUploadFieldProps {
   value: string
   /** Called with the new URL after upload, or `emptyValue` after removal. */
   onChange: (url: string) => void
-  /** Where this image is used — sets endpoint, shape, guidance and validation. */
+  /** Where this image is used - sets endpoint, shape, guidance and validation. */
   slot?: MediaSlot
   /** Override the upload endpoint (defaults to the slot's). */
   endpoint?: keyof UploadRouter
@@ -152,7 +152,7 @@ export function ImageUploadField({
                 toast.warning(`Imagen pequeña (${width}×${height}px). Recomendado: ${cfg.hint}.`)
               }
             } catch {
-              // Unreadable file — let UploadThing surface the real error.
+              // Unreadable file - let UploadThing surface the real error.
             }
           }
           return files

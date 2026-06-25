@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { ChevronDown, Search, X } from "lucide-react"
 import { ICON_NAMES, getLucideIcon } from "@/lib/lucide-icons"
 
-/** Max icons rendered at once — keeps the grid snappy on broad queries. */
+/** Max icons rendered at once - keeps the grid snappy on broad queries. */
 const MAX_RESULTS = 120
 
 interface IconPickerProps {
@@ -126,7 +126,7 @@ export function IconPicker({ label = "Ícono", value, onChange }: IconPickerProp
 
           {results.length === MAX_RESULTS && (
             <p className="border-t border-slate-100 px-3 py-1.5 text-center text-[11px] text-slate-400">
-              Mostrando {MAX_RESULTS} — refina tu búsqueda
+              Mostrando {MAX_RESULTS} - refina tu búsqueda
             </p>
           )}
         </div>

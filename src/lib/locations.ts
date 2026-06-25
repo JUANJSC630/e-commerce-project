@@ -29,7 +29,7 @@ export function getStates(countryCode: string): LocationOption[] {
 
 /**
  * Searches cities within a country, optionally narrowed to a state. When a state
- * is given the full (bounded) list is returned — a department/state has at most
+ * is given the full (bounded) list is returned - a department/state has at most
  * a few hundred cities, so it's both complete and fast. Only the country-wide
  * search (no state) is capped, to avoid dumping the thousands of cities a large
  * country can have; typing then narrows it.

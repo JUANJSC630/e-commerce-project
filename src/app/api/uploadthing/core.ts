@@ -10,7 +10,7 @@ const f = createUploadthing()
 /**
  * Builds a single-image endpoint gated by a permission resource. The
  * `.middleware` is the security boundary: only an authenticated admin who can
- * manage that resource obtains a presigned URL — anything thrown aborts the
+ * manage that resource obtains a presigned URL - anything thrown aborts the
  * upload before a byte reaches storage.
  */
 function imageEndpoint(resource: Resource) {

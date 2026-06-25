@@ -26,7 +26,7 @@ export function HeroSection({ banners, eyebrow, viewAllHref, viewAllLabel }: Her
       aria-label="Banner principal"
       className="flex flex-col md:grid md:grid-cols-[45%_55%] md:h-[calc(100dvh-80px)] md:min-h-[560px] overflow-hidden bg-brand-surface"
     >
-      {/* Image — order-first places it above the text on mobile */}
+      {/* Image - order-first places it above the text on mobile */}
       <div className="order-first md:order-2 relative h-[56dvh] md:h-auto overflow-hidden">
         {banners.map((b, i) => (
           <div

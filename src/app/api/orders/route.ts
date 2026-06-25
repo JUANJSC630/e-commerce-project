@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "El carrito está vacío o es inválido" }, { status: 400 })
   }
 
-  // Re-validate shipping server-side — never trust the client's own checks.
+  // Re-validate shipping server-side - never trust the client's own checks.
   const customer = body.customer as ShippingData
   if (!validateShippingData(customer).isValid) {
     return NextResponse.json({ error: "Datos de envío incompletos" }, { status: 400 })

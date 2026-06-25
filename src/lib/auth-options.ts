@@ -12,7 +12,7 @@ const LOGIN_WINDOW_MS = 10 * 60 * 1000
 
 /**
  * How often the JWT re-reads the user's role from the database. Without this a
- * role change (or deactivation) wouldn't take effect until the token expired —
+ * role change (or deactivation) wouldn't take effect until the token expired -
  * a degraded admin could keep their old access. 5 min bounds that window while
  * keeping the per-request DB cost negligible.
  */

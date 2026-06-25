@@ -12,7 +12,7 @@ import type { ShippingData } from "@/lib/validation"
  * Order creation + read layer.
  *
  * The server is the single source of truth for money: prices, subtotal,
- * shipping and total are recomputed from the database on every order — the
+ * shipping and total are recomputed from the database on every order - the
  * client only says *which* products and *how many*. Stock is decremented with
  * a guarded `updateMany` so two simultaneous checkouts can never oversell.
  */
@@ -122,7 +122,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           }
 
           // Guarded decrement: only succeeds while enough stock remains, so
-          // concurrent checkouts can't drive stock negative — except preorder
+          // concurrent checkouts can't drive stock negative - except preorder
           // products, which are allowed to backorder (stock may go negative).
           for (const [productId, qty] of qtyByProduct) {
             if (byId.get(productId)?.isPreorder) {
@@ -221,7 +221,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       )
     } catch (err) {
       // A unique clash on the generated number means another order slipped in
-      // concurrently — recompute and retry.
+      // concurrently - recompute and retry.
       const isNumberClash =
         err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002"
       if (isNumberClash && attempt < MAX_ATTEMPTS) continue
@@ -250,7 +250,7 @@ export interface OrderConfirmationDTO {
   customerEmail: string | null
   status: string
   paymentStatus: PaymentStatus
-  /** A gateway attempt exists and hasn't settled — show "waiting", not "pay". */
+  /** A gateway attempt exists and hasn't settled - show "waiting", not "pay". */
   paymentInFlight: boolean
   subtotal: number
   shippingCost: number
@@ -442,7 +442,7 @@ const ABANDON_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 /**
  * Emails a one-time "complete your payment" reminder for orders left PENDING
  * (checkout abandoned before paying). The reminder is claimed with a guarded
- * update before sending, so concurrent cron runs — or a duplicate invocation —
+ * update before sending, so concurrent cron runs - or a duplicate invocation -
  * can never email the same customer twice. Returns how many were sent.
  */
 export async function remindAbandonedOrders(): Promise<number> {
@@ -480,7 +480,7 @@ export const MAX_PAYMENT_ATTEMPTS = 5
  * Atomically claims one payment attempt: only succeeds while the order can
  * still settle and hasn't exhausted its attempts. The fresh idempotency key is
  * stored BEFORE the gateway is called, so a crash mid-charge can never lead to
- * a double bill — retrying reuses the stored key.
+ * a double bill - retrying reuses the stored key.
  */
 export async function claimPaymentAttempt(
   id: string,
@@ -522,7 +522,7 @@ export async function setPaymentReference(id: string, reference: string): Promis
   await prisma.order.update({ where: { id }, data: { paymentProviderId: reference } })
 }
 
-/** States a payment can still settle from — PENDING (card) or PROCESSING (PSE at the bank). */
+/** States a payment can still settle from - PENDING (card) or PROCESSING (PSE at the bank). */
 const SETTLEABLE: PaymentStatus[] = ["PENDING", "PROCESSING"]
 
 /**

@@ -63,7 +63,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         writeLocal(merged)
       }
     } catch {
-      /* offline — keep the local set */
+      /* offline - keep the local set */
     }
   }, [])
 

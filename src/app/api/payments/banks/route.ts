@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getPaymentProvider, isOnsiteProvider } from "@/lib/payments"
 
-/** PSE bank list changes rarely — cache it for an hour. */
+/** PSE bank list changes rarely - cache it for an hour. */
 export const revalidate = 3600
 
 export async function GET() {

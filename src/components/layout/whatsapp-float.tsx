@@ -39,7 +39,7 @@ export function WhatsAppFloat() {
     try {
       setLifted(!localStorage.getItem(COOKIE_CONSENT_KEY))
     } catch {
-      // localStorage unavailable — keep the default position.
+      // localStorage unavailable - keep the default position.
     }
     const onAccept = () => setLifted(false)
     window.addEventListener(COOKIE_CONSENT_EVENT, onAccept)

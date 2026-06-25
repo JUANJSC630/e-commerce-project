@@ -4,7 +4,7 @@ import { Instagram } from "lucide-react"
 
 export interface InstagramPost {
   image: string
-  /** Where the tile links — the product page (shoppable grid). */
+  /** Where the tile links - the product page (shoppable grid). */
   href: string
   alt: string
 }
@@ -30,7 +30,7 @@ function parseInstagram(value: string): { handle: string; url: string } | null {
 /**
  * "Follow us on Instagram" section: a shoppable grid of the store's product
  * photos that link to their product pages, plus a CTA to the real profile. Pure
- * presentational — the home passes the profile value and the post tiles.
+ * presentational - the home passes the profile value and the post tiles.
  */
 export function InstagramFeed({ instagram, posts }: InstagramFeedProps) {
   const profile = parseInstagram(instagram)

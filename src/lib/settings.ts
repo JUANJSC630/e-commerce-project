@@ -17,7 +17,7 @@ import { typography as defaultTypography } from "@/config/theme.config"
 import { homeContent as defaultHomeContent, type HomeContent } from "@/config/store.config"
 import { sanitizeThemeConfig, type ThemeConfig } from "@/lib/theme"
 
-/** Keeps only valid {label, href} entries — header links are user-editable. */
+/** Keeps only valid {label, href} entries - header links are user-editable. */
 function sanitizeHeaderLinks(value: unknown): NavItem[] {
   if (!Array.isArray(value)) return defaultHeaderLinks
   const links = value
@@ -67,7 +67,7 @@ export const loadAllSettings = unstable_cache(
       social: merge(defaultSocial, dbMap.get(SETTINGS_KEYS.social)),
       contact: merge(defaultContact, dbMap.get(SETTINGS_KEYS.contact)),
       // Sanitized so every consumer (CSS injection, layout attrs, Toaster props)
-      // gets validated colors + clamped enums — never raw DB values.
+      // gets validated colors + clamped enums - never raw DB values.
       theme: sanitizeThemeConfig(
         (dbMap.get(SETTINGS_KEYS.theme) as Record<string, unknown> | undefined) ?? {},
       ),

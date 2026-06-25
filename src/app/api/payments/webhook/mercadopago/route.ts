@@ -11,7 +11,7 @@ import {
 /**
  * MercadoPago webhook: the only path allowed to settle orders.
  *
- * Contract with MP: answer 200 within 22s or the delivery is retried — so the
+ * Contract with MP: answer 200 within 22s or the delivery is retried - so the
  * signature is checked synchronously and everything else (the status lookup
  * against MP's API plus the order update) runs via `after()`, once the
  * response is on the wire.
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   // Fail closed: without a configured secret no webhook can settle anything.
   const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET
   if (!secret) {
-    console.error("MERCADOPAGO_WEBHOOK_SECRET no está configurado — webhook rechazado")
+    console.error("MERCADOPAGO_WEBHOOK_SECRET no está configurado - webhook rechazado")
     return NextResponse.json({ error: "No configurado" }, { status: 503 })
   }
 
@@ -63,7 +63,7 @@ async function processPaymentNotification(paymentId: string): Promise<void> {
     const provider = getPaymentProvider()
     if (!isOnsiteProvider(provider)) return
 
-    // Authoritative state, fetched from MP — never from the notification body.
+    // Authoritative state, fetched from MP - never from the notification body.
     const result = await provider.getPaymentStatus(paymentId)
 
     const orderId = result.orderReference
@@ -88,7 +88,7 @@ async function processPaymentNotification(paymentId: string): Promise<void> {
     })
 
     if (result.status === "approved") {
-      // Guarded update — a duplicate delivery is a no-op.
+      // Guarded update - a duplicate delivery is a no-op.
       await markOrderPaid(orderId)
       return
     }
@@ -101,7 +101,7 @@ async function processPaymentNotification(paymentId: string): Promise<void> {
         await markOrderFailed(orderId)
       }
     }
-    // "pending" carries no transition — the next notification settles it.
+    // "pending" carries no transition - the next notification settles it.
   } catch (err) {
     console.error("Webhook MercadoPago: fallo procesando notificación", { paymentId, err })
   }

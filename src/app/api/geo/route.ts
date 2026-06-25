@@ -18,7 +18,7 @@ function publicIp(forwardedFor: string | null): string | undefined {
 
 /**
  * Best-effort country detection (ISO-3166 alpha-2). Prefers the edge geo header
- * set by the hosting platform (Vercel/Cloudflare) — zero latency, no API key.
+ * set by the hosting platform (Vercel/Cloudflare) - zero latency, no API key.
  * Falls back to a keyless geo-IP lookup. Always returns a shape; `country` is
  * null when detection isn't possible, and the client falls back to its default.
  */
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ country: data.country_code.toUpperCase() })
     }
   } catch {
-    // Network/timeout — fall through to null.
+    // Network/timeout - fall through to null.
   }
 
   return NextResponse.json({ country: null })

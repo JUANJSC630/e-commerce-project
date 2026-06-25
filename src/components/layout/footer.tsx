@@ -14,6 +14,7 @@ import {
 import { routes } from "@/config/store.config"
 import { useSettings } from "@/components/providers/settings-provider"
 import { TikTokIcon, WhatsAppIcon } from "@/components/icons/brand-icons"
+import { PaymentMethods } from "@/components/layout/payment-methods"
 import type { NavItem } from "@/lib/categories"
 
 /** Builds a wa.me link from a raw number or an already-complete URL. */
@@ -37,7 +38,7 @@ export function Footer({ navItems }: { navItems: NavItem[] }) {
 
   return (
     <footer className="bg-brand-ink text-brand-surface" aria-label="Pie de página">
-      {/* Trust strip — last reassurance before leaving, on every page */}
+      {/* Trust strip - last reassurance before leaving, on every page */}
       <div className="border-b border-brand-surface/10">
         <div className="container mx-auto px-4 py-7 grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-6">
           {TRUST.map(({ icon: Icon, title, sub }) => (
@@ -160,16 +161,8 @@ export function Footer({ navItems }: { navItems: NavItem[] }) {
 
       {/* Payment methods */}
       <div className="border-t border-brand-surface/10">
-        <div className="container mx-auto px-4 py-4 flex flex-wrap items-center justify-center gap-2">
-          <span className="text-xs text-brand-surface/50 mr-1">Medios de pago:</span>
-          {PAYMENT_METHODS.map((name) => (
-            <span
-              key={name}
-              className="inline-flex items-center rounded-md border border-brand-surface/20 bg-brand-surface/5 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-brand-surface/80"
-            >
-              {name}
-            </span>
-          ))}
+        <div className="container mx-auto px-4 py-4">
+          <PaymentMethods />
         </div>
       </div>
 
@@ -188,9 +181,6 @@ export function Footer({ navItems }: { navItems: NavItem[] }) {
     </footer>
   )
 }
-
-/** Accepted payment methods shown as wordmark chips (no third-party logo assets). */
-const PAYMENT_METHODS = ["Visa", "Mastercard", "Amex", "MercadoPago", "PSE", "Nequi"]
 
 function SocialLink({
   href,

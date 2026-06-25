@@ -241,7 +241,7 @@ export async function POST(request: Request) {
     }
 
     // Rejected: the order stays PENDING so the customer can retry. The latest
-    // providerId is deliberately NOT stored — a late webhook for this dead
+    // providerId is deliberately NOT stored - a late webhook for this dead
     // attempt must never cancel an order the customer is actively retrying.
     return NextResponse.json({
       status: "rejected",

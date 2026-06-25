@@ -93,11 +93,11 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
         <dl className="space-y-1 text-sm">
           <div className="flex gap-2">
             <dt className="text-slate-500 w-24">Nombre:</dt>
-            <dd className="text-slate-900">{order.customerName ?? "—"}</dd>
+            <dd className="text-slate-900">{order.customerName ?? "-"}</dd>
           </div>
           <div className="flex gap-2">
             <dt className="text-slate-500 w-24">Email:</dt>
-            <dd className="text-slate-900">{order.customerEmail ?? "—"}</dd>
+            <dd className="text-slate-900">{order.customerEmail ?? "-"}</dd>
           </div>
           <div className="flex gap-2">
             <dt className="text-slate-500 w-24">Fecha:</dt>
@@ -185,7 +185,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
                     <td className="px-5 py-2 font-mono text-xs">{log.event}</td>
                     <td className="px-5 py-2">{log.provider}</td>
                     <td className="px-5 py-2 font-mono text-xs text-slate-400">
-                      {log.providerId ?? "—"}
+                      {log.providerId ?? "-"}
                     </td>
                     <td className="px-5 py-2">{log.status}</td>
                   </tr>

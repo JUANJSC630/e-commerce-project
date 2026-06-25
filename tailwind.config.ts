@@ -14,7 +14,7 @@ const config: Config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         /*
-         * Brand tokens — driven by CSS variables in globals.css.
+         * Brand tokens - driven by CSS variables in globals.css.
          * Change values in src/config/theme.config.ts, then mirror
          * the oklch values in globals.css :root { --brand-* }.
          * Never use hex values here; use the CSS variable references below.
@@ -26,7 +26,7 @@ const config: Config = {
           "surface-alt": "var(--brand-surface-alt)",
           muted: "var(--brand-muted)",
           ink: "var(--brand-ink)",
-          /* Legacy aliases — kept for backward compat while migrating components */
+          /* Legacy aliases - kept for backward compat while migrating components */
           charcoal: "var(--brand-ink)",
           offWhite: "var(--brand-surface)",
           silver: "var(--brand-surface-alt)",
@@ -111,7 +111,7 @@ const config: Config = {
         /* These reference CSS variables set by next/font in layout.tsx */
         display: ["var(--font-display)", "sans-serif"],
         body: ["var(--font-body)", "sans-serif"],
-        /* Legacy alias — components using font-montserrat still work */
+        /* Legacy alias - components using font-montserrat still work */
         montserrat: ["var(--font-display)", "sans-serif"],
       },
     },

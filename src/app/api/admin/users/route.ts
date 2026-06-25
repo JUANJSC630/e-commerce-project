@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     )
   }
 
-  // Validate the role exists up front — a bad roleId would otherwise surface as a
+  // Validate the role exists up front - a bad roleId would otherwise surface as a
   // 500 from the foreign-key constraint instead of a clean 400.
   const role = await prisma.role.findUnique({ where: { id: roleId }, select: { id: true } })
   if (!role) return NextResponse.json({ error: "El rol indicado no existe" }, { status: 400 })

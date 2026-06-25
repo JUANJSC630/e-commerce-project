@@ -9,7 +9,7 @@ import { prisma } from "@/lib/prisma"
  * the table stays small without a separate cron.
  *
  * Both primitives are best-effort: if the database is unreachable they fail open
- * (allow the request) rather than locking everyone out — rate limiting must never
+ * (allow the request) rather than locking everyone out - rate limiting must never
  * become a denial of service itself.
  */
 export interface RateLimitWindow {

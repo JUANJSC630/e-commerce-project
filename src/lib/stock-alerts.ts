@@ -24,7 +24,7 @@ export async function notifyBackInStock(productId: string): Promise<number> {
   const price = formatPrice(product.price, locale)
   const productUrl = `${process.env.NEXTAUTH_URL ?? "https://dulceinfancia.co"}/products/${productId}`
 
-  const subject = `¡${product.name} volvió! — ${brand.name}`
+  const subject = `¡${product.name} volvió! - ${brand.name}`
   const html = `
     <div style="font-family:sans-serif;max-width:560px;margin:auto;padding:24px">
       <h1 style="font-size:20px;color:#1e293b">¡Buenas noticias! 🎉</h1>

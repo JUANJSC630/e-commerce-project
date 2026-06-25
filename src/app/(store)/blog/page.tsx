@@ -9,7 +9,7 @@ export const revalidate = 300
 export async function generateMetadata(): Promise<Metadata> {
   const { brand } = await loadAllSettings()
   return {
-    title: `Blog — ${brand.name}`,
+    title: `Blog - ${brand.name}`,
     description: `Consejos de crianza, moda infantil y guías para padres en el blog de ${brand.name}.`,
   }
 }

@@ -28,7 +28,7 @@ export default async function OrderSuccessPage({ params }: PageProps) {
   if (order.paymentStatus === "FAILED") redirect(`/pago-fallido?orderId=${id}`)
   // No payment attempt yet → send the customer to complete payment. With one
   // in flight (PSE at the bank, card in review) we show the waiting state
-  // below instead — bouncing them back to the payment form would double-pay.
+  // below instead - bouncing them back to the payment form would double-pay.
   if (order.paymentStatus !== "PAID" && !order.paymentInFlight) redirect(`/pago/${id}`)
 
   // Offer a guest an account that will claim this (and other) orders by email.

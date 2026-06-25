@@ -9,7 +9,7 @@ import { useFormatPrice } from "@/components/providers/settings-provider"
 
 /**
  * MercadoPago CardForm (Checkout API). Card number, expiry and CVV render
- * inside MP-hosted iframes — raw card data never touches our page, our state
+ * inside MP-hosted iframes - raw card data never touches our page, our state
  * or our server; we only ever see the single-use token.
  */
 
@@ -46,7 +46,7 @@ function loadSdk(): Promise<unknown> {
 
 interface MpCardFormProps {
   orderId: string
-  /** Amount in store currency — display/installments only; the charge amount comes from the DB. */
+  /** Amount in store currency - display/installments only; the charge amount comes from the DB. */
   amount: number
 }
 

@@ -47,7 +47,7 @@ export function AddressSelectors({ value, onChange, errors, zipField }: AddressS
   const labelOf = (options: { value: string; label: string }[], code?: string) =>
     options.find((o) => o.value === code)?.label
 
-  // Seed the country immediately from the saved name or the config default —
+  // Seed the country immediately from the saved name or the config default -
   // without waiting on geo, so the field is never blank on load.
   const seededDefault = useRef(false)
   useEffect(() => {

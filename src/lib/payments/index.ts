@@ -19,7 +19,7 @@ export { isOnsiteProvider } from "./types"
  * Selects the active payment provider from `PAYMENT_PROVIDER`. Defaults to the
  * mock simulator so a fresh clone works without gateway credentials; set
  * PAYMENT_PROVIDER=mercadopago (plus its keys) to charge for real. Future
- * providers (wompi, stripe) plug in as new cases — nothing else changes.
+ * providers (wompi, stripe) plug in as new cases - nothing else changes.
  */
 export function getPaymentProvider(): PaymentProvider {
   switch (process.env.PAYMENT_PROVIDER) {

@@ -21,8 +21,8 @@ const isSettled = (status: PaymentStatus) => status === "PAID" || status === "FA
 /**
  * Shows the live payment state on the order confirmation page. A PSE payment can
  * settle seconds after the customer returns from the bank, so while the order is
- * pending we poll the order endpoint and transition the UI in place — no full
- * reload — until it settles or we give up and point the customer to their email.
+ * pending we poll the order endpoint and transition the UI in place - no full
+ * reload - until it settles or we give up and point the customer to their email.
  */
 export function PaymentStatusPoller({
   orderId,
@@ -59,7 +59,7 @@ export function PaymentStatusPoller({
           }
         }
       } catch {
-        // Transient network error — keep polling until the attempt budget runs out.
+        // Transient network error - keep polling until the attempt budget runs out.
       }
       if (polls >= MAX_POLLS) {
         setGaveUp(true)
@@ -120,7 +120,7 @@ export function PaymentStatusPoller({
         estamos esperando la confirmación del pago.{" "}
         {gaveUp
           ? `Verifica tu correo${emailSuffix} para la confirmación del banco.`
-          : `Te avisaremos por correo${emailSuffix} apenas se confirme — no necesitas hacer nada más.`}
+          : `Te avisaremos por correo${emailSuffix} apenas se confirme - no necesitas hacer nada más.`}
       </p>
     </header>
   )

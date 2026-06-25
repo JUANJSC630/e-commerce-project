@@ -7,7 +7,7 @@ import { Resend } from "resend"
  *
  * Email is always best-effort: a delivery failure must never break the flow that
  * triggered it (placing an order, confirming a payment). When `RESEND_API_KEY` is
- * absent — local dev without credentials — sending is a logged no-op so the rest
+ * absent - local dev without credentials - sending is a logged no-op so the rest
  * of the app works unchanged.
  */
 
@@ -32,7 +32,7 @@ export interface SendEmailInput {
 export async function sendEmail({ to, subject, html }: SendEmailInput): Promise<boolean> {
   const resend = getResend()
   if (!resend) {
-    console.warn(`[email] RESEND_API_KEY no configurada — email "${subject}" omitido`)
+    console.warn(`[email] RESEND_API_KEY no configurada - email "${subject}" omitido`)
     return false
   }
   try {

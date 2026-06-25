@@ -14,7 +14,7 @@ const catHref = (slug: string) => `${routes.categoryBase}/${slug}`
  * "Categorías" mega-menu. A vertical rail of top-level categories on the left;
  * hovering/focusing one reveals its subcategories (and their children) on the
  * right, plus the category photo. The rail scales to many categories without
- * blowing up the panel height — unlike a flat card grid.
+ * blowing up the panel height - unlike a flat card grid.
  */
 export function CategoryMegaMenu({ tree }: { tree: CategoryNode[] }) {
   const [open, setOpen] = useState(false)

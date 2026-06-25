@@ -10,7 +10,7 @@ const VALID_STATUSES: OrderStatus[] = ["PENDING", "CONFIRMED", "SHIPPED", "DELIV
 
 /**
  * Bulk-update order statuses. Accepts up to 100 order IDs at once.
- * Does NOT fire individual emails — admin should use single-order PATCH
+ * Does NOT fire individual emails - admin should use single-order PATCH
  * if shipping notifications are needed per order.
  */
 export async function PATCH(request: Request) {

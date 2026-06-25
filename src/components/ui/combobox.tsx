@@ -23,7 +23,7 @@ interface ComboboxProps {
   onChange: (value: string) => void
   /**
    * When provided, internal filtering is disabled and this is called (raw, per
-   * keystroke — debounce upstream) so the parent can supply server-filtered
+   * keystroke - debounce upstream) so the parent can supply server-filtered
    * options. Use for large/remote datasets like cities.
    */
   onSearchChange?: (query: string) => void

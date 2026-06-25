@@ -3,7 +3,7 @@
  *
  * Security: the editor only ever stores validated color/length values. Before a
  * value reaches the injected `<style>`, `isValidColor`/`isValidRadius` reject
- * anything that isn't a plain color or length literal — there is no path for
+ * anything that isn't a plain color or length literal - there is no path for
  * arbitrary CSS (no `;`, `{`, `}`, `url(...)`, etc.), so the theme cannot be
  * used for CSS/style injection.
  */
@@ -12,17 +12,17 @@ import { brandColors } from "@/config/theme.config"
 import { radius as radiusConfig } from "@/config/theme.config"
 
 export interface ThemeTokens {
-  /** Primary accent — buttons, links, active states */
+  /** Primary accent - buttons, links, active states */
   base: string
   /** Foreground on top of `base` */
   onBase: string
   /** Page / card background */
   surface: string
-  /** Deeper surface — sections, inputs, borders */
+  /** Deeper surface - sections, inputs, borders */
   surfaceAlt: string
-  /** Muted tone — secondary text, subtle icons */
+  /** Muted tone - secondary text, subtle icons */
   muted: string
-  /** Ink — headings, body text, dark surfaces */
+  /** Ink - headings, body text, dark surfaces */
   ink: string
   /** Corner radius (rem/px/em), e.g. "0.625rem" */
   radius: string
@@ -58,7 +58,7 @@ export type BannerStyle = (typeof BANNER_STYLES)[number]
 export type ToastPosition = (typeof TOAST_POSITIONS)[number]
 export type CardSize = (typeof CARD_SIZES)[number]
 
-/** Product grid columns per card size — denser size = smaller cards. */
+/** Product grid columns per card size - denser size = smaller cards. */
 export const PRODUCT_GRID_CLASS: Record<CardSize, string> = {
   small: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
   medium: "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
@@ -67,9 +67,9 @@ export const PRODUCT_GRID_CLASS: Record<CardSize, string> = {
 
 /** Semantic colors + behavioural options layered on top of the 6-color palette. */
 export interface ThemeOptions {
-  /** Success accent — confirmations, "in stock", positive toasts */
+  /** Success accent - confirmations, "in stock", positive toasts */
   success: string
-  /** Danger accent — errors, "out of stock", destructive actions */
+  /** Danger accent - errors, "out of stock", destructive actions */
   danger: string
   /** Default look of primary CTAs across the storefront */
   buttonStyle: ButtonStyle
@@ -281,7 +281,7 @@ export const THEME_PRESETS: ReadonlyArray<{ id: string; name: string; tokens: Th
 
 /**
  * True only for plain color literals: #rrggbb, oklch(), rgb()/rgba(), hsl()/hsla().
- * Deliberately strict — the character set forbids anything that could break out
+ * Deliberately strict - the character set forbids anything that could break out
  * of a `--token: value;` declaration.
  */
 export function isValidColor(value: unknown): value is string {

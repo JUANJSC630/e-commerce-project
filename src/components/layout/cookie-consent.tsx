@@ -20,7 +20,7 @@ export function CookieConsent() {
     try {
       if (!localStorage.getItem(COOKIE_CONSENT_KEY)) setVisible(true)
     } catch {
-      // localStorage unavailable (private mode) — skip the banner.
+      // localStorage unavailable (private mode) - skip the banner.
     }
   }, [])
 

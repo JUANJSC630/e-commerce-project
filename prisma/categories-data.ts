@@ -3,7 +3,7 @@
  * Initial categories, migrated out of the hardcoded store.config. The admin can
  * edit/add/remove these afterward. `legacyKey` maps the old Product.category
  * string to the new Category so existing products can be linked (backfill).
- * "Ofertas" is intentionally absent — it's the isOnSale flag, not a category.
+ * "Ofertas" is intentionally absent - it's the isOnSale flag, not a category.
  */
 
 export interface CategorySeed {
@@ -24,7 +24,7 @@ export const categoriesSeed: CategorySeed[] = [
     legacyKey: "Babies",
     order: 1,
     description: "Ropa adorable y cómoda para tus pequeños (0-24 meses).",
-    metaTitle: "Ropa para Bebés (0-24m) — Dulce Infancia",
+    metaTitle: "Ropa para Bebés (0-24m) - Dulce Infancia",
     metaDescription:
       "Descubre ropa adorable y cómoda para bebés de 0 a 24 meses en Dulce Infancia. Bodys, ranitas, conjuntos y más.",
   },
@@ -34,7 +34,7 @@ export const categoriesSeed: CategorySeed[] = [
     legacyKey: "Girls",
     order: 2,
     description: "Atuendos elegantes y divertidos para cada pequeña princesa.",
-    metaTitle: "Ropa para Niñas — Dulce Infancia",
+    metaTitle: "Ropa para Niñas - Dulce Infancia",
     metaDescription:
       "Vestidos, faldas, chaquetas y más para niñas en Dulce Infancia. Moda infantil con estilo y calidad.",
   },
@@ -44,7 +44,7 @@ export const categoriesSeed: CategorySeed[] = [
     legacyKey: "Boys",
     order: 3,
     description: "Looks frescos y cómodos para los más activos.",
-    metaTitle: "Ropa para Niños — Dulce Infancia",
+    metaTitle: "Ropa para Niños - Dulce Infancia",
     metaDescription:
       "Camisetas, pantalones, sudaderas y más para niños en Dulce Infancia. Ropa cómoda y duradera para los más activos.",
   },
@@ -54,7 +54,7 @@ export const categoriesSeed: CategorySeed[] = [
     legacyKey: "Essentials",
     order: 4,
     description: "Básicos cómodos, duraderos y versátiles para el armario de tu hijo/a.",
-    metaTitle: "Esenciales — Dulce Infancia",
+    metaTitle: "Esenciales - Dulce Infancia",
     metaDescription:
       "Básicos cómodos, duraderos y versátiles para el armario de tu hijo/a. Selección de esenciales en Dulce Infancia.",
   },

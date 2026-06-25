@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma"
  *
  * The server is the single source of truth: a code entered at checkout is
  * re-validated here against the database (active, within its window, under its
- * redemption cap, meeting the minimum subtotal) and the amount is recomputed —
+ * redemption cap, meeting the minimum subtotal) and the amount is recomputed -
  * the client preview can never set the actual discount.
  */
 
@@ -49,7 +49,7 @@ function round(n: number): number {
 }
 
 /**
- * Computes the discount an active code yields for the given amounts. Pure — the
+ * Computes the discount an active code yields for the given amounts. Pure - the
  * caller decides whether the code is allowed to be applied (see `validateDiscount`).
  */
 export function computeDiscount(
@@ -103,7 +103,7 @@ export type ValidateResult =
 /**
  * Read-only validation for the checkout preview. Looks up the code, checks it's
  * usable for `subtotal`, and returns the computed amount. Does NOT consume a
- * redemption — that happens atomically when the order is created.
+ * redemption - that happens atomically when the order is created.
  */
 export async function validateDiscount(
   rawCode: string,
@@ -126,7 +126,7 @@ export async function validateDiscount(
  * Re-validates inside an order transaction and atomically consumes one
  * redemption with a guarded update (so a capped code can't be over-redeemed by
  * concurrent checkouts). Returns the application, or null when the code is no
- * longer usable — the caller treats that as "no discount" rather than failing
+ * longer usable - the caller treats that as "no discount" rather than failing
  * the whole order.
  */
 export async function consumeDiscountInTx(

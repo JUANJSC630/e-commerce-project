@@ -67,7 +67,7 @@ export function OrderStatusUpdater({
           ))}
         </select>
 
-        {/* Tracking — relevant when shipping. Saved with the status. */}
+        {/* Tracking - relevant when shipping. Saved with the status. */}
         <div className="grid grid-cols-2 gap-3">
           <input
             value={carrier}

@@ -5,10 +5,10 @@ import { pageSeo, seo } from "@/config/store.config"
 
 type PageSeoKey = keyof typeof pageSeo
 
-/** `"<title> — <Brand>"` using the live brand from settings. */
+/** `"<title> - <Brand>"` using the live brand from settings. */
 export async function titleWithBrand(pageTitle: string): Promise<string> {
   const { brand } = await loadAllSettings()
-  return `${pageTitle} — ${brand.name}`
+  return `${pageTitle} - ${brand.name}`
 }
 
 /** Metadata for a private page (account/checkout): brand-aware title, noindex. */

@@ -12,7 +12,7 @@ import type { LucideIcon } from "lucide-react"
 /**
  * Step 3 of the checkout: the customer picks HOW they'll pay. The actual
  * charge happens after the order is created, on the payment page, where the
- * gateway renders its own PCI-scoped fields — no card data is collected here.
+ * gateway renders its own PCI-scoped fields - no card data is collected here.
  */
 
 const PAYMENT_OPTIONS: Array<{

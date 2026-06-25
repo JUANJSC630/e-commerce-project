@@ -10,7 +10,7 @@ export type Resource =
 export type Action = "read" | "create" | "update" | "delete"
 export type Permissions = Partial<Record<Resource, Action[]>>
 
-/** Slug of the storefront customer role — has no admin permissions. */
+/** Slug of the storefront customer role - has no admin permissions. */
 export const CUSTOMER_ROLE_SLUG = "customer"
 
 /** A customer shops the store; everyone else is staff with admin access. */
@@ -43,7 +43,7 @@ export function hasPermission(
   return permissions[resource]?.includes(action) ?? false
 }
 
-/** Resources whose editors upload images — any grants shared media access. */
+/** Resources whose editors upload images - any grants shared media access. */
 const IMAGE_RESOURCES: Resource[] = ["products", "categories", "settings"]
 
 /** True when these permissions may browse and manage the shared media library. */

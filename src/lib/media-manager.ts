@@ -11,7 +11,7 @@ import { uploadThingUrlFromKey } from "@/lib/media-library"
  *
  * Cross-references every file in the CDN against the image fields that reference
  * it across the database (products, categories, users and the recursive settings
- * blob). A file no entity points at is an orphan — safe to delete to reclaim CDN
+ * blob). A file no entity points at is an orphan - safe to delete to reclaim CDN
  * space. The scan is cached briefly so opening the page is cheap; a forced
  * refresh revalidates the `media-scan` tag.
  */
@@ -133,7 +133,7 @@ async function runScan(): Promise<ScanResult> {
   }
 }
 
-/** Cached scan (5 min) — fast page loads; revalidate `MEDIA_SCAN_TAG` to refresh. */
+/** Cached scan (5 min) - fast page loads; revalidate `MEDIA_SCAN_TAG` to refresh. */
 export const scanMediaUsage = unstable_cache(runScan, ["media-scan"], {
   tags: [MEDIA_SCAN_TAG],
   revalidate: 300,

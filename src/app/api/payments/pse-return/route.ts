@@ -7,7 +7,7 @@ import { logPaymentEvent } from "@/lib/payments/audit"
  * Where the bank sends the customer back after a PSE transfer. Query params
  * from this redirect are attacker-controlled (the customer can edit the URL),
  * so the outcome is ALWAYS re-verified against the gateway before any
- * navigation — collection_status and friends are ignored on purpose.
+ * navigation - collection_status and friends are ignored on purpose.
  */
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const order = await getOrderPaymentInfo(orderId)
   if (!order) return redirect("/pago-fallido")
 
-  // Already settled (webhook beat the redirect) — route by final state.
+  // Already settled (webhook beat the redirect) - route by final state.
   if (order.paymentStatus === "PAID") return redirect(`/order-success/${order.id}`)
   if (order.paymentStatus === "FAILED") return redirect(`/pago-fallido?orderId=${order.id}`)
 
@@ -49,11 +49,11 @@ export async function GET(request: Request) {
       await markOrderFailed(order.id)
       return redirect(`/pago-fallido?orderId=${order.id}`)
     }
-    // Still pending at the bank — the success page shows the waiting state.
+    // Still pending at the bank - the success page shows the waiting state.
     return redirect(`/order-success/${order.id}`)
   } catch (err) {
     console.error("PSE return: no se pudo verificar el pago", { orderId, err })
-    // Verification failed — don't guess; the webhook will settle it.
+    // Verification failed - don't guess; the webhook will settle it.
     return redirect(`/order-success/${order.id}`)
   }
 }

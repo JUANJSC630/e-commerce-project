@@ -2,7 +2,7 @@
 ALTER TYPE "PaymentStatus" ADD VALUE IF NOT EXISTS 'PROCESSING';
 ALTER TYPE "PaymentStatus" ADD VALUE IF NOT EXISTS 'REFUNDED';
 
--- paymentRef becomes paymentProviderId (same meaning, clearer name) — rename
+-- paymentRef becomes paymentProviderId (same meaning, clearer name) - rename
 -- instead of drop/add so existing references survive.
 ALTER TABLE "Order" RENAME COLUMN "paymentRef" TO "paymentProviderId";
 

@@ -111,7 +111,7 @@ export function orderPlacedEmail({ order, brandName, locale, appUrl }: OrderEmai
     itemsTable(order, locale) +
     addressBlock(order)
   return {
-    subject: `Recibimos tu pedido ${order.orderNumber} — ${brandName}`,
+    subject: `Recibimos tu pedido ${order.orderNumber} - ${brandName}`,
     html: layout(brandName, "¡Gracias por tu compra!", body, appUrl),
   }
 }
@@ -122,7 +122,7 @@ export function orderPaidEmail({ order, brandName, locale, appUrl }: OrderEmailC
       `El pago de tu pedido <strong style="color:${COLORS.ink};">${order.orderNumber}</strong> fue confirmado. Ya lo estamos preparando para el envío.`,
     ) + itemsTable(order, locale)
   return {
-    subject: `Pago confirmado — pedido ${order.orderNumber}`,
+    subject: `Pago confirmado - pedido ${order.orderNumber}`,
     html: layout(brandName, "Tu pago fue confirmado", body, appUrl),
   }
 }
@@ -149,7 +149,7 @@ export function orderShippedEmail({ order, brandName, appUrl }: OrderEmailContex
 export function abandonedOrderEmail({ order, brandName, locale, appUrl }: OrderEmailContext) {
   const body =
     p(
-      `Tu pedido <strong style="color:${COLORS.ink};">${order.orderNumber}</strong> está reservado pero el pago aún no se completó. Termínalo cuando quieras — tus productos te esperan.`,
+      `Tu pedido <strong style="color:${COLORS.ink};">${order.orderNumber}</strong> está reservado pero el pago aún no se completó. Termínalo cuando quieras - tus productos te esperan.`,
     ) +
     itemsTable(order, locale) +
     `<p style="margin:24px 0 0;"><a href="${appUrl}/pago/${order.id}" style="display:inline-block;background:${COLORS.accent};color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;">Completar mi pago</a></p>`

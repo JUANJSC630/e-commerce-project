@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Include the bare paths — "/admin/:path*" alone doesn't match "/admin".
+  // Include the bare paths - "/admin/:path*" alone doesn't match "/admin".
   // /api/payments/* must NEVER be added here: the gateway webhook and the
   // bank's PSE return call arrive without a session (they authenticate by
   // HMAC signature / server-side verification instead).

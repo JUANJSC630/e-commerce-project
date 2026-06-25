@@ -1,5 +1,5 @@
 /**
- * seed-blog.ts — siembra (idempotente, por slug) los artículos iniciales del blog.
+ * seed-blog.ts - siembra (idempotente, por slug) los artículos iniciales del blog.
  *
  * Uso:  yarn tsx scripts/seed-blog.ts
  * Requiere el `.env` cargado (Prisma CLI/scripts solo leen `.env`).

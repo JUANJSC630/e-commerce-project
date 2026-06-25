@@ -6,7 +6,7 @@ import type { NavItem } from "@/config/store.config"
 
 /**
  * Admin-curated header links (editable in Configuración → Menú). These are the
- * merchandising entries — "Novedades", "Ofertas", a seasonal drop — separate
+ * merchandising entries - "Novedades", "Ofertas", a seasonal drop - separate
  * from the product categories, which live in the "Categorías" mega-menu.
  */
 export function HeaderNav({ links }: { links: NavItem[] }) {

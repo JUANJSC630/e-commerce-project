@@ -6,7 +6,7 @@ import { buildThemeCss } from "@/lib/theme"
  * colors configured in /admin. Cached + tag-revalidated via `loadAllSettings`,
  * so the page stays static/ISR and only refreshes when the theme is saved.
  *
- * The CSS body is built by `buildThemeCss`, which sanitizes every value — there
+ * The CSS body is built by `buildThemeCss`, which sanitizes every value - there
  * is no path for arbitrary CSS through `dangerouslySetInnerHTML`.
  */
 export async function ThemeStyle({ selector = ".dulce-theme" }: { selector?: string }) {

@@ -1,13 +1,13 @@
-# Standards — Dulce Infancia Shop
+# Standards - Dulce Infancia Shop
 
 > Documento de referencia obligatoria. Verificar contra esta lista antes de cada commit.
-> Si un cambio no cumple un estándar, se corrige antes de mergear — sin excepciones.
+> Si un cambio no cumple un estándar, se corrige antes de mergear - sin excepciones.
 
 ---
 
 ## 1. Principios SOLID
 
-### S — Single Responsibility
+### S - Single Responsibility
 
 Cada archivo tiene una sola razón para cambiar.
 
@@ -19,7 +19,7 @@ Cada archivo tiene una sola razón para cambiar.
 
 **Regla práctica**: Si describes lo que hace un archivo y usas "y también", hay que dividirlo.
 
-### O — Open/Closed
+### O - Open/Closed
 
 El código se extiende sin modificar los existentes.
 
@@ -27,17 +27,17 @@ El código se extiende sin modificar los existentes.
 | ---------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | Crear una categoría en `/admin` → aparece en nav/footer/storefront automáticamente | Editar `layout.tsx` para agregar un link de categoría    |
 | Agregar un método de pago en `store.config.ts` → aparece en el checkout            | Editar `payment-form.tsx` para agregar un método de pago |
-| `homePageContent` en config — copy cambia sin tocar TSX                            | Strings hardcodeados en JSX                              |
+| `homePageContent` en config - copy cambia sin tocar TSX                            | Strings hardcodeados en JSX                              |
 
 **Regla práctica**: Si cambiar texto de UI requiere editar un `.tsx`, algo está hardcodeado.
 
-### L — Liskov Substitution
+### L - Liskov Substitution
 
 Los componentes que reciben `Product` funcionan con cualquier `Product` válido.
 
 **Regla práctica**: Un componente no debe fallar silenciosamente si recibe datos válidos del tipo declarado. Los guards van en el type, no en el componente.
 
-### I — Interface Segregation
+### I - Interface Segregation
 
 Las props solo incluyen lo que el componente realmente usa.
 
@@ -48,7 +48,7 @@ Las props solo incluyen lo que el componente realmente usa.
 
 **Regla práctica**: Si el componente ignora más de 2 props de un objeto que se le pasa, pasar solo las que usa.
 
-### D — Dependency Inversion
+### D - Dependency Inversion
 
 Los componentes dependen de abstracciones (interfaces/types), no de implementaciones.
 
@@ -88,7 +88,7 @@ Un componente solo lleva `"use client"` si usa: `useState`, `useEffect`, `useRef
 ```
 src/components/
   home/ cart/ checkout/ layout/ product/ order/ account/ admin/ favorites/
-  ui/             ← shadcn/ui + primitivos (Combobox, Command) — NO romper la API
+  ui/             ← shadcn/ui + primitivos (Combobox, Command) - NO romper la API
 
 src/lib/                ← Capa de datos/dominio. Las marcadas server-only NO llegan al cliente
   prisma.ts       ← Cliente Prisma (PrismaPg + pg.Pool, SSL)
@@ -179,7 +179,7 @@ const data: any = fetch(...)  // usar tipado correcto o unknown + type guard
 
 - [ ] Un solo `<h1>` por página (nunca uno en desktop y otro en mobile)
 - [ ] Jerarquía de headings sin saltos: `h1 → h2 → h3` (nunca `h1 → h3`)
-- [ ] `<button>` para acciones, `<a>` para navegación — nunca `<div onClick>`
+- [ ] `<button>` para acciones, `<a>` para navegación - nunca `<div onClick>`
 - [ ] `<section>` con `aria-label` o `aria-labelledby` para landmarks accesibles
 - [ ] `<blockquote>` solo para citas externas, no para copy de la marca
 
@@ -196,7 +196,7 @@ const data: any = fetch(...)  // usar tipado correcto o unknown + type guard
 - [ ] Listas de radio tienen `role="radiogroup"` y cada opción `role="radio"` + `aria-checked`
 - [ ] Cambios de contenido dinámico usan `aria-live="polite"` (o `"assertive"` para errores)
 - [ ] `tabIndex={0}` NO se añade a elementos que ya son focusables (`<a>`, `<button>`)
-- [ ] `aria-hidden` usa string `"true"` o se omite — nunca `aria-hidden={false}` (inconsistente en AT)
+- [ ] `aria-hidden` usa string `"true"` o se omite - nunca `aria-hidden={false}` (inconsistente en AT)
 
 **Formularios:**
 
@@ -234,7 +234,7 @@ const data: any = fetch(...)  // usar tipado correcto o unknown + type guard
 //   useState, useEffect, useRef, event handlers del DOM, o APIs del browser
 
 // ❌ No añadir "use client" innecesariamente
-"use client" // solo porque renderiza texto — no hace falta
+"use client" // solo porque renderiza texto - no hace falta
 export function StaticSection() {
   return <p>Texto</p>
 }
@@ -284,12 +284,12 @@ Estándares establecidos al conectar el storefront a la base de datos.
   Las páginas y API routes dependen de esas funciones; **nunca** llaman `prisma.*`
   inline ni en componentes cliente.
 - Cada lib expone un tipo de dominio (mapper Prisma→dominio) y un `select`
-  acotado — no se sobre-consulta ni se filtran datos sensibles al cliente.
+  acotado - no se sobre-consulta ni se filtran datos sensibles al cliente.
 
 ### Dinero, stock y transacciones
 
 - **El servidor es la única fuente de verdad del dinero**: precios, subtotal,
-  envío y total se recalculan desde la DB en `createOrder` — jamás se confía en
+  envío y total se recalculan desde la DB en `createOrder` - jamás se confía en
   el cliente.
 - **Stock sin oversell**: decremento con `updateMany({ where: { stock: { gte } } })`
   dentro de una transacción; si `count === 0` se aborta.
@@ -321,12 +321,12 @@ Estándares establecidos al conectar el storefront a la base de datos.
 ### Verificación E2E
 
 - Los flujos interactivos (checkout, combobox, cuenta, favoritos, admin) se
-  validan con Playwright (`scripts/verify-*.mjs`, `yarn verify:*`) — curl no basta
+  validan con Playwright (`scripts/verify-*.mjs`, `yarn verify:*`) - curl no basta
   para UI. Limpiar siempre los datos de prueba creados en la DB.
 
 ---
 
-## 8. Patrones Establecidos — Usar siempre estos
+## 8. Patrones Establecidos - Usar siempre estos
 
 ### Precios y moneda
 
@@ -442,7 +442,7 @@ Archivos:    kebab-case   → product-card.tsx, use-favorites.ts
 
 ---
 
-## 10. Pipeline de Calidad — Ejecutar antes de cada commit
+## 10. Pipeline de Calidad - Ejecutar antes de cada commit
 
 ```bash
 yarn validate
@@ -464,7 +464,7 @@ yarn lint:fix
 
 ---
 
-## 11. Checklist de PR — Antes de cada pull request
+## 11. Checklist de PR - Antes de cada pull request
 
 ### Código
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 /**
- * POST /api/stock-alerts — Subscribe to back-in-stock notification.
+ * POST /api/stock-alerts - Subscribe to back-in-stock notification.
  * Body: { email: string, productId: string }
  * Idempotent: re-subscribing resets the `notified` flag.
  */

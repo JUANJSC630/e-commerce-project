@@ -3,7 +3,7 @@
  *
  * Converts between OKLCH (our canonical storage format) and sRGB hex (what the
  * native <input type="color"> speaks), and computes WCAG contrast. Pure
- * functions, no dependencies — usable on client or server.
+ * functions, no dependencies - usable on client or server.
  *
  * Reference: https://bottosson.github.io/posts/oklab/
  */

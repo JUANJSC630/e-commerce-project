@@ -16,7 +16,7 @@ export interface PaymentCheckout {
 /**
  * Payment gateway abstraction. The checkout depends on this interface, never on
  * a concrete provider, so MercadoPago can replace the mock by swapping the
- * implementation returned by `getPaymentProvider()` — no checkout changes.
+ * implementation returned by `getPaymentProvider()` - no checkout changes.
  */
 export interface PaymentProvider {
   readonly name: string
@@ -78,7 +78,7 @@ export interface PaymentResult {
   /** Our order id, echoed back by the provider (external_reference). */
   orderReference?: string
   status: GatewayStatus
-  /** Provider-internal detail — log it, never show it to the customer. */
+  /** Provider-internal detail - log it, never show it to the customer. */
   statusDetail: string
   /** Curated customer-facing message for rejections (safe to display). */
   declineMessage?: string

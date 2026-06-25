@@ -4,7 +4,7 @@ import { revalidateTag } from "next/cache"
 import { UTApi } from "uploadthing/server"
 
 // Keep in sync with MEDIA_SCAN_TAG in media-manager.ts. Inlined (not imported) to
-// avoid a circular import — media-manager already depends on this module.
+// avoid a circular import - media-manager already depends on this module.
 const MEDIA_SCAN_TAG = "media-scan"
 
 /**
@@ -12,7 +12,7 @@ const MEDIA_SCAN_TAG = "media-scan"
  *
  * When an admin replaces or deletes an entity image, the old file would
  * otherwise linger in the CDN forever. These helpers delete the underlying
- * UploadThing object — best-effort: a cleanup failure must never break the
+ * UploadThing object - best-effort: a cleanup failure must never break the
  * primary mutation (the DB write already succeeded), so errors are logged and
  * swallowed.
  *
@@ -80,7 +80,7 @@ export async function deleteUploadedImages(urls: Array<string | null | undefined
 }
 
 /**
- * Deletes `oldUrl` only when it changed and was an UploadThing object — the
+ * Deletes `oldUrl` only when it changed and was an UploadThing object - the
  * common "image replaced" path. No-op when the image is unchanged.
  */
 export async function deleteReplacedImage(

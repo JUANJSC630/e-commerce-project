@@ -5,7 +5,7 @@ import type { Prisma } from "@prisma/client"
 /**
  * Whitelist of product columns an admin form may write. Everything else
  * (id, timestamps, rating/reviewCount, relations) is server-owned, so we never
- * spread the raw request body into Prisma — that would be mass-assignment.
+ * spread the raw request body into Prisma - that would be mass-assignment.
  */
 const EDITABLE_FIELDS = [
   "name",
@@ -40,7 +40,7 @@ export function pickProductInput(body: unknown): Prisma.ProductUncheckedCreateIn
 /**
  * Parses the gallery field (`body.images`) into an ordered, de-duplicated list of
  * image URLs. Accepts an array of strings or `{ url }` objects; ignores anything
- * else. The cover (`image`) is handled separately — these are only the extras.
+ * else. The cover (`image`) is handled separately - these are only the extras.
  * Returns `null` when `images` is absent, signalling "leave the gallery untouched".
  */
 export function pickGalleryUrls(body: unknown): string[] | null {

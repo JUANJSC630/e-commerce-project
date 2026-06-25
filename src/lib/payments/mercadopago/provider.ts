@@ -19,7 +19,7 @@ function appUrl(): string {
 /**
  * Per-payment notification_url, only when MP can actually reach it. MP
  * rejects the whole payment (error 4020) if the URL isn't public https, so
- * on localhost it's omitted — the panel-configured webhook and the PSE
+ * on localhost it's omitted - the panel-configured webhook and the PSE
  * return re-verification still settle orders.
  */
 function notificationUrl(): Record<string, string> {
@@ -42,7 +42,7 @@ interface MpPaymentMethod {
 /**
  * MercadoPago via Checkout API: cards are tokenized in the browser (CardForm)
  * and charged here; PSE returns the bank's URL to redirect to. Settlement
- * truth always arrives through the webhook — these calls only initiate.
+ * truth always arrives through the webhook - these calls only initiate.
  *
  * Amounts: the store keeps COP as unit-pesos floats (same unit MP expects in
  * `transaction_amount`), so values pass through without conversion.

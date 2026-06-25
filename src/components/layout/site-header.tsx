@@ -19,7 +19,7 @@ interface SiteHeaderProps {
 
 /**
  * Storefront header. Two tiers: a primary row (logo · inline search · account /
- * favorites / cart) and a navigation row — a "Categorías" mega-menu of products
+ * favorites / cart) and a navigation row - a "Categorías" mega-menu of products
  * plus admin-curated links. Built for a wide, mixed-age audience: search is
  * surfaced, actions carry labels on desktop, touch targets stay generous.
  */
@@ -50,7 +50,7 @@ export function SiteHeader({ brand, categoryTree, headerLinks }: SiteHeaderProps
           <Link
             href={routes.home}
             className="font-display font-bold text-xl md:text-2xl text-brand-ink whitespace-nowrap shrink-0"
-            aria-label={`${brand.name} — inicio`}
+            aria-label={`${brand.name} - inicio`}
           >
             {logo}
           </Link>
@@ -83,7 +83,7 @@ export function SiteHeader({ brand, categoryTree, headerLinks }: SiteHeaderProps
         </div>
       </div>
 
-      {/* Navigation row — categories mega-menu + curated links */}
+      {/* Navigation row - categories mega-menu + curated links */}
       <div className="hidden md:block border-t border-brand-muted/15">
         <div className="container mx-auto px-4">
           <div className="flex items-center h-12">

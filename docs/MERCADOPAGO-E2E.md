@@ -1,4 +1,4 @@
-# Runbook E2E — MercadoPago sandbox
+# Runbook E2E - MercadoPago sandbox
 
 > Cómo ejecutar y verificar el flujo de pago real de punta a punta en sandbox.
 > Complementa `MERCADOPAGO-SETUP.md` (que cubre crear la app, credenciales y el
@@ -31,14 +31,14 @@
 
 ## 1. Levantar el stack
 
-**Terminal A — servidor** (puerto 3000):
+**Terminal A - servidor** (puerto 3000):
 
 ```bash
 nvm use 22
 yarn dev          # next dev --turbopack en http://localhost:3000
 ```
 
-**Terminal B — túnel público** (MP no acepta `localhost` para el webhook):
+**Terminal B - túnel público** (MP no acepta `localhost` para el webhook):
 
 ```bash
 ngrok http 3000
@@ -61,7 +61,7 @@ El `notification_url` que recibe MercadoPago se construye desde
 3. En el panel de MP → tu app → **Webhooks**, confirma que la URL de **modo
    prueba** sea:
    `https://abc123.ngrok-free.app/api/payments/webhook/mercadopago`
-   (la URL de ngrok cambia en cada reinicio del túnel en el plan free — re-pégala).
+   (la URL de ngrok cambia en cada reinicio del túnel en el plan free - re-pégala).
 
 > Opcional: el panel tiene un botón **Simular** para enviar un evento de prueba.
 > Si la firma está bien, verás `200` en la consola del server y nada de errores.
@@ -82,7 +82,7 @@ el número, o "Stock bajo (N)").
 
 ---
 
-## 4. Caso A — Tarjeta aprobada (APRO)
+## 4. Caso A - Tarjeta aprobada (APRO)
 
 1. En el storefront: abre el producto → **Agregar al carrito** → ir al carrito →
    **Checkout**.
@@ -115,7 +115,7 @@ el número, o "Stock bajo (N)").
 
 ---
 
-## 5. Caso B — Tarjeta rechazada por fondos (FUND)
+## 5. Caso B - Tarjeta rechazada por fondos (FUND)
 
 Repite el flujo del Caso A con **otro** producto/checkout, pero con el titular
 **`FUND`** (mismo número, vencimiento y CVV).
@@ -125,7 +125,7 @@ Repite el flujo del Caso A con **otro** producto/checkout, pero con el titular
 - [ ] La página de pago muestra un mensaje amigable tipo "La tarjeta no tiene
       fondos suficientes" (sin exponer el `status_detail` crudo).
 - [ ] `/admin/pedidos/[id]`: el pedido sigue en **Pago pendiente** (PENDING), **no**
-      en Fallido — es intencional para permitir reintentar con otra tarjeta.
+      en Fallido - es intencional para permitir reintentar con otra tarjeta.
 - [ ] "Historial de pagos": aparece `initiate.card` con el detalle del rechazo.
 - [ ] ⚠️ **El stock de ese producto siguió descontado.** Esto es correcto: el stock
       se reserva al **crear** el pedido, no al pagar. Mientras el pedido sea
@@ -133,7 +133,7 @@ Repite el flujo del Caso A con **otro** producto/checkout, pero con el titular
 
 ---
 
-## 6. Caso C — Restauración de stock al cancelar
+## 6. Caso C - Restauración de stock al cancelar
 
 Esto valida `markOrderFailed()` (el restock idempotente). Usa el pedido del Caso B
 (PENDING con stock reservado):
@@ -146,14 +146,14 @@ Esto valida `markOrderFailed()` (el restock idempotente). Usa el pedido del Caso
 - [ ] `/admin/productos`: el stock de ese producto **volvió a subir** (se restauró
       la reserva).
 - [ ] Cancelarlo de nuevo (o un segundo intento) no vuelve a subir el stock
-      (restock idempotente — el guard solo actúa en la primera transición).
+      (restock idempotente - el guard solo actúa en la primera transición).
 
 > El stock también se restaura automáticamente cuando un **webhook `rejected`** o
 > el **retorno de PSE rechazado** liquidan el pedido del intento vigente.
 
 ---
 
-## 7. Caso D — PSE (opcional)
+## 7. Caso D - PSE (opcional)
 
 PSE requiere las credenciales de una **cuenta de prueba vendedor** (`APP_USR-...`),
 no tus `TEST-`. Ver `MERCADOPAGO-SETUP.md` Fase 4 y 5b. Resumen:

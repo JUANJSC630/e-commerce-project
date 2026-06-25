@@ -7,8 +7,8 @@ import { UTApi } from "uploadthing/server"
  *
  * Lists images already uploaded to the app's CDN so the admin can reuse them
  * without uploading again. `listFiles` returns keys but not URLs; since our
- * uploads are public, the public URL is deterministic — `https://<appId>.ufs.sh/
- * f/<key>` — and `appId` lives in the (base64-JSON) UPLOADTHING_TOKEN.
+ * uploads are public, the public URL is deterministic - `https://<appId>.ufs.sh/
+ * f/<key>` - and `appId` lives in the (base64-JSON) UPLOADTHING_TOKEN.
  */
 
 const utapi = new UTApi()

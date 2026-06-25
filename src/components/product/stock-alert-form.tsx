@@ -46,7 +46,7 @@ export function StockAlertForm({ productId }: StockAlertFormProps) {
     <form onSubmit={handleSubmit} className="space-y-2">
       <p className="text-sm text-brand-muted flex items-center gap-1.5">
         <Bell className="h-4 w-4" />
-        Producto agotado — recibe un aviso cuando vuelva
+        Producto agotado - recibe un aviso cuando vuelva
       </p>
       <div className="flex gap-2">
         <input

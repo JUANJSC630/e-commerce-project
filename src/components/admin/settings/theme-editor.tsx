@@ -289,7 +289,7 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
   }
 
   function applyPreset(tokens: ThemeTokens) {
-    // Keep the component options (button/banner/toast/semantic) — a preset is a palette.
+    // Keep the component options (button/banner/toast/semantic) - a preset is a palette.
     setForm((prev) => ({ ...prev, ...tokens }))
   }
 

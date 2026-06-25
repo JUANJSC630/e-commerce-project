@@ -16,7 +16,7 @@ export class AccountError extends Error {
 }
 
 export const PASSWORD_MIN_LENGTH = 8
-/** bcrypt silently truncates input past 72 bytes — reject longer to avoid surprises. */
+/** bcrypt silently truncates input past 72 bytes - reject longer to avoid surprises. */
 export const PASSWORD_MAX_BYTES = 72
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 

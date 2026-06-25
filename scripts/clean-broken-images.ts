@@ -15,7 +15,7 @@
  *   yarn db:clean-images          # dry-run: muestra qué cambiaría, sin escribir
  *   yarn db:clean-images --apply  # aplica los cambios en la base de datos
  *
- * IMPORTANTE — caché de Next:
+ * IMPORTANTE - caché de Next:
  *   Los Setting del storefront se leen a través de `unstable_cache`
  *   (ver src/lib/settings.ts -> loadAllSettings), que solo se invalida vía
  *   `revalidateTag(SETTINGS_TAG)` cuando se guarda desde la app (saveSetting).
@@ -102,7 +102,7 @@ async function cleanStringColumn<T extends { id: string }>(opts: {
 }
 
 async function main() {
-  console.log(`\n=== Limpieza de imágenes rotas — modo ${APPLY ? "APPLY" : "DRY-RUN"} ===\n`)
+  console.log(`\n=== Limpieza de imágenes rotas - modo ${APPLY ? "APPLY" : "DRY-RUN"} ===\n`)
   const fixes: Fix[] = []
 
   // --- Columnas string `image` --------------------------------------------

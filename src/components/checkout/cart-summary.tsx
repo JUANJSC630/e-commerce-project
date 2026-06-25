@@ -30,7 +30,7 @@ interface CartSummaryProps {
   enableDiscount?: boolean
   discount?: AppliedDiscount | null
   onDiscountChange?: (discount: AppliedDiscount | null) => void
-  /** Destination state (departamento) — picks the shipping zone rate when known. */
+  /** Destination state (departamento) - picks the shipping zone rate when known. */
   state?: string
 }
 

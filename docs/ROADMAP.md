@@ -1,7 +1,7 @@
-# Roadmap — Dulce Infancia Shop
+# Roadmap - Dulce Infancia Shop
 
-> Actualizado: 2026-06-24 (Bloque 15 — paridad Shopify; Fase A ✅ (A.1/A.2), Fase B ✅, **Fase C ✅** (C.1 smart collections, C.2 analytics, C.3a/b/c; gift cards/multi-ubicación/metafields = bloques futuros), Fase D ✅, Fase E ✅. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅ | Build prod ✅ 94/94
-> **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
+> Actualizado: 2026-06-24 (Bloque 15 - paridad Shopify; Fase A ✅ (A.1/A.2), Fase B ✅, **Fase C ✅** (C.1 smart collections, C.2 analytics, C.3a/b/c; gift cards/multi-ubicación/metafields = bloques futuros), Fase D ✅, Fase E ✅. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅ | Build prod ✅ 94/94
+> **Objetivo final**: e-commerce 100% administrable - productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
 
@@ -11,7 +11,7 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 
 ---
 
-## Decisiones Arquitectónicas — TOMADAS ✅
+## Decisiones Arquitectónicas - TOMADAS ✅
 
 | Decisión      | Elegida                                   | Razón                                                                   |
 | ------------- | ----------------------------------------- | ----------------------------------------------------------------------- |
@@ -32,16 +32,16 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 | ~~Productos desde mock-data~~ ✅  | Resuelto: storefront lee de Prisma vía `src/lib/products.ts` + `/api/products`       |
 | ~~Checkout no guarda pedido~~ ✅  | Resuelto: `POST /api/orders` transaccional + `/order-success/[id]`                   |
 | ~~1 sola imagen por producto~~ ✅ | Resuelto: portada + galería `ProductImage[]` (Bloque 15 A.1)                         |
-| ~~Sin variantes reales~~ ✅       | Resuelto: `ProductVariant` (stock/precio/SKU/imagen por talla×color) — Bloque 15 A.2 |
+| ~~Sin variantes reales~~ ✅       | Resuelto: `ProductVariant` (stock/precio/SKU/imagen por talla×color) - Bloque 15 A.2 |
 | Imágenes placeholder              | Faltan fotos reales de productos (Bloque 15 A.3)                                     |
 | ~~Sin stock real~~ ✅             | Resuelto: `StockBadge` muestra "Agotado" / "Últimas X unidades" desde la DB          |
 | ~~Categorías hardcoded~~ ✅       | Resuelto: modelo `Category` + admin CRUD + `/category/[slug]` dinámico (Bloque 9.6)  |
-| ~~Tema editado no se aplica~~ ✅  | Resuelto: `ThemeStyle` inyecta el tema de la DB (scopeado, validado) — Bloque 9.7    |
+| ~~Tema editado no se aplica~~ ✅  | Resuelto: `ThemeStyle` inyecta el tema de la DB (scopeado, validado) - Bloque 9.7    |
 
 ### Código con bugs menores
 
 ✅ Sin bugs menores pendientes. (`brand-coral` ya no existe en el código; las
-categorías son dinámicas desde la DB vía `src/lib/categories.ts` — Bloque 9.6.)
+categorías son dinámicas desde la DB vía `src/lib/categories.ts` - Bloque 9.6.)
 
 ---
 
@@ -59,18 +59,18 @@ categorías son dinámicas desde la DB vía `src/lib/categories.ts` — Bloque 9
 | Detalle de producto  | `/products/[id]`    | ✅ Funcional    | Prisma + relacionados por props + badge de stock                                              |
 | Carrito              | `/carrito`          | ✅ Funcional    | AlertDialog, edición de cantidad                                                              |
 | Checkout             | `/checkout-flow`    | ✅ Funcional    | Guarda el pedido vía `POST /api/orders` → `/order-success/[id]`                               |
-| 404 (store)          | —                   | ✅ Funcional    | Branding + CTAs                                                                               |
-| Error (store)        | —                   | ✅ Funcional    | Botón reset + branding                                                                        |
-| Cart Context         | —                   | ✅ Sólido       | localStorage, extensible                                                                      |
-| useFavorites         | —                   | ✅ Funcional    | localStorage, persiste entre navegaciones                                                     |
-| Sistema de tema      | —                   | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                                                           |
-| store.config.ts      | —                   | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                                                 |
-| validation.ts        | —                   | ✅ Centralizado | Luhn, shipping, payment                                                                       |
-| products.ts (lib)    | —                   | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts)                               |
+| 404 (store)          | -                   | ✅ Funcional    | Branding + CTAs                                                                               |
+| Error (store)        | -                   | ✅ Funcional    | Botón reset + branding                                                                        |
+| Cart Context         | -                   | ✅ Sólido       | localStorage, extensible                                                                      |
+| useFavorites         | -                   | ✅ Funcional    | localStorage, persiste entre navegaciones                                                     |
+| Sistema de tema      | -                   | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                                                           |
+| store.config.ts      | -                   | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                                                 |
+| validation.ts        | -                   | ✅ Centralizado | Luhn, shipping, payment                                                                       |
+| products.ts (lib)    | -                   | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts)                               |
 | **Admin Dashboard**  | `/admin`            | ✅ Completo     | Stats, gráficos, accesos rápidos                                                              |
 | **Admin Login**      | `/admin/login`      | ✅ Funcional    | NextAuth JWT + Credentials                                                                    |
-| **Admin Productos**  | `/admin/productos`  | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                                                       |
-| **Admin Categorías** | `/admin/categorias` | ✅ CRUD         | Crear/editar/eliminar/ordenar, imagen, SEO — permiso `categories`                             |
+| **Admin Productos**  | `/admin/productos`  | ✅ CRUD         | Lista, crear, editar, eliminar - Prisma                                                       |
+| **Admin Categorías** | `/admin/categorias` | ✅ CRUD         | Crear/editar/eliminar/ordenar, imagen, SEO - permiso `categories`                             |
 | **Admin Pedidos**    | `/admin/pedidos`    | ✅ CRUD         | Lista, detalle, cambio de estado                                                              |
 | **Admin Usuarios**   | `/admin/usuarios`   | ✅ CRUD         | Gestión con asignación de rol                                                                 |
 | **Admin Roles**      | `/admin/roles`      | ✅ CRUD         | Permisos granulares por módulo                                                                |
@@ -82,13 +82,13 @@ categorías son dinámicas desde la DB vía `src/lib/categories.ts` — Bloque 9
 
 ## Plan de Ejecución Completo
 
-### ✅ Bloques 0–5 — Completados
+### ✅ Bloques 0–5 - Completados
 
 Ver historial al final del documento.
 
 ---
 
-### ✅ Bloque 6 — Correcciones de código + SEO base
+### ✅ Bloque 6 - Correcciones de código + SEO base
 
 > **Completado**. Frontend limpio, indexable y con arquitectura SOLID.
 
@@ -107,21 +107,21 @@ Ver historial al final del documento.
 
 ---
 
-### ✅ Bloque 7 — Features de navegación y descubrimiento
+### ✅ Bloque 7 - Features de navegación y descubrimiento
 
 > **Completado**. Buscador, filtros, favoritos y banner promocional implementados.
 
 ```
 [x] Buscador en header + página /search?q= (filtra nombre/categoría/descripción)
-[x] Filtros en páginas de categoría (precio, talla, color) — sidebar desktop, drawer mobile
-[x] searchProducts() en mock-data.ts — listo para migrar a API
-[x] Página /favoritos — lista productos guardados (useFavorites + useAllFavoriteIds)
+[x] Filtros en páginas de categoría (precio, talla, color) - sidebar desktop, drawer mobile
+[x] searchProducts() en mock-data.ts - listo para migrar a API
+[x] Página /favoritos - lista productos guardados (useFavorites + useAllFavoriteIds)
 [x] Banner de promoción colapsable en header (envío gratis, configurable en store.config.ts)
 ```
 
 ---
 
-### ✅ Bloque 8 — Admin Dashboard + Backend con Prisma
+### ✅ Bloque 8 - Admin Dashboard + Backend con Prisma
 
 > **Completado**. Panel de administración multi-rol con CRUD completo. Se decidió **Custom (Next.js + Prisma + PostgreSQL)** en vez de Sanity + Supabase por control total.
 
@@ -139,24 +139,24 @@ Ver historial al final del documento.
 #### Modelos Prisma (ya migrados)
 
 ```
-[x] Role — nombre, slug, permisos granulares (JSON), isSystem
-[x] User — email, password (hashed), rol asignado, status (ACTIVE/INACTIVE)
-[x] Product — nombre, precio, categoría, stock, imágenes, flags (isOnSale, isNew, isFeatured, isPublished)
-[x] Order — cliente, estado (PENDING→CONFIRMED→SHIPPED→DELIVERED→CANCELLED), total, dirección, pago
-[x] OrderItem — producto, cantidad, precio, talla, color
-[x] Setting — key/value (JSON) para configuración dinámica
+[x] Role - nombre, slug, permisos granulares (JSON), isSystem
+[x] User - email, password (hashed), rol asignado, status (ACTIVE/INACTIVE)
+[x] Product - nombre, precio, categoría, stock, imágenes, flags (isOnSale, isNew, isFeatured, isPublished)
+[x] Order - cliente, estado (PENDING→CONFIRMED→SHIPPED→DELIVERED→CANCELLED), total, dirección, pago
+[x] OrderItem - producto, cantidad, precio, talla, color
+[x] Setting - key/value (JSON) para configuración dinámica
 ```
 
 #### Panel Admin (/admin)
 
 ```
-[x] /admin — Dashboard: stats de ventas, pedidos, productos, usuarios + gráficos
-[x] /admin/login — Login con email/password
-[x] /admin/productos — CRUD completo de productos
-[x] /admin/pedidos — Lista de pedidos + cambio de estado
-[x] /admin/usuarios — CRUD de usuarios con asignación de rol
-[x] /admin/roles — CRUD de roles con permisos granulares por módulo
-[x] /admin/settings — Editor CRUD de 9 secciones de configuración:
+[x] /admin - Dashboard: stats de ventas, pedidos, productos, usuarios + gráficos
+[x] /admin/login - Login con email/password
+[x] /admin/productos - CRUD completo de productos
+[x] /admin/pedidos - Lista de pedidos + cambio de estado
+[x] /admin/usuarios - CRUD de usuarios con asignación de rol
+[x] /admin/roles - CRUD de roles con permisos granulares por módulo
+[x] /admin/settings - Editor CRUD de 9 secciones de configuración:
     - Brand (nombre, tagline, logo, favicon)
     - Locale (moneda, idioma, zona horaria)
     - Theme (colores primario/acento/superficie, border-radius)
@@ -193,16 +193,16 @@ Ver historial al final del documento.
 
 ---
 
-### ⏳ Bloque 9 — Conectar storefront al backend real
+### ⏳ Bloque 9 - Conectar storefront al backend real
 
 > **Objetivo**: El storefront deja de leer mock-data.ts y consume productos/pedidos desde Prisma. El checkout guarda pedidos reales.
 
-#### Productos desde Prisma — ✅ Completado
+#### Productos desde Prisma - ✅ Completado
 
 ```
 [x] Capa de datos server-only src/lib/products.ts (repositorio, mapper Prisma→Product)
 [x] Crear API routes: GET /api/products, GET /api/products/[id]
-[x] Filtros por categoría, búsqueda, ids — query params (dispatch en /api/products)
+[x] Filtros por categoría, búsqueda, ids - query params (dispatch en /api/products)
 [x] Páginas de categoría → Server Components async con Prisma directo
 [x] /products y /products/[id] leen de la base de datos
 [x] getFeaturedProducts() → Prisma query con isFeatured: true
@@ -212,7 +212,7 @@ Ver historial al final del documento.
 [x] Eliminado src/lib/mock-data.ts
 ```
 
-#### Pedidos reales — ✅ Completado
+#### Pedidos reales - ✅ Completado
 
 ```
 [x] Schema: Order.orderNumber (unique) + índices createdAt/status (migración aplicada)
@@ -221,7 +221,7 @@ Ver historial al final del documento.
     - Descuenta stock con updateMany guard (sin oversell ni bajo concurrencia)
     - Genera DI-2026-001 (reinicio anual) con retry ante colisión única
     - maxWait/timeout ampliados para cold-start del pool de Prisma Postgres
-[x] POST /api/orders — re-valida envío en server, OrderError → status HTTP
+[x] POST /api/orders - re-valida envío en server, OrderError → status HTTP
 [x] GET /api/orders/[id]
 [x] checkout-flow → handleOrderConfirm async, POST y redirige a /order-success/[id]
 [x] OrderConfirmation → espera el request real (eliminado el delay falso de 2s)
@@ -230,7 +230,7 @@ Ver historial al final del documento.
 [x] Verificado E2E (totales, descuento de stock, guards out-of-stock/inexistente, numeración)
 ```
 
-#### Stock en storefront — ✅ Completado
+#### Stock en storefront - ✅ Completado
 
 ```
 [x] Helper src/lib/inventory.ts (isOutOfStock / isLowStock) + config inventory.lowStockThreshold
@@ -240,18 +240,18 @@ Ver historial al final del documento.
 [x] Verificación de stock al confirmar el pedido (POST /api/orders, transaccional)
 ```
 
-#### Imágenes reales — ✅ Integración lista (falta cargar contenido)
+#### Imágenes reales - ✅ Integración lista (falta cargar contenido)
 
 ```
 [x] Proveedor: UploadThing (v7, UPLOADTHING_TOKEN)
-[x] File router seguro: /api/uploadthing — solo admins con permiso de productos
+[x] File router seguro: /api/uploadthing - solo admins con permiso de productos
 [x] ImageUploadField (dropzone + preview + quitar) en el form de producto
 [x] next.config.ts → remotePatterns para *.ufs.sh y utfs.io
 [x] NextSSRPlugin en layout admin (config hidratada en SSR, sin flash)
 [x] Estilos vía Tailwind v4 (@import "uploadthing/tw/v4" + @source), no el CSS global
     (el stylesheet pre-construido rompía .hidden y ocultaba el sidebar)
 [ ] Migrar productos de placeholder a imágenes reales (contenido, vía /admin/productos)
-[x] Borrar archivo del CDN al reemplazar imagen o eliminar producto (UTApi) — hecho en
+[x] Borrar archivo del CDN al reemplazar imagen o eliminar producto (UTApi) - hecho en
     Bloque 9.9 (media-cleanup.ts cableado en products PUT/PATCH/DELETE)
 ```
 
@@ -259,12 +259,12 @@ Ver historial al final del documento.
 
 ```
 [x] Categorías del form alineadas con las keys del storefront (productCategories en
-    store.config.ts) — antes guardaba "niñas"/"ofertas" y el producto quedaba invisible
+    store.config.ts) - antes guardaba "niñas"/"ofertas" y el producto quedaba invisible
 ```
 
 ---
 
-### ✅ Bloque 9.5 — Autocompletado inteligente de dirección (checkout)
+### ✅ Bloque 9.5 - Autocompletado inteligente de dirección (checkout)
 
 > **Completado**. País / Departamento / Ciudad como comboboxes buscables y
 > encadenados, con auto-detección de país. Instantáneo (dataset server-side +
@@ -292,7 +292,7 @@ Ver historial al final del documento.
   geo-IP keyless (ipwho.is); si falla devuelve `null` y el cliente usa el default.
   El valor solo **prerellena**, nunca bloquea la edición.
 - **UI**: `<Combobox>` propio sobre `cmdk`, **autocontenido** (dropdown posicionado
-  - click-outside, sin dependencia de popover — el del repo era un stub), con
+  - click-outside, sin dependencia de popover - el del repo era un stub), con
     filtrado local (país/estado) o búsqueda async (ciudad) y ARIA combobox/listbox.
 - **Integración**: `<AddressSelectors>` reemplaza los inputs en `shipping-form.tsx`;
   guarda nombres legibles en el pedido y rastrea códigos ISO internamente.
@@ -300,7 +300,7 @@ Ver historial al final del documento.
 #### Tareas
 
 ```
-[x] Dataset server-only (lib/locations.ts sobre country-state-city) — no llega al cliente
+[x] Dataset server-only (lib/locations.ts sobre country-state-city) - no llega al cliente
 [x] APIs cacheadas: /api/locations/{countries,states,cities} (ciudades buscadas + cap en server)
 [x] Componente reutilizable <Combobox> (cmdk) buscable, autocontenido, con estados de carga
 [x] command.tsx (wrapper cmdk) reutilizable
@@ -323,10 +323,10 @@ Ver historial al final del documento.
 
 ---
 
-### ✅ Bloque 9.6 — Categorías administrables (dinámicas)
+### ✅ Bloque 9.6 - Categorías administrables (dinámicas)
 
 > **Completado**. Las categorías se gestionan 100% desde el admin (crear, editar,
-> eliminar, ordenar, activar) — **nada hardcoded**. Storefront, nav, form de
+> eliminar, ordenar, activar) - **nada hardcoded**. Storefront, nav, form de
 > producto, breadcrumbs y SEO leen las categorías desde la DB. Verificado E2E
 > (scripts/verify-categories-admin.mjs, 6/6).
 
@@ -336,7 +336,7 @@ Ver historial al final del documento.
     string legacy "Babies/Girls/Boys/Essentials" a su Category)
 [x] Ruta dinámica /category/[slug] (reemplaza babies/girls/boys); ISR +
     generateStaticParams + generateMetadata desde la DB. /essentials → redirect
-[x] Admin /admin/categorias — CRUD (nombre, slug auto, descripción, imagen vía
+[x] Admin /admin/categorias - CRUD (nombre, slug auto, descripción, imagen vía
     UploadThing categoryImage, orden, activo, SEO) + permiso "categories"
 [x] Nav (header/footer/mobile/404) y form de producto leen categorías de la DB
     (getNavItems / getAdminCategories); navigation hardcoded → specialNavItems
@@ -346,46 +346,47 @@ Ver historial al final del documento.
 [x] Seed crea las categorías y vincula los productos
 [x] SEO por categoría desde la DB; sitemap dinámico
 [x] Cache etiquetada (`categories`) + ISR; revalidateCategories() al editar en admin
-[x] Subcategorías (parentId, self-relación) — 2026-06-14. Migración add_category_parent;
+[x] Subcategorías (parentId, self-relación) - 2026-06-14. Migración add_category_parent;
     selector de "categoría padre" en el form (con guarda anti-ciclo); getCategoryTree()
     construye el árbol anidado; mega-menú "Categorías" estilo rail + panel de
     subcategorías escalable; mobile-nav con acordeón. getNavItems usa solo nivel superior.
-[ ] drag-to-reorder de categorías — opcional, fase futura
+[ ] drag-to-reorder de categorías - opcional, fase futura
 ```
 
 ---
 
-### ✅ Bloque 9.7 — Editor de temas y branding (theming avanzado)
+### ✅ Bloque 9.7 - Editor de temas y branding (theming avanzado)
 
 > **Objetivo**: que el cliente personalice el look de la tienda sin tocar código
-> — colores con selectores visuales, plantillas, vista previa en vivo, seguro.
-> **Estado**: ✅ Fases 1–4 completas (colores + radius + presets + preview +
-> contraste AA + inyección segura + **opciones por componente**).
+>
+> - colores con selectores visuales, plantillas, vista previa en vivo, seguro.
+>   **Estado**: ✅ Fases 1–4 completas (colores + radius + presets + preview +
+>   contraste AA + inyección segura + **opciones por componente**).
 
-#### Fase 1 — Aplicar el tema de la DB al storefront (cimiento) ✅
+#### Fase 1 - Aplicar el tema de la DB al storefront (cimiento) ✅
 
 ```
 [x] ThemeStyle (server) lee loadAllSettings().theme e inyecta un <style> scopeado
     a .dulce-theme con --brand-* + tokens shadcn derivados + --radius
-[x] Seguridad: lib/theme.ts sanitiza cada valor (isValidColor/isValidRadius — solo
+[x] Seguridad: lib/theme.ts sanitiza cada valor (isValidColor/isValidRadius - solo
     #hex/oklch()/rgb()/hsl() y longitudes) antes de inyectar; jamás CSS arbitrario
 [x] Cacheado (tag "settings") + revalidado al guardar; storefront sigue ISR
 [x] Scope correcto: el wrapper .dulce-theme aísla el storefront; el admin (slate)
     no consume tokens de marca, así que no se ve afectado
 ```
 
-#### Fase 2 — Editor visual (color pickers + vista previa en vivo) ✅
+#### Fase 2 - Editor visual (color pickers + vista previa en vivo) ✅
 
 ```
 [x] lib/color.ts propio (sin dependencias): oklch⇄hex (matemática OKLab verificada),
     parse/format OKLCH, contraste WCAG
 [x] ColorRow: swatch + <input type="color"> + campo OKLCH avanzado con validación visual
 [x] Panel de vista previa en vivo (banner, card, botones, badge, input) con los mismos
-    tokens Tailwind del storefront vía CSS vars inline — refleja cambios ANTES de guardar
+    tokens Tailwind del storefront vía CSS vars inline - refleja cambios ANTES de guardar
 [x] Slider de radius; badges de contraste AA (botón base/onBase, texto ink/surface)
 ```
 
-#### Fase 3 — Plantillas / presets ✅
+#### Fase 3 - Plantillas / presets ✅
 
 ```
 [x] THEME_PRESETS built-in ("Dulce Infancia", "Pastel", "Océano", "Vibrante", "Minimal")
@@ -393,7 +394,7 @@ Ver historial al final del documento.
 [x] Preset activo resaltado; todo reversible (Deshacer + presets)
 ```
 
-#### Fase 4 — Personalización por componente ✅ Completado 2026-06-13
+#### Fase 4 - Personalización por componente ✅ Completado 2026-06-13
 
 ```
 [x] Esquema extendido (ThemeOptions en lib/theme.ts): success/danger (colores),
@@ -436,7 +437,7 @@ Ver historial al final del documento.
 
 ---
 
-### ✅ Bloque 9.8 — Config dinámica (aplicar Settings al storefront)
+### ✅ Bloque 9.8 - Config dinámica (aplicar Settings al storefront)
 
 > **Objetivo**: que TODO lo editable desde el admin se aplique de verdad al
 > storefront, y eliminar el contenido hardcoded restante.
@@ -449,7 +450,7 @@ Ver historial al final del documento.
 
 | Setting (DB key)       | Estado | Cómo se aplica ahora                                                 |
 | ---------------------- | ------ | -------------------------------------------------------------------- |
-| `brand`                | ✅     | header (layout server), footer, checkout — `useSettings()`           |
+| `brand`                | ✅     | header (layout server), footer, checkout - `useSettings()`           |
 | `locale`               | ✅     | `formatPrice(amount, locale)` + `useFormatPrice()`, fechas, país     |
 | `shipping`             | ✅     | cart-summary (×2), checkout, product-detail, order-summary           |
 | `payment_methods`      | ✅     | `payment-form` vía `useSettings()`                                   |
@@ -464,7 +465,7 @@ Infra: `loadAllSettings` cacheado (`unstable_cache`, tag `settings`);
 SEO: `lib/seo.ts` (`pageMetadata`/`privatePageMetadata`/`customMetadata`/`rootMetadata`)
 resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
-**B. Contenido del home — ahora administrable** ✅:
+**B. Contenido del home - ahora administrable** ✅:
 
 - `heroBanners`, `featuredCategories`, `homeFeatures` y todo el copy (`homePageContent`)
   se agrupan en el setting `home_content` y se editan en /admin → Configuración →
@@ -473,7 +474,7 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
   función de brand (resuelto en A).
 
 **C. Limpiado** ✅: `categoryLabels`, `productCategories`, `categoryHrefFor`,
-`essentialsConfig` (config muerto tras categorías dinámicas) — eliminados.
+`essentialsConfig` (config muerto tras categorías dinámicas) - eliminados.
 
 #### Reto técnico (por qué no es solo "leer de la DB")
 
@@ -488,7 +489,7 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
 #### Plan por fases
 
-**Fase 1 — Infra de lectura (sin cambiar UI):** ✅
+**Fase 1 - Infra de lectura (sin cambiar UI):** ✅
 
 ```
 [x] Cachear loadAllSettings con unstable_cache, tag "settings" (cold-start friendly)
@@ -497,17 +498,17 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
     pageSeo, home content); brand/locale/shipping/payment/promo/social/contact → DB
 ```
 
-**Fase 2 — Distribución al árbol de render:** ✅
+**Fase 2 - Distribución al árbol de render:** ✅
 
 ```
-[x] SettingsProvider (client) en (store)/layout.tsx — el layout (server) lee
+[x] SettingsProvider (client) en (store)/layout.tsx - el layout (server) lee
     loadAllSettings y lo hidrata; los Client leen vía useSettings()/useFormatPrice()
 [x] Server Components con precios: order-summary (async) + páginas de pedidos/pago
     leen settings y pasan locale a formatPrice
 [x] formatPrice(amount, locale?) retrocompatible (default estático)
 ```
 
-**Fase 3 — Migración de importers (brand/locale/shipping/payment/promo/social):** ✅
+**Fase 3 - Migración de importers (brand/locale/shipping/payment/promo/social):** ✅
 
 ```
 [x] Migrados a useSettings()/props: footer, header(layout), cart-summary (cart + checkout),
@@ -518,19 +519,19 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 [x] Títulos `<title>`/metadata (brand): generateMetadata + lib/seo.ts en todas las
     páginas (home, products, favoritos, search, sales, category/[slug], products/[id],
     cuenta/login/registro/pedidos, order-success, pago, pago-fallido) + root layout
-[x] store.config queda como capa de defaults pura (loadAllSettings la consume) — OK
+[x] store.config queda como capa de defaults pura (loadAllSettings la consume) - OK
 ```
 
 > **Fase 3 cerrada**: brand/locale/shipping/payment/promo/social/contact + todos los
 > `<title>`/SEO se sirven desde settings.
 
-**Fase 4 — Contenido del home administrable (grupo B):** ✅
+**Fase 4 - Contenido del home administrable (grupo B):** ✅
 
 ```
 [x] Setting único `home_content` (heroBanners + featuredCategories + homeFeatures + copy)
     agregado en store.config como default; loadAllSettings lo expone (StoreSettings.homeContent)
 [x] Editor en /admin (permiso settings): "Contenido del inicio" con array-editors
-    (add/remove + preview de imagen) — primitivos extraídos a primitives.tsx
+    (add/remove + preview de imagen) - primitivos extraídos a primitives.tsx
 [x] (store)/page.tsx lee loadAllSettings().homeContent y pasa props a las secciones
 [x] Imágenes vía UploadThing (no hardcoded): banners del hero y categorías destacadas
     usan ImageUploadField (endpoint settingsImage, gated por permiso settings) → suben
@@ -564,10 +565,10 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
 ---
 
-### ✅ Bloque 9.9 — Gestión de medios (imágenes) unificada
+### ✅ Bloque 9.9 - Gestión de medios (imágenes) unificada
 
 > **Objetivo**: una experiencia de imágenes consistente, intuitiva y eficiente en
-> TODO el admin — subir, reemplazar, reutilizar y limpiar — sin imágenes dentro
+> TODO el admin - subir, reemplazar, reutilizar y limpiar - sin imágenes dentro
 > del repo y sin pegar URLs a mano.
 
 #### Estado actual ✅
@@ -576,10 +577,10 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 [x] ImageUploadField (UploadThing) reutilizable: preview + botón quitar + dropzone
     con subida automática (mode "auto"); formas portrait/landscape/square por prop
 [x] Endpoints por permiso: productImage (products), categoryImage (categories),
-    settingsImage (settings) — la subida se aborta si el usuario no tiene permiso
+    settingsImage (settings) - la subida se aborta si el usuario no tiene permiso
 [x] Usado en: productos, categorías y "Contenido del inicio" (hero + cat. destacadas)
 [x] next/image remotePatterns ya permite el CDN (*.ufs.sh, utfs.io)
-[x] Auditoría completa: ningún campo de imagen del admin es ya input de texto —
+[x] Auditoría completa: ningún campo de imagen del admin es ya input de texto -
     el logo de "Marca" (brand-editor) se migró a ImageUploadField (endpoint settingsImage)
 [x] ImageUploadField vive ahora en components/admin/media/ (ubicación compartida);
     imports de productos/categorías/inicio/marca actualizados
@@ -631,24 +632,24 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 
 ---
 
-### ✅ Bloque 10 — Pagos reales (MercadoPago + arquitectura multi-proveedor)
+### ✅ Bloque 10 - Pagos reales (MercadoPago + arquitectura multi-proveedor)
 
 > **Completado (código)**. El cliente paga de verdad con tarjeta (CardForm,
 > tokenización en iframes PCI de MP) o PSE (redirect al banco). El pedido se
 > confirma **solo** vía webhook firmado o verificación contra el API de MP.
 > Verificado E2E: `yarn verify:payments` (15/15) con un mock del API de MP
-> (`MERCADOPAGO_BASE_URL` override) — tarjeta aprobada/rechazada, PSE,
+> (`MERCADOPAGO_BASE_URL` override) - tarjeta aprobada/rechazada, PSE,
 > firma inválida 401, webhook duplicado idempotente y monto manipulado ignorado.
 >
 > **Implementación real (difiere del plan original donde el código ya era mejor):**
 >
 > - La UI de pago vive en `/pago/[orderId]` (no en el paso 3 del checkout): ahí
->   el pedido ya existe y el monto sale de la DB — el paso 3 quedó como selector
+>   el pedido ya existe y el monto sale de la DB - el paso 3 quedó como selector
 >   de método (tarjeta/PSE) y se eliminó la captura falsa de tarjeta (y el
 >   Luhn/getCardType muerto). El handoff redirect existente (`createCheckout`)
 >   se conservó; el mock simulator sigue para dev sin credenciales.
 > - Los montos van en pesos (Float, igual que `Order.total` y `transaction_amount`
->   de MP) — no aplica la conversión `/100` del plan (la DB nunca usó centavos).
+>   de MP) - no aplica la conversión `/100` del plan (la DB nunca usó centavos).
 > - `paymentRef` se renombró a `paymentProviderId` (migración con RENAME).
 > - Rechazo síncrono de tarjeta NO guarda providerId: un webhook tardío de un
 >   intento muerto jamás cancela un pedido que el cliente está reintentando; el
@@ -687,7 +688,7 @@ interfaz; el resto del sistema solo habla con la interfaz.
 ```
 src/lib/payments/
 ├── types.ts            ← IPaymentProvider, PaymentIntent, PaymentResult, WebhookEvent
-├── index.ts            ← getPaymentProvider() — factory que lee PAYMENT_PROVIDER del env
+├── index.ts            ← getPaymentProvider() - factory que lee PAYMENT_PROVIDER del env
 ├── mercadopago/
 │   ├── client.ts       ← inicializa MercadoPago con Access Token
 │   ├── provider.ts     ← implementa IPaymentProvider
@@ -792,7 +793,7 @@ export function getPaymentProvider(): IPaymentProvider {
 
 ---
 
-#### Variables de entorno — configuración por cliente
+#### Variables de entorno - configuración por cliente
 
 Todas las variables de pago deben vivir en `.env.local` (nunca en el repo).
 El archivo `.env.local.example` documenta todas las necesarias con comentarios.
@@ -809,7 +810,7 @@ MERCADOPAGO_ACCESS_TOKEN=TEST-xxxx          # llave privada (solo servidor)
 NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=TEST-xxxx # llave pública (SDK frontend)
 MERCADOPAGO_WEBHOOK_SECRET=xxxx             # clave secreta del webhook (panel → Webhooks)
 
-# ─── Wompi (Bloque 10.5 — completar cuando se active) ───────────────────────
+# ─── Wompi (Bloque 10.5 - completar cuando se active) ───────────────────────
 # Obtener en: https://comercios.wompi.co
 # Sandbox: claves que empiezan con pub_test_ / prv_test_
 # Producción: claves que empiezan con pub_prod_ / prv_prod_
@@ -818,7 +819,7 @@ WOMPI_PRIVATE_KEY=prv_test_xxxx            # llave privada (solo servidor)
 WOMPI_EVENTS_SECRET=xxxx                   # secreto de integridad de eventos webhook
 # WOMPI_BASE_URL se infiere del prefijo de las llaves (test vs prod) en el client.ts
 
-# ─── Stripe (Bloque 10.6 — para clientes internacionales o fuera de Colombia) ─
+# ─── Stripe (Bloque 10.6 - para clientes internacionales o fuera de Colombia) ─
 # Obtener en: https://dashboard.stripe.com/apikeys
 # Sandbox: llaves que empiezan con sk_test_ / pk_test_
 # Producción: llaves que empiezan con sk_live_ / pk_live_
@@ -869,7 +870,7 @@ enum PaymentStatus {
 
 - Agregar: `paymentProvider`, `paymentProviderId`, `paymentMethod`, `paymentStatus`
   (enum con default PENDING), `idempotencyKey` (unique nullable), `pseRedirectUrl`
-- Migración aditiva — no rompe el checkout existente
+- Migración aditiva - no rompe el checkout existente
 
 ---
 
@@ -888,15 +889,15 @@ PENDING ──[webhook: approved]──────────► PAID ──[a
 **Reglas:**
 
 - El pedido se crea siempre en `PENDING` (createOrder existente no cambia)
-- `PAID` solo lo escribe el webhook handler — nunca el frontend
+- `PAID` solo lo escribe el webhook handler - nunca el frontend
 - Si el webhook llega duplicado, verificar que no esté ya en `PAID` antes de reprocessar
 - Si `idempotencyKey` ya existe en DB con otro pedido, retornar 409 al frontend
 
 ---
 
-#### Fase 10-A: MercadoPago — Tarjetas (CardForm)
+#### Fase 10-A: MercadoPago - Tarjetas (CardForm)
 
-**Principio clave**: La tarjeta nunca toca el servidor — MercadoPago.js corre en el
+**Principio clave**: La tarjeta nunca toca el servidor - MercadoPago.js corre en el
 cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
 
 ```
@@ -934,8 +935,8 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
     - Inicializar: new MercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!)
     - Usar mp.cardForm() con callbacks: onFormMounted, onSubmit, onError
     - onSubmit: llamar cardForm.getCardFormData() → obtiene token, paymentMethodId,
-      issuerId, installments — enviar a POST /api/payments/initiate
-    - Nunca loguear ni enviar datos de tarjeta raw — solo el token
+      issuerId, installments - enviar a POST /api/payments/initiate
+    - Nunca loguear ni enviar datos de tarjeta raw - solo el token
     - Manejar errores de CardForm: mostrar mensajes amigables (fondos insuficientes,
       tarjeta rechazada, etc.) sin exponer status_detail raw al cliente
 
@@ -953,13 +954,13 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
 
 ---
 
-#### Fase 10-B: MercadoPago — PSE
+#### Fase 10-B: MercadoPago - PSE
 
 ```
 [ ] Agregar endpoint GET /api/payments/banks?provider=mercadopago
     - Llama GET https://api.mercadopago.com/v1/payment_methods con Access Token
     - Filtra payment_method_id === 'pse', extrae financial_institutions[]
-    - Cachear la respuesta (revalidate: 3600) — la lista de bancos no cambia frecuente
+    - Cachear la respuesta (revalidate: 3600) - la lista de bancos no cambia frecuente
     - Retorna [{ id: "1009", name: "Banco de Bogotá" }, ...]
 
 [ ] Agregar tab/opción PSE en payment-form.tsx:
@@ -993,7 +994,7 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
     - Guardar en Order: paymentStatus=PROCESSING, pseRedirectUrl, paymentProviderId
 
 [ ] En /api/payments/initiate: detectar método PSE, llamar createPsePayment(),
-    retornar { success: true, redirectUrl: external_resource_url } — el frontend
+    retornar { success: true, redirectUrl: external_resource_url } - el frontend
     redirige al banco con window.location.href = redirectUrl
 
 [ ] Crear GET /api/payments/pse-return:
@@ -1002,20 +1003,20 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
     - Consultar estado real: getPaymentProvider().getPaymentStatus(paymentProviderId)
     - Actualizar Order según resultado
     - Redirigir a /order-success/[id] o /payment-failed/[id]
-    - IMPORTANTE: no confiar solo en collection_status del query param — siempre
+    - IMPORTANTE: no confiar solo en collection_status del query param - siempre
       verificar con el API de MP (puede manipularse en la URL)
 ```
 
 ---
 
-#### Fase 10-C: Webhook handler — MercadoPago
+#### Fase 10-C: Webhook handler - MercadoPago
 
 ```
 [ ] Crear POST /api/payments/webhook/mercadopago (route handler, no server action):
     export const runtime = 'edge'; // opcional, para latencia mínima
 
     Algoritmo completo:
-    1. Leer body raw como string (ANTES de parsear JSON — necesario para HMAC)
+    1. Leer body raw como string (ANTES de parsear JSON - necesario para HMAC)
     2. Verificar firma HMAC-SHA256:
        a. Extraer header x-signature: "ts=1704106600&v1=abc123..."
        b. Extraer header x-request-id
@@ -1027,7 +1028,7 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
     4. Procesar en background (setImmediate / sin await en la respuesta):
        a. Si type !== 'payment' → ignorar (puede ser merchant_order u otro)
        b. Consultar estado real: GET https://api.mercadopago.com/v1/payments/{data.id}
-          (el webhook solo trae el ID — el estado real viene del GET)
+          (el webhook solo trae el ID - el estado real viene del GET)
        c. Buscar Order por external_reference (= orderId guardado al crear el pago)
        d. Si Order no existe o ya está en PAID → ignorar (idempotencia)
        e. Según payment.status:
@@ -1089,7 +1090,7 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
     - Paso 4 del checkout (actual: inputs manuales de tarjeta) →
       TabSelector: "Tarjeta de crédito/débito" | "PSE"
     - Tab Tarjeta: CardForm de MercadoPago.js (iframes seguros, PCI-compliant)
-      * El CardForm renderiza iframes nativos — NO se puede estilizar con Tailwind directo
+      * El CardForm renderiza iframes nativos - NO se puede estilizar con Tailwind directo
       * Usar las CSS variables del CardForm API para adaptar colores al tema
       * Mostrar selector de cuotas (installments) si el monto > umbral configurable
     - Tab PSE: formulario propio con dropdown de bancos + datos del pagador
@@ -1100,9 +1101,9 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
     - Mostrar razón amigable del rechazo (traducción de status_detail)
     - CTA: "Intentar con otra tarjeta" → vuelve al checkout con el mismo orderId
     - CTA: "Pagar por PSE" → switch al tab PSE
-    - El pedido sigue en PENDING — el cliente puede reintentar
+    - El pedido sigue en PENDING - el cliente puede reintentar
 
-[ ] /order-success/[id] — actualizar para mostrar paymentStatus:
+[ ] /order-success/[id] - actualizar para mostrar paymentStatus:
     - Si PAID: "¡Pago confirmado! Tu pedido está siendo procesado"
     - Si PENDING: "Tu pedido está pendiente de confirmación de pago.
       Te notificaremos por email cuando se confirme." (caso PSE)
@@ -1141,13 +1142,13 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
 
 ---
 
-### ✅ Bloque 9.10 — Media Manager (gestor completo de archivos del CDN)
+### ✅ Bloque 9.10 - Media Manager (gestor completo de archivos del CDN)
 
 > **✅ Completado 2026-06-13** (ver checklist al final de la sección).
 >
 > **Robustez añadida (cierre de gaps, 2026-06-13):**
 >
-> - `loading.tsx` con skeleton para el primer scan (cache frío) — ya no bloquea sin feedback.
+> - `loading.tsx` con skeleton para el primer scan (cache frío) - ya no bloquea sin feedback.
 > - `error.tsx` con estado degradado + reintento si el scan falla (p. ej. falta
 >   `UPLOADTHING_TOKEN`), sin reventar al error boundary global del admin.
 > - **Badge de huérfanos en el sidebar**: ahora sí, pero **sin la regresión** que se
@@ -1160,7 +1161,7 @@ cliente, tokeniza la tarjeta, y el frontend envía solo el token al backend.
 
 > **Objetivo**: una página dedicada en el admin (`/admin/media`) que muestra TODOS
 > los archivos subidos al CDN de UploadThing, indica cuáles están siendo usados y
-> dónde, detecta huérfanos, y permite limpiarlos individualmente o en lote — todo
+> dónde, detecta huérfanos, y permite limpiarlos individualmente o en lote - todo
 > integrado con las entidades reales de la DB (productos, categorías, settings).
 >
 > **Por qué es necesario**: hoy el admin puede subir imágenes desde cualquier editor
@@ -1205,7 +1206,7 @@ El `appId` se extrae del `UPLOADTHING_TOKEN` (base64 JSON).
 
 - No hay método `getUsageInfo()` para cuota de almacenamiento total
 - No hay metadata custom por archivo (no podemos guardar en UT a qué entidad pertenece)
-- Borrado concurrente: máx 25 archivos por llamada — batching necesario para lotes grandes
+- Borrado concurrente: máx 25 archivos por llamada - batching necesario para lotes grandes
 
 ---
 
@@ -1224,7 +1225,7 @@ El scanner de uso debe cruzar TODAS estas fuentes para saber si un archivo está
 | `Setting` (cualquier otra)     | `value`                            | `Json` recursivo          | Cualquier campo futuro con imágenes |
 
 La función `collectUploadThingUrls(value)` de `media-cleanup.ts` ya hace el
-escaneo recursivo de JSON — **reutilizar sin modificar**.
+escaneo recursivo de JSON - **reutilizar sin modificar**.
 
 ---
 
@@ -1238,7 +1239,7 @@ src/
 ├── app/api/admin/
 │   └── media/
 │       ├── route.ts              ← extender: añadir DELETE + paginación + ?scan=true
-│       └── scan/route.ts         ← nuevo: GET — devuelve el informe de uso completo
+│       └── scan/route.ts         ← nuevo: GET - devuelve el informe de uso completo
 │
 ├── app/admin/
 │   └── media/
@@ -1252,7 +1253,7 @@ src/
 
 ---
 
-#### Fase 1 — Scanner de uso (`src/lib/media-manager.ts`)
+#### Fase 1 - Scanner de uso (`src/lib/media-manager.ts`)
 
 ```typescript
 // Tipos de retorno del scanner
@@ -1286,7 +1287,7 @@ export interface ScanResult {
 **Algoritmo del scan** (en `media-manager.ts`):
 
 ```
-1. listFiles() de UTApi — paginar con limit=500 hasta hasMore=false
+1. listFiles() de UTApi - paginar con limit=500 hasta hasMore=false
    → construir Map<key, FileInfo>
 
 2. Escanear la DB en paralelo (Promise.all):
@@ -1312,7 +1313,7 @@ La acción de borrar un archivo debe llamar `revalidateTag("media-scan")`.
 
 ---
 
-#### Fase 2 — API routes
+#### Fase 2 - API routes
 
 **`GET /api/admin/media`** (extender el existente):
 
@@ -1358,7 +1359,7 @@ Solo accesible por admins con permiso settings.
 
 ---
 
-#### Fase 3 — UI: página `/admin/media`
+#### Fase 3 - UI: página `/admin/media`
 
 **Layout general**:
 
@@ -1406,7 +1407,7 @@ Solo accesible por admins con permiso settings.
 
 - Checkbox por tarjeta + "Seleccionar todo los huérfanos"
 - Botón "Eliminar seleccionados (N)" con AlertDialog de confirmación
-- "Eliminar todos los huérfanos" — acción en lote con confirmación explícita
+- "Eliminar todos los huérfanos" - acción en lote con confirmación explícita
   mostrando el espacio que se liberará: "¿Eliminar 8 archivos y liberar 2.1 MB?"
 
 **Flujo de eliminación segura**:
@@ -1425,7 +1426,7 @@ Solo accesible por admins con permiso settings.
 
 ---
 
-#### Fase 4 — Integración con el sistema existente
+#### Fase 4 - Integración con el sistema existente
 
 ```
 [x] (ya existe) media-cleanup.ts → borra huérfanos al reemplazar imágenes en entities
@@ -1460,14 +1461,14 @@ del archivo no es crítico para el funcionamiento. Puede agregarse como mejora V
 #### Checklist de tareas
 
 ```
-[x] src/lib/media-manager.ts — scanner con ScanResult, FileReference, caché 5 min
+[x] src/lib/media-manager.ts - scanner con ScanResult, FileReference, caché 5 min
     (scanMediaUsage, keysInUse, deleteMediaFiles en chunks de 25)
-[x] DELETE /api/admin/media — borrado con re-verificación (keysInUse) + batch + revalidate
-[x] GET /api/admin/media/scan — scan fresco forzado (revalida antes de devolver)
+[x] DELETE /api/admin/media - borrado con re-verificación (keysInUse) + batch + revalidate
+[x] GET /api/admin/media/scan - scan fresco forzado (revalida antes de devolver)
     (GET /api/admin/media se mantiene devolviendo {items} para no romper el modal;
-     la página usa scanMediaUsage() directo — patrón server-component sin hop HTTP)
-[x] src/app/admin/media/page.tsx — Server Component con datos iniciales del scan
-[x] src/components/admin/media/media-manager-page.tsx — Client Component:
+     la página usa scanMediaUsage() directo - patrón server-component sin hop HTTP)
+[x] src/app/admin/media/page.tsx - Server Component con datos iniciales del scan
+[x] src/components/admin/media/media-manager-page.tsx - Client Component:
     tabs (Todos/En uso/Huérfanos), grid responsivo, checkboxes, AlertDialog, paginación 25, toast
 [x] Sidebar del admin → link "Medios" (gateado por canManageMedia) + badge de huérfanos
     (fetch no bloqueante a ?stats=1, conteo del scan cacheado)
@@ -1480,7 +1481,7 @@ del archivo no es crítico para el funcionamiento. Puede agregarse como mejora V
 
 ---
 
-### ⏳ Bloque 10.5 — Wompi (Colombia — fase futura)
+### ⏳ Bloque 10.5 - Wompi (Colombia - fase futura)
 
 > **Objetivo**: Agregar Wompi como segundo proveedor de pago disponible.
 > Activable con solo cambiar `PAYMENT_PROVIDER=wompi` en `.env.local`.
@@ -1506,7 +1507,7 @@ del archivo no es crítico para el funcionamiento. Puede agregarse como mejora V
 
 ```
 Wompi usa un modelo diferente al de MP:
-- El monto va en CENTAVOS (amount_in_cents), igual que la DB — sin conversión
+- El monto va en CENTAVOS (amount_in_cents), igual que la DB - sin conversión
 - Cada transacción requiere un acceptance_token (JWT de aceptación de T&C)
 - Todas las transacciones requieren una firma de integridad (integrity signature)
 - Las transacciones siempre arrancan en PENDING → polling o webhook para estado final
@@ -1548,7 +1549,7 @@ function buildIntegritySignature(
 ```
 [ ] Implementar getAcceptanceToken() en wompi/client.ts:
     - GET /v1/merchants/{publicKey}
-    - Retorna presigned_acceptance.acceptance_token (JWT corto — expira)
+    - Retorna presigned_acceptance.acceptance_token (JWT corto - expira)
     - Cachear con TTL de 10 minutos (el token dura ~30 min pero es seguro renovar)
     - El acceptance_token se envía en el body de cada transacción
     - Representa que el cliente aceptó los T&C de Wompi
@@ -1561,7 +1562,7 @@ function buildIntegritySignature(
 ```
 [ ] Tokenización de tarjeta (frontend):
     - Wompi provee Widget de pago (iFrame) o Widget de tokenización standalone
-    - Alternativa: POST /v1/tokens/cards directamente (requiere PCI scope propio — NO recomendado)
+    - Alternativa: POST /v1/tokens/cards directamente (requiere PCI scope propio - NO recomendado)
     - Usar el Widget de Wompi o el WidgetCheckout embebido como iframe
     - El widget retorna un token de tarjeta (tok_prod_xxx o tok_test_xxx)
 
@@ -1590,7 +1591,7 @@ function buildIntegritySignature(
           legal_id_type: payer.identificationType  // CC, CE, NIT, PAS, TI
         }
       }
-    - Estado inicial siempre PENDING — monitorear vía webhook o polling
+    - Estado inicial siempre PENDING - monitorear vía webhook o polling
     - Guardar transaction.data.id como paymentProviderId en Order
 ```
 
@@ -1609,7 +1610,7 @@ function buildIntegritySignature(
     - POST /v1/transactions con payment_method: { type: "NEQUI", phone_number: "3001234567" }
     - Wompi envía una notificación push a la app Nequi del cliente
     - El cliente acepta en su app → webhook confirma
-    - No requiere redirect — flujo 100% asíncrono
+    - No requiere redirect - flujo 100% asíncrono
 
 [ ] Bancolombia Transfer:
     - POST /v1/transactions con payment_method: { type: "BANCOLOMBIA_TRANSFER", user_type, user_legal_id }
@@ -1677,7 +1678,7 @@ function buildIntegritySignature(
     PAYMENT_PROVIDER=wompi (leer del env en el server component del settings editor)
 
 [ ] El payment-form.tsx lee los métodos habilitados vía useSettings() y solo
-    muestra los tabs activos — sin requerir deploy para cambiar métodos disponibles
+    muestra los tabs activos - sin requerir deploy para cambiar métodos disponibles
 ```
 
 ---
@@ -1691,7 +1692,7 @@ function buildIntegritySignature(
 [ ] Verificar que idempotencyKey es @unique en la DB de producción
 [ ] Testear con tarjeta real (monto mínimo) en producción antes de lanzar
 [ ] Confirmar que /api/payments/webhook/ NO requiere autenticación de NextAuth
-    (MP llama sin sesión — debe estar excluido del middleware)
+    (MP llama sin sesión - debe estar excluido del middleware)
 [ ] Confirmar que /api/payments/initiate SÍ requiere orderId válido del usuario en sesión
 [ ] Verificar logs en PaymentLog después de primera transacción real
 [ ] Activar notificaciones de contracargos (chargebacks) en el panel de MP
@@ -1699,7 +1700,7 @@ function buildIntegritySignature(
 
 ---
 
-### ⏳ Bloque 10.6 — Stripe (internacional — fase futura)
+### ⏳ Bloque 10.6 - Stripe (internacional - fase futura)
 
 > **Objetivo**: Agregar Stripe como tercer proveedor de pago para clientes
 > internacionales o cuando el repo se replica fuera de Colombia.
@@ -1710,9 +1711,9 @@ function buildIntegritySignature(
 > **Cuándo usar Stripe vs MercadoPago/Wompi**:
 >
 > - Stripe: clientes fuera de Colombia, pagos en USD/EUR, tarjetas internacionales,
->   suscripciones, marketplaces — la API más madura y documentada del mercado.
-> - MercadoPago: Colombia/LATAM, PSE, Efecty, billetera MP — mejor tasa de aprobación local.
-> - Wompi: Colombia, Nequi, Bancolombia, BNPL — métodos bancarios colombianos nativos.
+>   suscripciones, marketplaces - la API más madura y documentada del mercado.
+> - MercadoPago: Colombia/LATAM, PSE, Efecty, billetera MP - mejor tasa de aprobación local.
+> - Wompi: Colombia, Nequi, Bancolombia, BNPL - métodos bancarios colombianos nativos.
 >
 > **Referencia oficial**:
 >
@@ -1725,10 +1726,10 @@ function buildIntegritySignature(
 #### Diferencias clave de Stripe vs los otros proveedores
 
 ```
-- Montos en centavos de la moneda destino (USD: cents, COP: centavos — igual que la DB)
-- No tiene PSE ni métodos locales colombianos — solo tarjetas, SEPA, etc.
+- Montos en centavos de la moneda destino (USD: cents, COP: centavos - igual que la DB)
+- No tiene PSE ni métodos locales colombianos - solo tarjetas, SEPA, etc.
 - PaymentIntent es el objeto central (equivalente al "pago" de MP)
-- 3DS es automático vía Payment Element — no requiere manejo manual
+- 3DS es automático vía Payment Element - no requiere manejo manual
 - Webhook verificado con stripe.webhooks.constructEvent() (librería oficial)
 - SDK oficial: npm install stripe (server) + @stripe/stripe-js + @stripe/react-stripe-js (frontend)
 - Stripe CLI para testing local: stripe listen --forward-to localhost:3000/api/payments/webhook/stripe
@@ -1766,7 +1767,7 @@ function buildIntegritySignature(
 #### Fase 10.6-B: Payment Element (frontend)
 
 ```
-[ ] StripePaymentForm — componente nuevo (solo se monta cuando PAYMENT_PROVIDER=stripe):
+[ ] StripePaymentForm - componente nuevo (solo se monta cuando PAYMENT_PROVIDER=stripe):
     import { loadStripe } from '@stripe/stripe-js';
     import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -1775,12 +1776,12 @@ function buildIntegritySignature(
     // Flujo:
     1. Al llegar al paso 4 del checkout → POST /api/payments/initiate → recibir clientSecret
     2. Montar <Elements stripe={stripePromise} options={{ clientSecret }}>
-    3. Dentro: <PaymentElement /> — Stripe renderiza el formulario completo (tarjeta,
+    3. Dentro: <PaymentElement /> - Stripe renderiza el formulario completo (tarjeta,
        Apple Pay, Google Pay, Link) adaptado al navegador y país del cliente
     4. onSubmit: stripe.confirmPayment({ elements, confirmParams: {
          return_url: `${APP_URL}/api/payments/stripe-return?orderId=${orderId}`
        }})
-    5. Stripe maneja 3DS automáticamente — no requiere código adicional
+    5. Stripe maneja 3DS automáticamente - no requiere código adicional
 
 [ ] Ventaja del Payment Element: soporta múltiples métodos de pago en un solo
     componente (tarjeta, Apple Pay, Google Pay, Link) sin código extra.
@@ -1819,7 +1820,7 @@ function buildIntegritySignature(
     Eventos a manejar:
     - 'payment_intent.succeeded'       → Order PAID + CONFIRMED
     - 'payment_intent.payment_failed'  → Order FAILED
-    - 'charge.dispute.created'         → loguear (contracargo — notificar admin)
+    - 'charge.dispute.created'         → loguear (contracargo - notificar admin)
     - Todos los demás → ignorar (retornar 200 igual)
 
     Registrar URL en Dashboard de Stripe → Webhooks:
@@ -1868,39 +1869,39 @@ function buildIntegritySignature(
 
 ---
 
-### ⏳ Bloque 11 — Email transaccional
+### ⏳ Bloque 11 - Email transaccional
 
 > **Objetivo**: El cliente recibe email automático en cada evento importante.
 >
-> **🟡 En progreso (2026-06-13)** — infraestructura + 4 de 5 emails implementados.
+> **🟡 En progreso (2026-06-13)** - infraestructura + 4 de 5 emails implementados.
 > Falta solo abandono de carrito (requiere cron) y la prueba con API key real.
 
 **Infraestructura** (`src/lib/email/`):
 
-- `client.ts` — transporte Resend best-effort: nunca lanza (un fallo de envío no
+- `client.ts` - transporte Resend best-effort: nunca lanza (un fallo de envío no
   rompe el flujo que lo dispara) y es no-op con log si falta `RESEND_API_KEY`.
-- `templates.ts` — layout HTML email-safe con branding (nombre de marca vivo desde
+- `templates.ts` - layout HTML email-safe con branding (nombre de marca vivo desde
   settings, `formatPrice` por locale) + plantillas por evento. Funciones puras.
-- `index.ts` — disparadores de alto nivel (`sendOrderPlacedEmail`,
+- `index.ts` - disparadores de alto nivel (`sendOrderPlacedEmail`,
   `sendOrderPaidEmail`, `sendOrderShippedEmail`, `sendWelcomeEmail`).
 
 ```
 [x] Configurar Resend (paquete instalado; RESEND_API_KEY + EMAIL_FROM en .env.example)
-[x] Email: Confirmación de pedido (al crear) — número, items, totales, dirección
+[x] Email: Confirmación de pedido (al crear) - número, items, totales, dirección
     de envío, branding. Disparado en POST /api/orders con after() (no bloquea checkout)
-[x] Email: Pedido confirmado (pago exitoso) — disparado dentro de markOrderPaid
+[x] Email: Pedido confirmado (pago exitoso) - disparado dentro de markOrderPaid
     (el guard idempotente garantiza envío exactly-once aunque el webhook llegue 2 veces)
-[x] Email: Pedido enviado — disparado en PATCH /api/admin/orders/[id] solo en la
+[x] Email: Pedido enviado - disparado en PATCH /api/admin/orders/[id] solo en la
     transición a SHIPPED, con after(). (Sin número de guía: no hay campo de tracking
-    en el schema — pendiente como mejora futura)
-[x] Email: Bienvenida (al crear cuenta) — POST /api/cuenta/register con after()
-[x] Email: Abandono de pago (pedido PENDING >24h) — cron diario GET
+    en el schema - pendiente como mejora futura)
+[x] Email: Bienvenida (al crear cuenta) - POST /api/cuenta/register con after()
+[x] Email: Abandono de pago (pedido PENDING >24h) - cron diario GET
     /api/cron/abandoned-orders (Vercel Cron, vercel.json), protegido con CRON_SECRET.
     remindAbandonedOrders() reclama el recordatorio con update guardado (no doble envío)
     y solo apunta a PENDING entre 24h y 7 días con email. Campo Order.reminderSentAt
     (migración add_order_reminder_sent_at). NOTA: el carrito vive en localStorage, no
     es detectable; en su lugar se recuperan pedidos creados que nunca se pagaron.
-[ ] Verificación E2E con API key real (RESEND_API_KEY) — falta credencial
+[ ] Verificación E2E con API key real (RESEND_API_KEY) - falta credencial
 ```
 
 > **Para activar el cron en Vercel**: definir `CRON_SECRET` (p. ej. `openssl rand -hex 32`)
@@ -1910,7 +1911,7 @@ function buildIntegritySignature(
 
 ---
 
-### ⏳ Bloque 12 — Analytics y Marketing
+### ⏳ Bloque 12 - Analytics y Marketing
 
 > **Objetivo**: Medir conversiones, entender comportamiento y hacer retargeting.
 
@@ -1930,17 +1931,17 @@ function buildIntegritySignature(
 
 ---
 
-### ✅ Bloque 13 — Cuenta de cliente y post-compra
+### ✅ Bloque 13 - Cuenta de cliente y post-compra
 
 > **Completado**. El cliente se registra, inicia sesión, ve su historial de
 > pedidos y gestiona su cuenta. Sobre el mismo NextAuth/User/Role del admin.
 
 ```
-[x] /cuenta/registro — crear cuenta (rol customer idempotente en el primer signup)
-[x] /cuenta/login — autenticación (NextAuth Credentials, email normalizado)
-[x] /cuenta — panel: nombre, email, cambiar contraseña, cerrar sesión
-[x] /cuenta/pedidos — historial con estado + paymentStatus
-[x] /cuenta/pedidos/[id] — detalle (verificación de propiedad por userId)
+[x] /cuenta/registro - crear cuenta (rol customer idempotente en el primer signup)
+[x] /cuenta/login - autenticación (NextAuth Credentials, email normalizado)
+[x] /cuenta - panel: nombre, email, cambiar contraseña, cerrar sesión
+[x] /cuenta/pedidos - historial con estado + paymentStatus
+[x] /cuenta/pedidos/[id] - detalle (verificación de propiedad por userId)
 [x] Rol 'customer' sin permisos de admin; middleware protege /cuenta/* y bloquea
     clientes en /admin
 [x] Pedidos se enlazan al userId del cliente logueado (createOrder + /api/orders)
@@ -1957,9 +1958,9 @@ function buildIntegritySignature(
 
 ---
 
-## 🐛 Bloque 13.5 — Vinculación de pedidos guest al iniciar sesión
+## 🐛 Bloque 13.5 - Vinculación de pedidos guest al iniciar sesión
 
-> **Estado**: pendiente — bug confirmado. El registro ya reclama pedidos, el login no.
+> **Estado**: pendiente - bug confirmado. El registro ya reclama pedidos, el login no.
 
 ### Diagnóstico
 
@@ -1968,8 +1969,8 @@ El flujo actual tiene una implementación parcial:
 | Escenario                                             | Pedidos reclamados                                 |
 | ----------------------------------------------------- | -------------------------------------------------- |
 | Guest compra → **se registra** con ese email          | ✅ Funciona (`registerCustomer` hace `updateMany`) |
-| Guest compra → **inicia sesión** con cuenta existente | ❌ No funciona — `authorize` no reclama nada       |
-| Usuario registrado compra como guest → inicia sesión  | ❌ No funciona — mismo gap en `authorize`          |
+| Guest compra → **inicia sesión** con cuenta existente | ❌ No funciona - `authorize` no reclama nada       |
+| Usuario registrado compra como guest → inicia sesión  | ❌ No funciona - mismo gap en `authorize`          |
 
 **Raíz del bug**: el claiming (`prisma.order.updateMany({ where: { userId: null, customerEmail: email } })`)
 está embebido en `registerCustomer()` (`src/lib/account.ts:70`) pero nunca se llama
@@ -1978,13 +1979,13 @@ desde el callback `authorize` en `src/lib/auth-options.ts`.
 ### Archivos clave
 
 ```
-src/lib/account.ts          — registerCustomer() tiene el claiming embebido (línea 68-71)
-src/lib/auth-options.ts     — authorize() no llama a claiming tras login exitoso
+src/lib/account.ts          - registerCustomer() tiene el claiming embebido (línea 68-71)
+src/lib/auth-options.ts     - authorize() no llama a claiming tras login exitoso
 ```
 
 ### Plan de implementación
 
-**Paso 1 — Extraer utilidad `claimGuestOrders`** en `src/lib/account.ts`:
+**Paso 1 - Extraer utilidad `claimGuestOrders`** en `src/lib/account.ts`:
 
 ```typescript
 // Mueve la lógica embebida a una función reutilizable:
@@ -1997,14 +1998,14 @@ export async function claimGuestOrders(email: string, userId: string): Promise<n
 }
 ```
 
-**Paso 2 — Refactorizar `registerCustomer`** para usar la utilidad (sin cambiar comportamiento):
+**Paso 2 - Refactorizar `registerCustomer`** para usar la utilidad (sin cambiar comportamiento):
 
 ```typescript
 // En registerCustomer(), reemplazar el updateMany embebido por:
 await claimGuestOrders(email, user.id)
 ```
 
-**Paso 3 — Agregar claiming en el login** (`src/lib/auth-options.ts`):
+**Paso 3 - Agregar claiming en el login** (`src/lib/auth-options.ts`):
 
 ```typescript
 async authorize(credentials) {
@@ -2023,10 +2024,10 @@ async authorize(credentials) {
 
 | Caso                                  | Comportamiento esperado                                 |
 | ------------------------------------- | ------------------------------------------------------- |
-| No hay pedidos guest con ese email    | `claimGuestOrders` hace 0 updates — no-op seguro        |
-| Pedido ya reclamado (`userId ≠ null`) | Excluido por `WHERE userId IS NULL` — safe              |
-| Admin inicia sesión                   | Claiming corre, no encuentra nada — no-op               |
-| Email diferente al del checkout guest | No hay match — correcto (no reclamar pedidos ajenos)    |
+| No hay pedidos guest con ese email    | `claimGuestOrders` hace 0 updates - no-op seguro        |
+| Pedido ya reclamado (`userId ≠ null`) | Excluido por `WHERE userId IS NULL` - safe              |
+| Admin inicia sesión                   | Claiming corre, no encuentra nada - no-op               |
+| Email diferente al del checkout guest | No hay match - correcto (no reclamar pedidos ajenos)    |
 | Registro concurrente mismo email      | Prisma unique constraint en `email` previene duplicados |
 
 ### Checklist
@@ -2038,14 +2039,14 @@ async authorize(credentials) {
 [x] Refactorizar registerCustomer para usar claimGuestOrders (comportamiento idéntico)
 [x] Agregar await claimGuestOrders(...) en authorize() de src/lib/auth-options.ts (tras validar password)
 [x] Actualizar scripts/verify-account.mjs con caso de login-claiming (logout → guest checkout → login → 2 pedidos)
-[ ] Test manual E2E (requiere servidor) — verify:account cubre el flujo
+[ ] Test manual E2E (requiere servidor) - verify:account cubre el flujo
 ```
 
 ---
 
 ## Historial de Bloques Completados
 
-### ✅ Bloque 0 — Fundación
+### ✅ Bloque 0 - Fundación
 
 ```
 [x] Next.js 15.3.3, Tailwind v4, shadcn/ui, TypeScript strict
@@ -2055,7 +2056,7 @@ async authorize(credentials) {
 [x] Categorías con mock-data
 ```
 
-### ✅ Bloque 1 — Funcionalidad base
+### ✅ Bloque 1 - Funcionalidad base
 
 ```
 [x] Página detalle de producto /products/[id]
@@ -2064,7 +2065,7 @@ async authorize(credentials) {
 [x] not-found.tsx + error.tsx con branding
 ```
 
-### ✅ Bloque 2 — Bug fixes críticos + Tooling
+### ✅ Bloque 2 - Bug fixes críticos + Tooling
 
 ```
 [x] Unificar sistema de toast → Sonner (react-hot-toast eliminado)
@@ -2075,7 +2076,7 @@ async authorize(credentials) {
 [x] Prettier + ESLint + pipeline yarn validate
 ```
 
-### ✅ Bloque 3 — Deuda técnica
+### ✅ Bloque 3 - Deuda técnica
 
 ```
 [x] Unificar catálogos → 17 productos en allMockProducts
@@ -2087,20 +2088,20 @@ async authorize(credentials) {
 [x] README.md reescrito con stack real
 ```
 
-### ✅ Bloque 4 — Identidad visual
+### ✅ Bloque 4 - Identidad visual
 
 ```
 [x] Tipografía: Nunito (display) + Atkinson Hyperlegible (cuerpo)
 [x] Acento: Verde Salvia oklch(0.68 0.08 145)
 [x] Superficie: Beige claro oklch(0.95 0.022 80)
-[x] Modo claro only — bloque .dark eliminado
+[x] Modo claro only - bloque .dark eliminado
 [x] Hero: split 45/55 sin autoplay, pill indicators
 [x] Trust bar: marquee CSS 2 copias, keyframe en globals.css
 [x] Brand promise: <p> editorial a clamp(1.75–3.25rem)
 [x] Headings: left-aligned, eyebrow labels en todas las secciones
 ```
 
-### ✅ Bloque 5 — Arquitectura SOLID homepage
+### ✅ Bloque 5 - Arquitectura SOLID homepage
 
 ```
 [x] page.tsx → Server Component puro (36 líneas, sin estado)
@@ -2111,14 +2112,14 @@ async authorize(credentials) {
 [x] ProductCard usa Product de types.ts (no inline type)
 [x] Accessibility fixes: aria-live, aria-labelledby, aria-hidden correcto
 [x] Eliminado tabs.README.md (archivo basura de scaffolding)
-[x] STANDARDS.md — checklist de calidad para cada PR
+[x] STANDARDS.md - checklist de calidad para cada PR
 ```
 
-### ✅ Bloque 6 — Correcciones de código + SEO base (ver arriba)
+### ✅ Bloque 6 - Correcciones de código + SEO base (ver arriba)
 
-### ✅ Bloque 7 — Features de navegación y descubrimiento (ver arriba)
+### ✅ Bloque 7 - Features de navegación y descubrimiento (ver arriba)
 
-### ✅ Bloque 8 — Admin Dashboard + Backend con Prisma (ver arriba)
+### ✅ Bloque 8 - Admin Dashboard + Backend con Prisma (ver arriba)
 
 ---
 
@@ -2128,7 +2129,7 @@ async authorize(credentials) {
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         ADMIN (sin código)                          │
 │                                                                     │
-│  /admin (Next.js — Custom Dashboard)                                │
+│  /admin (Next.js - Custom Dashboard)                                │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │ Dashboard: ventas, pedidos, stock bajo, gráficos            │    │
 │  │ Productos: CRUD completo, imágenes, stock, variantes        │    │
@@ -2141,22 +2142,22 @@ async authorize(credentials) {
                                    │
                         Prisma ORM (v7, driver adapters)
                                    │
-                        PostgreSQL (Prisma Postgres — pooled, SSL)
+                        PostgreSQL (Prisma Postgres - pooled, SSL)
                         ├── roles, users (auth + permisos)
                         ├── products (catálogo + stock)
                         ├── orders, order_items (pedidos)
                         └── settings (configuración dinámica)
                                    │
                      Next.js API Routes (/api/*)
-                     ├── /api/auth/* (NextAuth — JWT)
+                     ├── /api/auth/* (NextAuth - JWT)
                      ├── /api/admin/settings (CRUD config)
                      ├── /api/admin/orders (gestión pedidos)
                      ├── /api/admin/products (gestión productos)
                      ├── /api/admin/users (gestión usuarios)
                      ├── /api/admin/roles (gestión roles)
-                     ├── /api/orders (crear pedido — PENDIENTE)
-                     ├── /api/payments/* (MercadoPago — PENDIENTE)
-                     └── /api/products (catálogo público — PENDIENTE)
+                     ├── /api/orders (crear pedido - PENDIENTE)
+                     ├── /api/payments/* (MercadoPago - PENDIENTE)
+                     └── /api/products (catálogo público - PENDIENTE)
                                    │
                      Next.js Storefront (/(store) route group)
                      dulceinfancia.co
@@ -2169,10 +2170,10 @@ async authorize(credentials) {
 ```
 src/
 ├── app/
-│   ├── (store)/                      ← Route group — layout de tienda (header+footer)
+│   ├── (store)/                      ← Route group - layout de tienda (header+footer)
 │   │   ├── layout.tsx                ← Header + Footer + CartProvider + MiniCart (dynamic)
 │   │   ├── loading.tsx               ← Skeleton de carga
-│   │   └── page.tsx                  ← Home — Server Component
+│   │   └── page.tsx                  ← Home - Server Component
 │   ├── admin/                        ← Panel de administración ✅
 │   │   ├── layout.tsx                ← Sidebar + SessionProvider
 │   │   ├── loading.tsx               ← Skeleton admin
@@ -2246,7 +2247,7 @@ src/
 
 ---
 
-## 🔍 Bloque 14 — Auditoría Profunda & Plan de Mejora para Fable 5
+## 🔍 Bloque 14 - Auditoría Profunda & Plan de Mejora para Fable 5
 
 > **Cómo usar este bloque**: cada sección tiene items accionables con rutas de archivo
 > exactas y descripciones del problema. Asignar a Fable 5 como contexto completo +
@@ -2255,9 +2256,9 @@ src/
 
 ---
 
-### 14.1 — Seguridad (revisar antes de cualquier deploy a producción)
+### 14.1 - Seguridad (revisar antes de cualquier deploy a producción)
 
-#### 🔴 Prioridad A — Críticos
+#### 🔴 Prioridad A - Críticos
 
 **[A-1] Sin headers de seguridad HTTP** ✅ Resuelto 2026-06-11
 
@@ -2307,7 +2308,7 @@ src/
 - Fix esperado: en `markOrderFailed()` agregar `restoreOrderStock(orderId)` que haga
   `updateMany { increment: qty }` por cada `OrderItem` del pedido, dentro de una
   transacción. También aplicar en cancelaciones del admin.
-- Verificar: `src/lib/orders.ts` función `markOrderFailed` — confirmar que no
+- Verificar: `src/lib/orders.ts` función `markOrderFailed` - confirmar que no
   llama ninguna restauración de stock.
 
 **[A-4] `order-success/[id]` no verifica propiedad del pedido** ✅ Resuelto 2026-06-13
@@ -2322,7 +2323,7 @@ src/
 - Archivos: `src/lib/orders.ts`, `src/app/(store)/order-success/[id]/page.tsx`,
   `src/app/api/orders/[id]/route.ts`
 
-**[A-5] Fuga de rol en JWT — cambios de rol no se propagan** ✅ Resuelto 2026-06-13
+**[A-5] Fuga de rol en JWT - cambios de rol no se propagan** ✅ Resuelto 2026-06-13
 
 - Resolución: el callback `jwt` de `auth-options.ts` re-lee el rol del usuario desde
   la DB cada `ROLE_SYNC_TTL_MS` (5 min). Un cambio de rol o degradación toma efecto en
@@ -2331,9 +2332,9 @@ src/
   `roleSyncedAt` añadido al tipo JWT. Costo por request: una query cada 5 min por sesión.
 - Archivos: `src/lib/auth-options.ts`, `src/types/next-auth.d.ts`
 
-#### 🟠 Prioridad B — Importantes
+#### 🟠 Prioridad B - Importantes
 
-**[B-1] `/api/payments/simulate` — ¿está gateado a dev?** ✅ Verificado/endurecido 2026-06-13
+**[B-1] `/api/payments/simulate` - ¿está gateado a dev?** ✅ Verificado/endurecido 2026-06-13
 
 - Resolución: ya estaba gateado por `isMockPaymentsEnabled()` (solo activo cuando el
   proveedor es `mock`). Se añadió una segunda capa defensiva: el handler retorna 404
@@ -2368,24 +2369,24 @@ src/
   con `userId`). Confirmar que esto también aplica para guests (que no tienen sesión) y
   que no hay forma de iniciar pago en un pedido ajeno enviando un `orderId` arbitrario.
 
-**[B-5] Admin APIs — verificar que TODAS validan sesión + permiso** ✅ Auditado 2026-06-13
+**[B-5] Admin APIs - verificar que TODAS validan sesión + permiso** ✅ Auditado 2026-06-13
 
 - Resultado: los 12 route handlers admin (categories, products, orders, users,
-  roles, settings, media, media/scan — GET/POST/PUT/PATCH/DELETE) verifican
+  roles, settings, media, media/scan - GET/POST/PUT/PATCH/DELETE) verifican
   `getServerSession` + `hasPermission(resource, action)` con el recurso/acción
   correctos. Sin rutas que solo validen sesión. Protecciones extra correctas:
   users PATCH/DELETE bloquean auto-modificación; roles DELETE protege isSystem y
   roles en uso; settings PUT valida la key contra whitelist.
-- Hallazgo corregido — **mass-assignment en products**: POST/PUT/PATCH hacían
+- Hallazgo corregido - **mass-assignment en products**: POST/PUT/PATCH hacían
   `data: body` (sin whitelist, a diferencia de users/roles que ya filtraban
   campos). Ahora usan `pickProductInput()` (whitelist en `src/lib/product-input.ts`).
-- Endurecido — **users POST**: valida que `roleId` exista (evita 500 por FK → 400)
+- Endurecido - **users POST**: valida que `roleId` exista (evita 500 por FK → 400)
   y longitud mínima de contraseña.
 - Auto-escalada de `roles:update` ✅ mitigada 2026-06-13: el PATCH de `roles/[id]`
   rechaza (403) cualquier cambio de `permissions` sobre el rol que el propio usuario
   tiene, cerrando la vía de auto-escalada.
 
-#### 🟡 Prioridad C — Menores
+#### 🟡 Prioridad C - Menores
 
 **[C-1] Contraseña sin requisitos de complejidad**
 
@@ -2401,7 +2402,7 @@ src/
 
 ---
 
-### 14.2 — Bugs confirmados
+### 14.2 - Bugs confirmados
 
 **[BUG-1] Shipping cost en pedidos NO usa la config del admin** ✅ Resuelto 2026-06-11
 
@@ -2419,9 +2420,9 @@ src/
   archivo de config estático, NO de `loadAllSettings()`. Si el admin cambia el costo
   de envío en Settings → Envíos, los nuevos pedidos siguen usando el valor hardcodeado.
 - Fix: en `createOrder()`, llamar `loadAllSettings()` para leer `shipping` desde la DB.
-  Ojo: `loadAllSettings` es async — la función `shippingCostFor` debe recibir los valores
+  Ojo: `loadAllSettings` es async - la función `shippingCostFor` debe recibir los valores
   como parámetro en vez de leerlos del módulo.
-- Verificar también: `cart-summary` y `mini-cart` — ¿usan `useSettings()` o el config estático?
+- Verificar también: `cart-summary` y `mini-cart` - ¿usan `useSettings()` o el config estático?
 
 **[BUG-2] `pago-fallido` no sabe cuál pedido falló → stock y carrito inconsistentes** ✅ Resuelto 2026-06-13
 
@@ -2469,7 +2470,7 @@ src/
   No es un bug grave en bajo volumen, pero documentar el comportamiento esperado.
 - Revisar: confirmar que el campo `orderNumber` tiene `@unique` en el schema de Prisma.
 
-**[BUG-6] Admin sidebar — permisos no reflejados en tiempo real**
+**[BUG-6] Admin sidebar - permisos no reflejados en tiempo real**
 
 - Archivo: `src/components/admin/sidebar.tsx`
 - Revisar: si el sidebar filtra items por los permisos del JWT (snapshot en login),
@@ -2478,7 +2479,7 @@ src/
 
 ---
 
-### 14.3 — Review de flujos (verificar E2E con Fable 5)
+### 14.3 - Review de flujos (verificar E2E con Fable 5)
 
 Cada flujo debe verificarse con Playwright o manualmente. Los pasos marcados `[RIESGO]`
 son los que más frecuentemente fallan en producción.
@@ -2486,7 +2487,7 @@ son los que más frecuentemente fallan en producción.
 #### Flujo 1: Compra con tarjeta (happy path)
 
 ```
-[ ] 1. Agregar producto al carrito — verificar que StockBadge refleja stock real
+[ ] 1. Agregar producto al carrito - verificar que StockBadge refleja stock real
 [ ] 2. Ir a carrito → ¿precio y envío usan settings de la DB?    [RIESGO: BUG-1]
 [ ] 3. Checkout paso 1–3 → crear pedido → redirige a /pago/[orderId]
 [ ] 4. /pago: CardForm monta iframes en < 3s (verificar en red lenta)
@@ -2525,7 +2526,7 @@ son los que más frecuentemente fallan en producción.
 ```
 [ ] 1. Enviar mismo webhook approved dos veces
 [ ] 2. Verificar: segunda entrega es no-op (Order ya en PAID → guarda no ejecuta)
-[ ] 3. Verificar: PaymentLog tiene dos registros (correcto — es auditoría, no operación)
+[ ] 3. Verificar: PaymentLog tiene dos registros (correcto - es auditoría, no operación)
 [ ] 4. No debe haber error 500 en la segunda entrega
 ```
 
@@ -2549,7 +2550,7 @@ son los que más frecuentemente fallan en producción.
 [ ] 5. Login con cuenta existente → favoritos DB sobrescriben o mergeán los de localStorage
 ```
 
-#### Flujo 7: Admin — ciclo completo de pedido
+#### Flujo 7: Admin - ciclo completo de pedido
 
 ```
 [ ] 1. Pedido llega en estado PENDING → admin ve en lista
@@ -2566,14 +2567,14 @@ son los que más frecuentemente fallan en producción.
 [ ] 2. Cambiar fuente → verificar que los iframes de MP NO pierden sus colores
        (probeFieldStyle usa el color al momento del mount, no después)    [BUG potencial]
 [ ] 3. Admin cambia costo de envío → verificar que NUEVO pedido usa costo nuevo
-       [RIESGO: BUG-1 — órdenes usan store.config, no settings]
+       [RIESGO: BUG-1 - órdenes usan store.config, no settings]
 ```
 
 ---
 
-### 14.4 — Performance & Caché
+### 14.4 - Performance & Caché
 
-> **🚀 Audit de rendimiento — implementado 2026-06-13.** Hallazgos corregidos:
+> **🚀 Audit de rendimiento - implementado 2026-06-13.** Hallazgos corregidos:
 >
 > - **Catálogo cacheado + revalidado** (`src/lib/products.ts`): todas las lecturas
 >   del storefront ahora usan `unstable_cache` bajo el tag `products` (ventana ISR
@@ -2595,10 +2596,10 @@ son los que más frecuentemente fallan en producción.
 **[PERF-1] `loadAllSettings` no se usa en la capa de pedidos**
 
 - Impacto: `createOrder` usa `shipping` del config estático. Fix = usar settings de DB.
-- También revisar: `src/app/(store)/checkout-flow/page.tsx` — ¿el subtotal de envío
+- También revisar: `src/app/(store)/checkout-flow/page.tsx` - ¿el subtotal de envío
   mostrado en el checkout usa el mismo cálculo que `createOrder`?
 
-**[PERF-2] Admin dashboard — múltiples queries sin batching**
+**[PERF-2] Admin dashboard - múltiples queries sin batching**
 
 - Archivo: `src/app/admin/page.tsx`
 - Revisar si las stats (total pedidos, total ventas, total usuarios, etc.) se hacen
@@ -2619,14 +2620,14 @@ son los que más frecuentemente fallan en producción.
   trust-bar por nombre. Si este módulo llega al bundle del cliente, es pesado.
 - Verificar: ¿tiene `"server-only"`? ¿El trust-bar resuelve íconos en el servidor?
 
-**[PERF-5] Caché de settings — verificar que `revalidateTag("settings")` funciona E2E**
+**[PERF-5] Caché de settings - verificar que `revalidateTag("settings")` funciona E2E**
 
 - Archivos: `src/lib/settings.ts`, `src/app/api/admin/settings/route.ts`
 - Flujo: `saveSetting()` llama `revalidateTag("settings")` → la próxima request
   al storefront debe generar una respuesta fresca. Verificar con un test: cambiar un
   setting en admin → esperar < 1s → hacer fetch al storefront → confirmar nuevo valor.
 
-**[PERF-6] Imágenes — verificar `sizes` en ProductCard para LCP**
+**[PERF-6] Imágenes - verificar `sizes` en ProductCard para LCP**
 
 - Archivo: `src/components/product/product-card.tsx`
 - Confirmar que el `sizes` prop de `next/image` es preciso para evitar que el navegador
@@ -2634,7 +2635,7 @@ son los que más frecuentemente fallan en producción.
 
 ---
 
-### 14.5 — UX & Experiencia del Cliente
+### 14.5 - UX & Experiencia del Cliente
 
 **[UX-1] `/pago-fallido` sin contexto del pedido**
 
@@ -2661,7 +2662,7 @@ son los que más frecuentemente fallan en producción.
 - El checkout de 4 pasos usa estado local. Si el usuario refresca en el paso 3,
   pierde la información de envío. Considerar `sessionStorage` como backup de borrador.
 
-**[UX-6] Admin pedidos — sin acción masiva de estado**
+**[UX-6] Admin pedidos - sin acción masiva de estado**
 
 - No hay forma de marcar 10 pedidos como "Enviados" a la vez. Para operar a escala
   es necesario. Agregar checkbox + acción masiva en la tabla de pedidos.
@@ -2669,13 +2670,13 @@ son los que más frecuentemente fallan en producción.
 **[UX-7] Sin indicador de "stock bajo" en el admin de productos** ✅ Resuelto 2026-06-13
 
 - `ProductsTable` ahora muestra `StockBadge` por fila: rojo "Agotado" (stock 0),
-  ámbar "Stock bajo (N)" (`isLowStock`), verde con el número si está OK — usando
+  ámbar "Stock bajo (N)" (`isLowStock`), verde con el número si está OK - usando
   `isLowStock`/`isOutOfStock` de `src/lib/inventory.ts` (sin hardcodear el umbral).
   Filtro server-side `?stock=low|out` con tabs Todos/Stock bajo/Agotados (preserva `q`).
 - Archivos: `src/app/admin/productos/page.tsx`,
   `src/components/admin/products/products-table.tsx`
 
-**[UX-8] Admin — PaymentLog no visible en detalle del pedido** ✅ Resuelto 2026-06-13
+**[UX-8] Admin - PaymentLog no visible en detalle del pedido** ✅ Resuelto 2026-06-13
 
 - `src/app/admin/pedidos/[id]/page.tsx` agrega sección "Historial de pagos" (tabla
   fecha/hora · evento · proveedor · provider id · status, más reciente primero; sin
@@ -2684,34 +2685,34 @@ son los que más frecuentemente fallan en producción.
 
 ---
 
-### 14.6 — Deuda Técnica & Arquitectura
+### 14.6 - Deuda Técnica & Arquitectura
 
-**[ARCH-1] `shipping` hardcoded en `orders.ts` — desacoplarlo de settings**
+**[ARCH-1] `shipping` hardcoded en `orders.ts` - desacoplarlo de settings**
 
 - Ver BUG-1. Es la deuda técnica más impactante en el flujo de negocio.
 
-**[ARCH-2] JWT sessions — considerar rotación automática de rol**
+**[ARCH-2] JWT sessions - considerar rotación automática de rol**
 
 - Ver A-5. El riesgo es bajo en producción temprana pero debe estar en el radar.
 
-**[ARCH-3] `mock-provider.ts` — confirmar que no puede activarse en producción** ✅ Verificado 2026-06-13
+**[ARCH-3] `mock-provider.ts` - confirmar que no puede activarse en producción** ✅ Verificado 2026-06-13
 
 - El `mock-provider` solo crea un redirect a `/pago/[orderId]`; no liquida pagos. La
   única superficie de ataque era `/api/payments/simulate`, ahora con doble gate
   (`isMockPaymentsEnabled()` + 404 en `NODE_ENV=production`). Ver [B-1].
 
-**[ARCH-4] Error boundaries — auditar cobertura en Server Components**
+**[ARCH-4] Error boundaries - auditar cobertura en Server Components**
 
 - Next.js App Router: un Server Component async que lanza puede burbujear al
   `error.tsx` más cercano. Verificar que las páginas del storefront con datos de Prisma
   tienen error boundaries apropiados (`loading.tsx` + `error.tsx` en las carpetas necesarias).
 
-**[ARCH-5] `src/app/(store)/essentials/page.tsx` — verificar si es redundante** ✅ Verificado 2026-06-13
+**[ARCH-5] `src/app/(store)/essentials/page.tsx` - verificar si es redundante** ✅ Verificado 2026-06-13
 
 - No es redundante: es un `permanentRedirect("/category/essentials")` (solo mantiene
   viva la URL antigua). Sin lógica propia que duplique la ruta dinámica. Se conserva.
 
-**[ARCH-6] `use-toast.ts` — shadcn toast legacy vs Sonner** ✅ Resuelto 2026-06-13
+**[ARCH-6] `use-toast.ts` - shadcn toast legacy vs Sonner** ✅ Resuelto 2026-06-13
 
 - Dead code confirmado por grep (ningún importador): eliminados `src/hooks/use-toast.ts`
   y `src/components/ui/toaster.tsx` (shim sin uso). Sonner (`ui/sonner` en el root
@@ -2722,12 +2723,12 @@ son los que más frecuentemente fallan en producción.
 - Archivo: `src/lib/payments/types.ts`
 - El tipo `CreateCardPaymentInput` tiene `amountCents: number` pero el comentario dice
   "centavos" mientras que el proveedor de MP trabaja en pesos (no centavos).
-  El campo está mal documentado — puede confundir a quien implemente Wompi/Stripe.
+  El campo está mal documentado - puede confundir a quien implemente Wompi/Stripe.
   Renombrar a `amount` y clarificar la unidad en el tipo (o usar un branded type).
 
 ---
 
-### 14.7 — Features de Alto Valor Pendientes (ordenados por impacto)
+### 14.7 - Features de Alto Valor Pendientes (ordenados por impacto)
 
 | #   | Feature                                                  | Impacto    | Bloque        |
 | --- | -------------------------------------------------------- | ---------- | ------------- |
@@ -2741,14 +2742,14 @@ son los que más frecuentemente fallan en producción.
 | 8   | ~~**Paginación en admin**~~ ✅                           | ⭐⭐⭐     | 14 (PERF-3)   |
 | 9   | **Google Analytics 4 + Meta Pixel**                      | ⭐⭐⭐     | 12            |
 | 10  | **Wompi** (Nequi, Bancolombia, PSE nativo)               | ⭐⭐⭐     | 10.5          |
-| 11  | **Cancelación de pedido con restauración de stock**      | ⭐⭐⭐     | —             |
+| 11  | **Cancelación de pedido con restauración de stock**      | ⭐⭐⭐     | -             |
 | 12  | **Imágenes reales de productos** (migrar de placeholder) | ⭐⭐       | 9 (pendiente) |
 | 13  | ~~**Stock bajo en admin**~~ ✅                           | ⭐⭐       | 14 (UX-7)     |
 | 14  | **Stripe** (clientes internacionales)                    | ⭐⭐       | 10.6          |
 
 ---
 
-### 14.8 — Cómo sacarle el máximo a Fable 5
+### 14.8 - Cómo sacarle el máximo a Fable 5
 
 Fable 5 es especialmente bueno en razonamiento multi-archivo y detección de
 inconsistencias sutiles entre capas. Prompt recomendado por tipo de tarea:
@@ -2791,7 +2792,7 @@ Archivos existentes relacionados: [listar].
 5. [A-2] Rate limiting → `src/app/api/cuenta/register/`, `src/lib/auth-options.ts` ✅
 6. [BUG-3] Polling PSE → `src/app/(store)/order-success/[id]/` ✅
 7. [A-4] Ownership check en order-success ✅
-8. Bloque 11 (emails) — 🟡 4/5 (falta abandono de carrito + key real)
+8. Bloque 11 (emails) - 🟡 4/5 (falta abandono de carrito + key real)
 
 ---
 
@@ -2813,7 +2814,7 @@ Archivos existentes relacionados: [listar].
 - [x] [A-5] Propagación de cambios de rol en JWT (re-sync cada 5 min) ✅
 - [x] [B-2] Password: límite máximo de 72 bytes (bcrypt) en registro/cambio ✅
 - [x] Auditoría: guard de auto-escalada en `roles:update` ✅
-- [x] Recordatorio de pago abandonado (cron diario + email) ✅ — falta definir
+- [x] Recordatorio de pago abandonado (cron diario + email) ✅ - falta definir
       `CRON_SECRET` en Vercel para activarlo
 
 **Mejoras de calidad (cuando haya tiempo):**
@@ -2831,7 +2832,7 @@ hallazgos), e infraestructura de emails transaccionales (4/5).
 
 ---
 
-## 🛍️ Bloque 15 — Paridad con Shopify (catálogo, conversión, operación)
+## 🛍️ Bloque 15 - Paridad con Shopify (catálogo, conversión, operación)
 
 > Iniciado 2026-06-24. Investigación de features de Shopify cruzada contra el
 > código actual para cerrar brechas y dar más facilidades a clientes y admins.
@@ -2863,7 +2864,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 ### Plan por fases
 
-**🔴 Fase A — Cimientos del catálogo**
+**🔴 Fase A - Cimientos del catálogo**
 
 ```
 [x] A.1 Galería de imágenes (ProductImage[])  ✅ Completado 2026-06-24
@@ -2871,7 +2872,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [ ] A.3 Cargar imágenes reales de productos (migrar de placeholder)
 ```
 
-**🟠 Fase B — Conversión y operación**
+**🟠 Fase B - Conversión y operación**
 
 ```
 [x] B.1 Cupones / descuentos (Discount: %, fijo, envío gratis) + UI checkout  ✅ 2026-06-24
@@ -2882,7 +2883,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] B.6 Back-in-stock ("avísame cuando vuelva")  ✅ 2026-06-24
 ```
 
-**🟢 Fase C — Crecimiento**
+**🟢 Fase C - Crecimiento**
 
 ```
 [x] C.1 Colecciones automáticas (smart, por condiciones)  ✅ 2026-06-24
@@ -2890,12 +2891,12 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] C.3a Guía de tallas (modal con tabla bebés/niños)  ✅ 2026-06-24
 [x] C.3b Tags de producto (+ condición de tag en colecciones smart)  ✅ 2026-06-24
 [x] C.3c Preventa (preorder: vender agotados marcados)  ✅ 2026-06-24
-[ ] C.3d Gift cards  — bloque futuro dedicado (instrumento de pago con saldo)
-[ ] C.3e Multi-ubicación de inventario  — bloque futuro dedicado (overhaul de stock)
-[ ] C.3f Metafields  — bloque futuro (datos estructurados arbitrarios)
+[ ] C.3d Gift cards  - bloque futuro dedicado (instrumento de pago con saldo)
+[ ] C.3e Multi-ubicación de inventario  - bloque futuro dedicado (overhaul de stock)
+[ ] C.3f Metafields  - bloque futuro (datos estructurados arbitrarios)
 ```
 
-**✅ Fase D — UX & Conversión (análisis competidores)** — 2026-06-24
+**✅ Fase D - UX & Conversión (análisis competidores)** - 2026-06-24
 
 > Análisis de 5 competidores directos del mercado infantil Colombia:
 > **Offcorss.us**, **Tomaticos.com**, **BabyFresh.co**, **MagicBabyCol.com** y
@@ -2926,7 +2927,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 #### Hallazgos por Competidor
 
-**Offcorss.us** — Marca líder, referente de UX:
+**Offcorss.us** - Marca líder, referente de UX:
 
 - Newsletter pop-up con incentivo (10-15% OFF)
 - Category pills tipo "TOPS / BOTTOMS / SETS" debajo del hero
@@ -2937,7 +2938,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - Envío gratis con umbral prominente en header
 - Recomendaciones "Complete the look" en detalle de producto
 
-**Tomaticos.com** — Ropa infantil económica:
+**Tomaticos.com** - Ropa infantil económica:
 
 - Homepage con tabs: "Más Vendidos" / "Lo Nuevo" / "Grandes Descuentos"
 - Badge de descuento prominente (-50%) en cada card de producto
@@ -2949,14 +2950,14 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - Precio tachado + precio de oferta siempre visible
 - Sello "Marca País" como trust signal
 
-**BabyFresh.co** — Marca grande (Crystal S.A.S):
+**BabyFresh.co** - Marca grande (Crystal S.A.S):
 
 - 3 promo banners rotativos en header ("Rebajas", "Envío gratis >$149.990", "Paga con ADDI")
 - Subcategoría pills: "Camisetas", "Vestidos", "Conjuntos", "Pijamas"
-- "Descubre más de Baby Fresh" — banners por segmento (Bebés Niñas, Bebés Niños, Niñas, Niños)
+- "Descubre más de Baby Fresh" - banners por segmento (Bebés Niñas, Bebés Niños, Niñas, Niños)
 - Ratings inline con conteo (★★★★★ (23)) en product cards
-- BNPL integrado (ADDI — Compra ahora, paga después)
-- "Rastrea tu pedido" — página pública de tracking
+- BNPL integrado (ADDI - Compra ahora, paga después)
+- "Rastrea tu pedido" - página pública de tracking
 - "Recoge en tienda" (Click & Collect)
 - Tiendas físicas con store locator
 - Cookie consent banner (Pandectes)
@@ -2966,11 +2967,11 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - Cupones y códigos (página informativa)
 - "Añadir a favoritos" en cada card con corazón
 
-**MagicBabyCol.com** — Productos variados bebé:
+**MagicBabyCol.com** - Productos variados bebé:
 
 - Secciones del home organizadas **por uso/ocasión**: "Alimentación y Lactancia", "Hora de Dormir", "Juegos para Aprender", "Ropa Niño y Niña"
 - "Los Más Vendidos" como primera sección del home (social proof)
-- **Testimonios masivos con fotos** — app Revie con 80+ reseñas con imagen real del producto
+- **Testimonios masivos con fotos** - app Revie con 80+ reseñas con imagen real del producto
 - WhatsApp flotante (wa.me link directo con mensaje pre-escrito)
 - Botón "Agregar al carrito" directamente en la product card (quick-add)
 - Promo bar: "👶🏻 Todo lo que necesitas para tu bebé lo encuentras aquí 👶🏻"
@@ -2980,7 +2981,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - Categorías en el nav con imagen de ícono por cada una
 - Footer con links de políticas, categorías y redes sociales
 
-**BabyCentro.com** — Premium/importado:
+**BabyCentro.com** - Premium/importado:
 
 - Banners full-width por categoría con copy + CTA ("La Seguridad Primero", "Es Hora de Comer!")
 - Tabs por subcategoría dentro de secciones (Sillas/Coches/De Paseo/Equipo Viaje)
@@ -2988,53 +2989,53 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - Blog "De Mamá a Mamá" con artículos de crianza (contenido SEO + engagement)
 - "Listas de Regalos" (gift registry)
 - Badge de descuento (-14%, -20%, -40%) en cards
-- "AGREGA A CARRO" — botón quick-add prominente en cada product card
+- "AGREGA A CARRO" - botón quick-add prominente en cada product card
 - Vendor/marca visible en cada product card
 - Instagram feed embebido (@babycentrocom)
 - Íconos de métodos de pago en footer (Visa, Mastercard, AmEx, Diners, Discover, Maestro)
 - Chat WhatsApp con asesor en línea
-- Envío gratis diferenciado por zona: "$300.000 Bogotá — $500.000 resto del país"
+- Envío gratis diferenciado por zona: "$300.000 Bogotá - $500.000 resto del país"
 - Sección "Categorías" con grid de imágenes circulares al final del home
 - Newsletter "Suscríbete a BabyCentro" en footer
 
-#### Matriz Comparativa — Estado Actual de Dulce Infancia
+#### Matriz Comparativa - Estado Actual de Dulce Infancia
 
 | Patrón UX                   | Dulce Infancia | Offcorss | Tomaticos | BabyFresh | MagicBaby | BabyCentro |
 | --------------------------- | :------------: | :------: | :-------: | :-------: | :-------: | :--------: |
-| Newsletter popup            |       ✅       |    ✅    |    ✅     |     —     |     —     |     ✅     |
+| Newsletter popup            |       ✅       |    ✅    |    ✅     |     -     |     -     |     ✅     |
 | Category pills              |       ✅       |    ✅    |    ✅     |    ✅     |    ✅     |     ✅     |
-| Gender/age tabs             |       ✅       |    ✅    |     —     |    ✅     |     —     |     ✅     |
-| SEO content block           |       ✅       |    ✅    |     —     |    ✅     |     —     |     —      |
-| Reviews/ratings             |       ✅       |    ✅    |     —     |    ✅     |    ✅     |     —      |
-| Cupones/descuentos          |       ✅       |    ✅    |    ✅     |    ✅     |     —     |     ✅     |
-| Favoritos/wishlist          |       ✅       |    ✅    |    ✅     |    ✅     |     —     |     ✅     |
-| Envío gratis (umbral)       |       ✅       |    ✅    |     —     |    ✅     |     —     |     ✅     |
-| Trust bar                   |       ✅       |    ✅    |     —     |     —     |     —     |     —      |
-| Promo banner                |       ✅       |    ✅    |     —     |  ✅ (×3)  |    ✅     |     —      |
-| Back-in-stock               |       ✅       |    —     |     —     |     —     |     —     |     —      |
-| Variantes (talla×color)     |       ✅       |    ✅    |    ✅     |    ✅     |     —     |     ✅     |
+| Gender/age tabs             |       ✅       |    ✅    |     -     |    ✅     |     -     |     ✅     |
+| SEO content block           |       ✅       |    ✅    |     -     |    ✅     |     -     |     -      |
+| Reviews/ratings             |       ✅       |    ✅    |     -     |    ✅     |    ✅     |     -      |
+| Cupones/descuentos          |       ✅       |    ✅    |    ✅     |    ✅     |     -     |     ✅     |
+| Favoritos/wishlist          |       ✅       |    ✅    |    ✅     |    ✅     |     -     |     ✅     |
+| Envío gratis (umbral)       |       ✅       |    ✅    |     -     |    ✅     |     -     |     ✅     |
+| Trust bar                   |       ✅       |    ✅    |     -     |     -     |     -     |     -      |
+| Promo banner                |       ✅       |    ✅    |     -     |  ✅ (×3)  |    ✅     |     -      |
+| Back-in-stock               |       ✅       |    -     |     -     |     -     |     -     |     -      |
+| Variantes (talla×color)     |       ✅       |    ✅    |    ✅     |    ✅     |     -     |     ✅     |
 | Galería multi-imagen        |       ✅       |    ✅    |    ✅     |    ✅     |    ✅     |     ✅     |
-| Zonas de envío              |       ✅       |    ✅    |     —     |     —     |     —     |     ✅     |
-| Tracking de pedido          |       ✅       |    ✅    |     —     |    ✅     |     —     |     —      |
-| **WhatsApp flotante**       |       ❌       |    —     |     —     |     —     |    ✅     |     ✅     |
-| **Badge % descuento**       |       ❌       |    ✅    |    ✅     |    ✅     |     —     |     ✅     |
+| Zonas de envío              |       ✅       |    ✅    |     -     |     -     |     -     |     ✅     |
+| Tracking de pedido          |       ✅       |    ✅    |     -     |    ✅     |     -     |     -      |
+| **WhatsApp flotante**       |       ❌       |    -     |     -     |     -     |    ✅     |     ✅     |
+| **Badge % descuento**       |       ❌       |    ✅    |    ✅     |    ✅     |     -     |     ✅     |
 | **Hover swap (2da img)**    |       ❌       |    ✅    |    ✅     |    ✅     |    ✅     |     ✅     |
-| **"Más Vendidos" section**  |       ❌       |    —     |    ✅     |     —     |    ✅     |     —      |
-| **Quick add-to-cart**       |       ❌       |    —     |     —     |     —     |    ✅     |     ✅     |
-| **Cookie consent**          |       ❌       |    —     |     —     |    ✅     |    ✅     |     —      |
-| **Instagram feed**          |       ❌       |    —     |    ✅     |     —     |    ✅     |     ✅     |
-| **Blog / contenido**        |       ❌       |    ✅    |     —     |    ✅     |     —     |     ✅     |
-| **Logos métodos de pago**   |       ❌       |    ✅    |     —     |     —     |     —     |     ✅     |
-| **BNPL (ADDI)**             |       ❌       |    —     |     —     |    ✅     |     —     |     —      |
-| **Testimonios con foto**    |       ❌       |    —     |     —     |     —     |    ✅     |     —      |
-| **Secciones por ocasión**   |       ❌       |    —     |     —     |     —     |    ✅     |     ✅     |
-| **Shop the Look (outfits)** |       ❌       |    ✅    |     —     |     —     |     —     |     —      |
-| **Gift registry**           |       ❌       |    —     |     —     |     —     |     —     |     ✅     |
-| **Store locator**           |       ❌       |    —     |     —     |    ✅     |     —     |     —      |
+| **"Más Vendidos" section**  |       ❌       |    -     |    ✅     |     -     |    ✅     |     -      |
+| **Quick add-to-cart**       |       ❌       |    -     |     -     |     -     |    ✅     |     ✅     |
+| **Cookie consent**          |       ❌       |    -     |     -     |    ✅     |    ✅     |     -      |
+| **Instagram feed**          |       ❌       |    -     |    ✅     |     -     |    ✅     |     ✅     |
+| **Blog / contenido**        |       ❌       |    ✅    |     -     |    ✅     |     -     |     ✅     |
+| **Logos métodos de pago**   |       ❌       |    ✅    |     -     |     -     |     -     |     ✅     |
+| **BNPL (ADDI)**             |       ❌       |    -     |     -     |    ✅     |     -     |     -      |
+| **Testimonios con foto**    |       ❌       |    -     |     -     |     -     |    ✅     |     -      |
+| **Secciones por ocasión**   |       ❌       |    -     |     -     |     -     |    ✅     |     ✅     |
+| **Shop the Look (outfits)** |       ❌       |    ✅    |     -     |     -     |     -     |     -      |
+| **Gift registry**           |       ❌       |    -     |     -     |     -     |     -     |     ✅     |
+| **Store locator**           |       ❌       |    -     |     -     |    ✅     |     -     |     -      |
 
 ---
 
-**✅ Fase E — UX Competitivo (hallazgos análisis multi-competidor)** — completa 2026-06-24
+**✅ Fase E - UX Competitivo (hallazgos análisis multi-competidor)** - completa 2026-06-24
 
 > Patrones identificados en 4+ competidores que Dulce Infancia aún no tiene.
 > Priorizados por impacto en conversión × esfuerzo de implementación.
@@ -3062,7 +3063,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 #### Log de implementación Fase C
 
-- **C.1 Colecciones automáticas (smart)** ✅ — `Category.rules` (Json, migración
+- **C.1 Colecciones automáticas (smart)** ✅ - `Category.rules` (Json, migración
   `add_category_rules`): cuando tiene condiciones, la categoría lista productos
   por reglas en vez de asignación manual. Motor puro `lib/collection-rules.ts`
   (`parseRules` + `rulesToWhere`) con condiciones onSale/new/featured/priceMin/
@@ -3073,21 +3074,21 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
   create/update revalidan también el tag `products`. Verificado E2E: colección
   con regla `onSale=true` lista exactamente los 5 productos en oferta.
 
-- **C.3c Preventa (preorder)** ✅ — `Product.isPreorder` (migración
+- **C.3c Preventa (preorder)** ✅ - `Product.isPreorder` (migración
   `add_product_preorder`): permite comprar más allá del stock (backorder). En el
   detalle, CTA "Reservar (preventa)" + nota cuando está agotado pero en preventa
   (sin formulario de back-in-stock). En `orders.ts` (ruta crítica), los productos/
   variantes en preventa hacen decremento **sin guard** (stock puede ir negativo);
   los normales mantienen el guard anti-sobreventa. Verificado E2E: preventa con
   stock 0 → pedido 201, stock −1; producto normal con stock 0 → 400 OUT_OF_STOCK.
-- **C.3b Tags** ✅ — `Product.tags String[]` (migración `add_product_tags`) en el
+- **C.3b Tags** ✅ - `Product.tags String[]` (migración `add_product_tags`) en el
   whitelist + data layer + tipo; campo de tags en el form admin; nueva condición
   `tag` en colecciones smart (`tags has`). Verificado E2E: colección por tag
   "verano" lista exactamente los 2 productos etiquetados.
-- **C.3a Guía de tallas** ✅ — `SizeGuideModal` (autocontenido, Escape/click-fuera,
+- **C.3a Guía de tallas** ✅ - `SizeGuideModal` (autocontenido, Escape/click-fuera,
   scroll-lock) con tablas de referencia bebés/niños (talla·edad·estatura·peso);
   trigger junto al selector de talla en el detalle.
-- **C.2 Analytics GA4 + Meta Pixel + OG** ✅ — `lib/analytics.ts` (dispatch a
+- **C.2 Analytics GA4 + Meta Pixel + OG** ✅ - `lib/analytics.ts` (dispatch a
   `gtag`/`fbq`, no-op si no hay IDs) + `AnalyticsScripts` (inyecta GA4 gtag.js y
   Meta Pixel vía `next/script afterInteractive` cuando hay env vars; trackea page
   views en cambios de ruta App Router). Eventos cableados: `view_item`
@@ -3099,46 +3100,46 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 #### Log de implementación Fase E
 
-- **E.1 WhatsApp flotante** ✅ — `WhatsAppFloat` (cliente) lee `social.whatsapp`
+- **E.1 WhatsApp flotante** ✅ - `WhatsAppFloat` (cliente) lee `social.whatsapp`
   de settings, normaliza número o URL → `wa.me/<n>?text=...` con mensaje
   pre-escrito con el nombre de marca; no renderiza nada si no está configurado.
   Montado en el layout de tienda. Verificado: con número renderiza el enlace
   correcto; vacío → oculto.
-- **E.2 Badge % descuento** ✅ — el badge `-XX%` en `ProductCard` y
+- **E.2 Badge % descuento** ✅ - el badge `-XX%` en `ProductCard` y
   `ProductDetail` ahora aparece siempre que hay ahorro real (`originalPrice >
 price`), consistente con el precio tachado (antes exigía además `isOnSale`).
-- **E.3 Hover swap** ✅ — `ProductCard` superpone la primera foto de galería
+- **E.3 Hover swap** ✅ - `ProductCard` superpone la primera foto de galería
   distinta de la portada (`product.images`) con fade en `group-hover`; sin
   galería se comporta igual que antes (solo zoom de la portada).
-- **E.4 Más vendidos** ✅ — `getBestSellingProducts` rankea por unidades vendidas
+- **E.4 Más vendidos** ✅ - `getBestSellingProducts` rankea por unidades vendidas
   reales (`groupBy` de `OrderItem._sum.quantity`) y rellena con destacados/
   recientes si faltan; sección `BestSellers` en la home entre destacados y género.
-- **E.5 Quick add-to-cart** ✅ — `ProductCard` agrega directo (qty 1, abre
+- **E.5 Quick add-to-cart** ✅ - `ProductCard` agrega directo (qty 1, abre
   mini-cart) cuando el producto no tiene variantes/tallas/colores y hay stock;
   si requiere elegir → CTA "Elegir opciones" al detalle (no se elige talla por el
   cliente en silencio); agotado → "Ver producto".
-- **E.6 Cookie consent** ✅ — `CookieConsent` (banner inferior, client-only tras
+- **E.6 Cookie consent** ✅ - `CookieConsent` (banner inferior, client-only tras
   mount para evitar hydration mismatch) recuerda la aceptación en localStorage;
   copy referencia la Ley 1581/2012. Montado en el layout de tienda.
-- **E.7 Instagram feed** ✅ — `InstagramFeed` (grid "shoppable" de fotos reales de
+- **E.7 Instagram feed** ✅ - `InstagramFeed` (grid "shoppable" de fotos reales de
   producto que enlazan al producto + CTA al perfil de `social.instagram`,
   parseando handle o URL). Se oculta sin handle o sin fotos reales (se activa con
   A.3). Sin API externa: honesto, sin posts falsos.
-- **E.9 Medios de pago** ✅ — fila de chips wordmark (Visa, Mastercard, Amex,
+- **E.9 Medios de pago** ✅ - fila de chips wordmark (Visa, Mastercard, Amex,
   MercadoPago, PSE, Nequi) en el footer; sin assets de logos de terceros para
   evitar uso indebido de marcas.
-- **E.10 Testimonios** ✅ — `getFeaturedReviews` (cacheado tag `posts`/products)
+- **E.10 Testimonios** ✅ - `getFeaturedReviews` (cacheado tag `posts`/products)
   trae las mejores reseñas (≥4★ con comentario) con su producto; sección
   `Testimonials` en la home (cita + estrellas + avatar inicial + **foto del
   producto reseñado** enlazada). Se oculta sin reseñas que califiquen.
-- **E.8 Blog** ✅ — modelo `Post` (migración `add_blog_posts`) + `lib/blog.ts`
+- **E.8 Blog** ✅ - modelo `Post` (migración `add_blog_posts`) + `lib/blog.ts`
   (cacheado tag `posts`) + páginas `/blog` (lista) y `/blog/[slug]` (ISR,
   generateMetadata + OG, contenido HTML con tipografía vía `[&_h2]`…); 3 artículos
   SEO sembrados con `yarn db:seed-blog` (idempotente por slug); enlace en footer +
   posts en `sitemap.ts`. Nota: contenido es HTML confiable (seed); un editor
   público futuro debe sanitizar.
 
-### A.1 — Galería de imágenes ✅ (2026-06-24)
+### A.1 - Galería de imágenes ✅ (2026-06-24)
 
 > El producto pasó de **1 imagen** a **portada + galería ordenada**. Retro-
 > compatible: `Product.image` sigue siendo la portada (thumbnail de las cards);
@@ -3170,7 +3171,7 @@ archivos de portada + galería.
 con 2 imágenes insertadas → renderiza 3 miniaturas (portada + 2). Pendiente real:
 cargar fotos reales desde el admin (A.3).
 
-### A.2 — Variantes reales (estilo Shopify) ✅ (2026-06-24)
+### A.2 - Variantes reales (estilo Shopify) ✅ (2026-06-24)
 
 > Cada combinación **talla × color** es una variante con su propio **stock,
 > precio (vacío = hereda el del producto), SKU e imagen**. Resuelve la
@@ -3213,7 +3214,7 @@ con stock → **201** y stock de esa variante 3→2 (las otras intactas); pedido
 variante agotada → **400 OUT_OF_STOCK**; `OrderItem` guardó `variantId` y el
 **precio de la variante** (39.000, no el base 20.000). type-check + lint limpios.
 
-### B.1 — Cupones / descuentos ✅ (2026-06-24)
+### B.1 - Cupones / descuentos ✅ (2026-06-24)
 
 > Códigos de descuento aplicables en el checkout: **% , monto fijo y envío
 > gratis**. Validados y consumidos **server-side** (nunca se confía en el cliente).
@@ -3241,7 +3242,7 @@ pedido). El DTO de confirmación y `OrderSummary` muestran la línea de descuent
 ajustado; el checkout envía `discountCode` en el pedido.
 
 **Admin**: nueva sección `/admin/descuentos` (en el sidebar, gated por permiso
-`discounts`) — crear códigos, activar/desactivar, ver usos y eliminar. APIs
+`discounts`) - crear códigos, activar/desactivar, ver usos y eliminar. APIs
 `/api/admin/discounts` (+`[id]`) con whitelist `pickDiscountInput` y 409 en código
 duplicado.
 
@@ -3249,7 +3250,7 @@ duplicado.
 **201**, `subtotal 40.000 + envío 10.000 − 4.000 = total 46.000`, `discountCode`
 guardado y `redemptions` 0→1. type-check + lint limpios.
 
-### B.2 — Reseñas reales ✅ (2026-06-24)
+### B.2 - Reseñas reales ✅ (2026-06-24)
 
 > Reseñas de clientes (1–5★ + comentario) en el detalle de producto. Una por
 > usuario por producto. El `rating`/`reviewCount` del producto se **recalcula**
@@ -3264,10 +3265,10 @@ crea la reseña y **recalcula el agregado** (`_avg`/`_count`) del producto en la
 misma transacción; luego `revalidateProducts()` para refrescar la tienda.
 `getProductReviews` lee las aprobadas.
 
-**API**: `POST /api/products/[id]/reviews` — **requiere sesión** (el nombre del
+**API**: `POST /api/products/[id]/reviews` - **requiere sesión** (el nombre del
 autor sale de la sesión, no del cliente); 401 sin login, 409 si ya reseñó.
 
-**Storefront**: `ReviewsSection` (cliente) bajo el detalle — lista de reseñas +
+**Storefront**: `ReviewsSection` (cliente) bajo el detalle - lista de reseñas +
 formulario con selector de estrellas; si no hay sesión muestra enlace a login.
 La página sigue siendo ISR: las reseñas se cargan en el server (cacheadas) y el
 estado de login se resuelve con `useSession` (nuevo `AuthSessionProvider` que
@@ -3281,7 +3282,7 @@ del mismo usuario → **409**. type-check + lint limpios.
 > hay reseñas reales, esos valores se recalculan a medida que llegan reseñas (un
 > producto sin reseñas reales mostrará 0). No se migran retroactivamente.
 
-### B.3 — Zonas de envío + IVA ✅ (2026-06-24)
+### B.3 - Zonas de envío + IVA ✅ (2026-06-24)
 
 > Tarifas de envío por **zona** (departamento) e **IVA** configurable, ambos
 > resueltos con la misma lógica en el servidor y en el preview del checkout.

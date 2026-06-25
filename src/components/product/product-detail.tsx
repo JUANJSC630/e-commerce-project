@@ -167,10 +167,11 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
           </ol>
         </nav>
 
-        {/* Main product grid */}
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-14 items-start">
+        {/* Main product grid — gallery column capped so low-res photos don't
+            upscale into blur on big screens; info column takes the rest. */}
+        <div className="grid md:grid-cols-[minmax(0,22rem)_1fr] gap-8 lg:gap-14 items-start">
           {/* Gallery */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 w-full max-w-sm mx-auto md:mx-0 md:sticky md:top-24">
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-brand-surface shadow-sm border border-border">
               {product.isNew && (
                 <Badge variant="new" className="absolute top-4 left-4 z-10">
@@ -188,7 +189,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
                 fill
                 priority
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 768px) 100vw, 24rem"
               />
             </div>
 

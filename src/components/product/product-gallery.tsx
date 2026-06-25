@@ -73,7 +73,7 @@ export function ProductGallery({
           alt={displayAlt}
           fill
           priority
-          sizes="(max-width: 768px) 100vw, 18rem"
+          sizes="(max-width: 768px) 100vw, 20rem"
           className={cn(
             "object-cover transition-transform duration-200 ease-out",
             zooming ? "scale-[1.8]" : "scale-100",

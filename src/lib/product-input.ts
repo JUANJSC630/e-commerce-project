@@ -17,6 +17,7 @@ const EDITABLE_FIELDS = [
   "categoryId",
   "sizes",
   "colors",
+  "tags",
   "description",
   "isOnSale",
   "isNew",

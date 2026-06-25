@@ -33,6 +33,7 @@ export interface Product {
   reviewCount?: number
   sizes?: string[]
   colors?: string[] // Colores disponibles del producto
+  tags?: string[]
   /** Category the product belongs to (from the admin-managed Category table). */
   category?: { name: string; slug: string } | null
   description?: string

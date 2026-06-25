@@ -7,7 +7,14 @@ import type { Prisma } from "@prisma/client"
  * the admin preview.
  */
 
-export type CollectionField = "onSale" | "new" | "featured" | "priceMin" | "priceMax" | "category"
+export type CollectionField =
+  | "onSale"
+  | "new"
+  | "featured"
+  | "priceMin"
+  | "priceMax"
+  | "category"
+  | "tag"
 
 export interface CollectionCondition {
   field: CollectionField
@@ -54,6 +61,8 @@ function conditionToWhere(c: CollectionCondition): Prisma.ProductWhereInput | nu
       return typeof c.value === "number" ? { price: { lte: c.value } } : null
     case "category":
       return typeof c.value === "string" && c.value ? { categoryRef: { slug: c.value } } : null
+    case "tag":
+      return typeof c.value === "string" && c.value ? { tags: { has: c.value } } : null
     default:
       return null
   }

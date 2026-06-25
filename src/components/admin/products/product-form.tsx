@@ -34,6 +34,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
     stock: product?.stock?.toString() ?? "0",
     sizes: product?.sizes?.join(", ") ?? "",
     colors: product?.colors?.join(", ") ?? "",
+    tags: product?.tags?.join(", ") ?? "",
     isOnSale: product?.isOnSale ?? false,
     isNew: product?.isNew ?? false,
     isFeatured: product?.isFeatured ?? false,
@@ -95,6 +96,10 @@ export function ProductForm({ product, categories }: ProductFormProps) {
       colors: form.colors
         .split(",")
         .map((c) => c.trim())
+        .filter(Boolean),
+      tags: form.tags
+        .split(",")
+        .map((t) => t.trim())
         .filter(Boolean),
       isOnSale: form.isOnSale,
       isNew: form.isNew,
@@ -252,6 +257,16 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               value={form.colors}
               onChange={(e) => set("colors", e.target.value)}
               placeholder="Rosa, Azul, Blanco"
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Tags (separados por coma)">
+            <input
+              type="text"
+              value={form.tags}
+              onChange={(e) => set("tags", e.target.value)}
+              placeholder="verano, algodón, unisex"
               className={inputClass}
             />
           </Field>

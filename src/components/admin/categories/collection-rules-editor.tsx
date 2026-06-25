@@ -10,6 +10,7 @@ const FIELD_LABELS: Record<CollectionField, string> = {
   priceMin: "Precio mínimo ($)",
   priceMax: "Precio máximo ($)",
   category: "Categoría (slug)",
+  tag: "Tag",
 }
 
 const FIELD_ORDER: CollectionField[] = [
@@ -19,12 +20,13 @@ const FIELD_ORDER: CollectionField[] = [
   "priceMin",
   "priceMax",
   "category",
+  "tag",
 ]
 
 /** Fields that need a typed value vs. boolean flags (value implicitly true). */
 function needsValue(field: CollectionField): "number" | "text" | null {
   if (field === "priceMin" || field === "priceMax") return "number"
-  if (field === "category") return "text"
+  if (field === "category" || field === "tag") return "text"
   return null
 }
 

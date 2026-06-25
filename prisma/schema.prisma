@@ -104,6 +104,8 @@ model Product {
   categoryRef   Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   sizes         String[]    @default([])
   colors        String[]    @default([])
+  // Free-form tags for organization, search and smart-collection rules.
+  tags          String[]    @default([])
   description   String?
   isOnSale      Boolean     @default(false)
   isNew         Boolean     @default(false)

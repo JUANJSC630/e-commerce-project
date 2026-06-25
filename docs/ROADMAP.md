@@ -2888,7 +2888,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] C.1 Colecciones automáticas (smart, por condiciones)  ✅ 2026-06-24
 [x] C.2 Analytics GA4 + Meta Pixel + OG por producto (= Bloque 12)  ✅ 2026-06-24
 [x] C.3a Guía de tallas (modal con tabla bebés/niños)  ✅ 2026-06-24
-[ ] C.3b Tags de producto (+ condición de tag en colecciones smart)
+[x] C.3b Tags de producto (+ condición de tag en colecciones smart)  ✅ 2026-06-24
 [ ] C.3c Preventa (preorder: vender agotados marcados)
 [ ] C.3d Gift cards  — bloque futuro dedicado (instrumento de pago con saldo)
 [ ] C.3e Multi-ubicación de inventario  — bloque futuro dedicado (overhaul de stock)
@@ -3073,6 +3073,10 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
   create/update revalidan también el tag `products`. Verificado E2E: colección
   con regla `onSale=true` lista exactamente los 5 productos en oferta.
 
+- **C.3b Tags** ✅ — `Product.tags String[]` (migración `add_product_tags`) en el
+  whitelist + data layer + tipo; campo de tags en el form admin; nueva condición
+  `tag` en colecciones smart (`tags has`). Verificado E2E: colección por tag
+  "verano" lista exactamente los 2 productos etiquetados.
 - **C.3a Guía de tallas** ✅ — `SizeGuideModal` (autocontenido, Escape/click-fuera,
   scroll-lock) con tablas de referencia bebés/niños (talla·edad·estatura·peso);
   trigger junto al selector de talla en el detalle.

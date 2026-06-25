@@ -3523,4 +3523,63 @@ funciones serverless (cold starts, duración, concurrencia).
 
 ---
 
+## 📱 Bloque 17 — Review profundo de adaptabilidad móvil
+
+> ⏳ Pendiente. Auditoría a fondo del responsive en móvil (el ~70 % de las
+> compras en este nicho ocurren desde el celular — ver `PROJECT.md`). La idea es
+> apoyarse en **Skills/plugins de diseño** y no revisar a ojo.
+
+### 17.1 — Herramientas a usar (Skills disponibles)
+
+| Skill                     | Para qué en este review                                                          |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| **`/adapt`**              | Adaptar diseños a distintos tamaños: breakpoints, layouts fluidos, touch targets |
+| **`/audit`**              | Chequeo técnico con score P0–P3: responsive + accesibilidad + performance        |
+| **`/critique`**           | Evaluación UX (jerarquía, carga cognitiva) específicamente en viewport móvil     |
+| **`/optimize`**           | Performance móvil: LCP, imágenes, bundle, animaciones a 60fps                    |
+| **`/polish`**             | Pulido final de alineación/espaciado/detalle en cada pantalla                    |
+| **`/verify` / `/run`**    | Levantar la app y observar el comportamiento real en tamaños móviles             |
+| **`project-design-pass`** | Workflow seguro end-to-end (audita → aplica pasos necesarios → valida)           |
+
+> Flujo sugerido: `project-design-pass` o `/audit` para el diagnóstico con score
+> → `/adapt` + `/optimize` para corregir → `/polish` → `/verify` para confirmar.
+
+### 17.2 — Alcance: pantallas y breakpoints
+
+- **Breakpoints a probar:** 320px (iPhone SE), 360–390px (Android común),
+  414–430px (phones grandes), 768px (tablet), landscape de móvil.
+- **Pantallas críticas (orden de impacto en conversión):**
+  1. Home (hero, category pills, secciones de producto, popup newsletter)
+  2. Detalle de producto (galería con lupa/expandir, selectores, CTAs sticky)
+  3. Catálogo/categoría (grid de cards, filtros en drawer)
+  4. Carrito y **checkout** (formularios, teclado numérico, resumen, cupón)
+  5. Cuenta, favoritos, búsqueda, blog
+  6. Overlays: MiniCart, mega-menú, cookie banner, WhatsApp float, modales
+     (guía de tallas, lightbox de galería)
+
+### 17.3 — Qué verificar (checklist)
+
+- **Touch targets** ≥ 44×44px (botones, swatches de color, miniaturas, +/- cantidad).
+- **Sin scroll horizontal** ni overflow en 320px; texto no cortado.
+- **Tipografía fluida/legible** (los ajustes de card ya escalan; revisar el resto).
+- **Imágenes**: tamaños/`sizes` correctos, sin upscaling (ver fix de galería),
+  LCP del hero y del detalle.
+- **Formularios**: tipos de input correctos (`type=tel/email/number`), teclado
+  adecuado, foco visible, errores claros, no zoom indeseado por font < 16px.
+- **Overlays y modales**: ocupan bien la pantalla, cerrables, sin solaparse
+  (cookie banner vs WhatsApp float — ya coordinado, re-verificar).
+- **Sticky/fixed**: header, CTA de compra, no tapan contenido ni el footer.
+- **Gestos**: la lupa de la galería es hover (no aplica en touch) → confirmar que
+  el **botón expandir** cubre ese caso en móvil; evaluar swipe en miniaturas.
+- **Performance**: Lighthouse mobile (objetivo Perf ≥ 90, A11y ≥ 95, LCP < 2.5s,
+  CLS < 0.1 — KPIs de `PROJECT.md`).
+
+### 17.4 — Entregable
+
+- Reporte con score P0–P3 (de `/audit`) + lista priorizada de fixes.
+- Correcciones aplicadas por pantalla (commits separados) + re-verificación.
+- Actualizar esta sección a ✅ con el antes/después de las métricas Lighthouse mobile.
+
+---
+
 _Para estándares de calidad y arquitectura de datos ver `STANDARDS.md`. Para visión de negocio ver `PROJECT.md`._

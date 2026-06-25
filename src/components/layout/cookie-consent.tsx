@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react"
 import { Cookie } from "lucide-react"
 
-const STORAGE_KEY = "dulceInfanciaCookieConsent"
+export const COOKIE_CONSENT_KEY = "dulceInfanciaCookieConsent"
+/** Dispatched when the visitor accepts, so other floats (WhatsApp) can drop back down. */
+export const COOKIE_CONSENT_EVENT = "cookie-consent-accepted"
 
 /**
  * Cookie consent banner (Colombian data-protection compliance). Shows once until
@@ -16,7 +18,7 @@ export function CookieConsent() {
 
   useEffect(() => {
     try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true)
+      if (!localStorage.getItem(COOKIE_CONSENT_KEY)) setVisible(true)
     } catch {
       // localStorage unavailable (private mode) — skip the banner.
     }
@@ -24,11 +26,12 @@ export function CookieConsent() {
 
   function accept() {
     try {
-      localStorage.setItem(STORAGE_KEY, new Date().toISOString())
+      localStorage.setItem(COOKIE_CONSENT_KEY, new Date().toISOString())
     } catch {
       // Ignore write failures; the banner just won't persist its dismissal.
     }
     setVisible(false)
+    window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT))
   }
 
   if (!visible) return null

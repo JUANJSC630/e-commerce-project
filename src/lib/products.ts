@@ -165,6 +165,8 @@ export const getBestSellingProducts = unstable_cache(
   async (limit = 8): Promise<Product[]> => {
     const grouped = await prisma.orderItem.groupBy({
       by: ["productId"],
+      // Only paid orders count as real sales (ignores cancelled/failed/pending).
+      where: { order: { paymentStatus: "PAID" } },
       _sum: { quantity: true },
       orderBy: { _sum: { quantity: "desc" } },
       take: limit,

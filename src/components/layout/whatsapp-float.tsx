@@ -1,6 +1,8 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useSettings } from "@/components/providers/settings-provider"
+import { COOKIE_CONSENT_KEY, COOKIE_CONSENT_EVENT } from "@/components/layout/cookie-consent"
 
 /** Brand WhatsApp glyph (lucide has no official one). */
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -30,6 +32,20 @@ function toWhatsAppUrl(value: string, message: string): string | null {
  */
 export function WhatsAppFloat() {
   const { social, brand } = useSettings()
+  // Lift the button above the cookie banner while consent hasn't been given, so
+  // the banner never covers it. Drops back down when the visitor accepts.
+  const [lifted, setLifted] = useState(false)
+  useEffect(() => {
+    try {
+      setLifted(!localStorage.getItem(COOKIE_CONSENT_KEY))
+    } catch {
+      // localStorage unavailable — keep the default position.
+    }
+    const onAccept = () => setLifted(false)
+    window.addEventListener(COOKIE_CONSENT_EVENT, onAccept)
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, onAccept)
+  }, [])
+
   const href = toWhatsAppUrl(social.whatsapp ?? "", `¡Hola ${brand.name}! Tengo una consulta.`)
   if (!href) return null
 
@@ -39,7 +55,9 @@ export function WhatsAppFloat() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Escríbenos por WhatsApp"
-      className="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2"
+      className={`fixed right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-lg transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 ${
+        lifted ? "bottom-28 sm:bottom-24" : "bottom-5"
+      }`}
     >
       <WhatsAppIcon className="h-7 w-7" />
     </a>

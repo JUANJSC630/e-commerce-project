@@ -13,6 +13,7 @@ import { FontStyle } from "@/components/theme/font-style"
 import { NewsletterPopup } from "@/components/home/newsletter-popup"
 import { WhatsAppFloat } from "@/components/layout/whatsapp-float"
 import { CookieConsent } from "@/components/layout/cookie-consent"
+import { AnalyticsScripts } from "@/components/analytics/analytics-scripts"
 
 const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
 
@@ -26,6 +27,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <SettingsProvider settings={settings}>
+      <AnalyticsScripts />
       <ThemeStyle />
       <FontStyle />
       <div

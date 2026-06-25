@@ -1,6 +1,6 @@
 # Roadmap — Dulce Infancia Shop
 
-> Actualizado: 2026-06-24 (Bloque 15 — paridad Shopify; A.1 galería ✅ + A.2 variantes ✅ + Fase D UX ✅ + análisis 5 competidores. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
+> Actualizado: 2026-06-24 (Bloque 15 — paridad Shopify; Fase A ✅ (A.1/A.2), Fase B ✅, Fase D ✅, **Fase E ✅ completa**; Fase C pendiente. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅
 > **Objetivo final**: e-commerce 100% administrable — productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -3029,7 +3029,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 ---
 
-**🟡 Fase E — UX Competitivo (hallazgos análisis multi-competidor)** — pendiente
+**✅ Fase E — UX Competitivo (hallazgos análisis multi-competidor)** — completa 2026-06-24
 
 > Patrones identificados en 4+ competidores que Dulce Infancia aún no tiene.
 > Priorizados por impacto en conversión × esfuerzo de implementación.
@@ -3044,7 +3044,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 [x] E.7 Instagram feed embebido en home (grid shoppable + CTA al perfil)  ✅ 2026-06-24
 [x] E.8 Blog básico (modelo Post + /blog + 3 artículos SEO de crianza)  ✅ 2026-06-24
 [x] E.9 Logos de métodos de pago en footer (Visa, MC, AmEx, MercadoPago, PSE, Nequi)  ✅ 2026-06-24
-[ ] E.10 Testimonios con foto en home (extraer reseñas destacadas con imagen)
+[x] E.10 Testimonios en home (mejores reseñas + foto del producto reseñado)  ✅ 2026-06-24
 ```
 
 #### Priorización sugerida
@@ -3085,6 +3085,10 @@ price`), consistente con el precio tachado (antes exigía además `isOnSale`).
 - **E.9 Medios de pago** ✅ — fila de chips wordmark (Visa, Mastercard, Amex,
   MercadoPago, PSE, Nequi) en el footer; sin assets de logos de terceros para
   evitar uso indebido de marcas.
+- **E.10 Testimonios** ✅ — `getFeaturedReviews` (cacheado tag `posts`/products)
+  trae las mejores reseñas (≥4★ con comentario) con su producto; sección
+  `Testimonials` en la home (cita + estrellas + avatar inicial + **foto del
+  producto reseñado** enlazada). Se oculta sin reseñas que califiquen.
 - **E.8 Blog** ✅ — modelo `Post` (migración `add_blog_posts`) + `lib/blog.ts`
   (cacheado tag `posts`) + páginas `/blog` (lista) y `/blog/[slug]` (ISR,
   generateMetadata + OG, contenido HTML con tipografía vía `[&_h2]`…); 3 artículos

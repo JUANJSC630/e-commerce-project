@@ -8,9 +8,11 @@ import { FeaturedProducts } from "@/components/home/featured-products"
 import { BestSellers } from "@/components/home/best-sellers"
 import { GenderSection } from "@/components/home/gender-section"
 import { InstagramFeed } from "@/components/home/instagram-feed"
+import { Testimonials } from "@/components/home/testimonials"
 import { SeoContent } from "@/components/home/seo-content"
 import { routes } from "@/config/store.config"
 import { getBestSellingProducts, getFeaturedProducts, getProductsByCategory } from "@/lib/products"
+import { getFeaturedReviews } from "@/lib/reviews"
 import { loadAllSettings } from "@/lib/settings"
 import { getActiveCategories } from "@/lib/categories"
 import { pageMetadata } from "@/lib/seo"
@@ -25,12 +27,14 @@ export default async function HomePage() {
   const { heroBanners, featuredCategories, homeFeatures, copy } = homeContent
   const { hero, categories, promise, products } = copy
 
-  const [featuredProducts, bestSellers, boysProducts, girlsProducts] = await Promise.all([
-    getFeaturedProducts(products.limit),
-    getBestSellingProducts(8),
-    getProductsByCategory("boys"),
-    getProductsByCategory("girls"),
-  ])
+  const [featuredProducts, bestSellers, boysProducts, girlsProducts, testimonials] =
+    await Promise.all([
+      getFeaturedProducts(products.limit),
+      getBestSellingProducts(8),
+      getProductsByCategory("boys"),
+      getProductsByCategory("girls"),
+      getFeaturedReviews(6),
+    ])
 
   // Category pills from active DB categories
   const categoryPills = activeCategories.map((cat) => ({
@@ -84,6 +88,7 @@ export default async function HomePage() {
           { label: "Niñas", products: girlsProducts },
         ]}
       />
+      <Testimonials testimonials={testimonials} />
       <InstagramFeed instagram={social.instagram} posts={instagramPosts} />
       <SeoContent brandName={brand.name} />
     </main>

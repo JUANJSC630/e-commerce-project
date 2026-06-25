@@ -1,7 +1,8 @@
 import "server-only"
 
+import { unstable_cache } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { revalidateProducts } from "@/lib/products"
+import { PRODUCTS_TAG, revalidateProducts } from "@/lib/products"
 
 /**
  * Product reviews + the denormalized rating aggregate.
@@ -18,6 +19,50 @@ export interface ReviewDTO {
   comment: string | null
   createdAt: string
 }
+
+/** A standout review surfaced as a home testimonial, with its product. */
+export interface TestimonialDTO {
+  id: string
+  authorName: string
+  rating: number
+  comment: string
+  productId: string
+  productName: string
+  productImage: string
+}
+
+/**
+ * Top reviews (≥4★ with a comment) across the catalog, for the home testimonials
+ * section. Cached under the products tag so a new review refreshes it. Returns an
+ * empty list when there are no qualifying reviews (the section then hides).
+ */
+export const getFeaturedReviews = unstable_cache(
+  async (limit = 6): Promise<TestimonialDTO[]> => {
+    const reviews = await prisma.review.findMany({
+      where: { isApproved: true, rating: { gte: 4 }, comment: { not: null } },
+      orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
+      take: limit,
+      select: {
+        id: true,
+        authorName: true,
+        rating: true,
+        comment: true,
+        product: { select: { id: true, name: true, image: true } },
+      },
+    })
+    return reviews.map((r) => ({
+      id: r.id,
+      authorName: r.authorName,
+      rating: r.rating,
+      comment: r.comment ?? "",
+      productId: r.product.id,
+      productName: r.product.name,
+      productImage: r.product.image,
+    }))
+  },
+  ["featured-reviews"],
+  { tags: [PRODUCTS_TAG], revalidate: 300 },
+)
 
 /** Reads a product's approved reviews, newest first. */
 export async function getProductReviews(productId: string): Promise<ReviewDTO[]> {

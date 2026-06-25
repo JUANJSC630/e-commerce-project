@@ -51,9 +51,8 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.isNew && <Badge variant="new">Nuevo</Badge>}
-          {product.isOnSale && discountPercentage > 0 && (
-            <Badge variant="discount">-{discountPercentage}%</Badge>
-          )}
+          {/* Show the % off whenever there's a real saving (mirrors the strike-through price). */}
+          {discountPercentage > 0 && <Badge variant="discount">-{discountPercentage}%</Badge>}
           <StockBadge stock={product.stock} />
         </div>
 

@@ -3036,7 +3036,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 ```
 [x] E.1 WhatsApp flotante (botón fijo bottom-right, link wa.me con mensaje pre-escrito)  ✅ 2026-06-24
-[ ] E.2 Badge % descuento en product cards (badge -XX% cuando isOnSale + compareAtPrice)
+[x] E.2 Badge % descuento en product cards (badge -XX% cuando hay ahorro real)  ✅ 2026-06-24
 [ ] E.3 Hover swap en product cards (muestra 2da imagen de galería al hover)
 [ ] E.4 Sección "Más Vendidos" en home (ordenar por ventas/popularidad)
 [ ] E.5 Quick add-to-cart en product cards (botón "Agregar" directo, sin ir al detalle)
@@ -3062,6 +3062,9 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
   pre-escrito con el nombre de marca; no renderiza nada si no está configurado.
   Montado en el layout de tienda. Verificado: con número renderiza el enlace
   correcto; vacío → oculto.
+- **E.2 Badge % descuento** ✅ — el badge `-XX%` en `ProductCard` y
+  `ProductDetail` ahora aparece siempre que hay ahorro real (`originalPrice >
+price`), consistente con el precio tachado (antes exigía además `isOnSale`).
 
 ### A.1 — Galería de imágenes ✅ (2026-06-24)
 

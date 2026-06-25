@@ -162,7 +162,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
                   Nuevo
                 </Badge>
               )}
-              {product.isOnSale && discountPct > 0 && (
+              {discountPct > 0 && (
                 <Badge variant="discount" className="absolute top-4 left-4 z-10">
                   -{discountPct}%
                 </Badge>

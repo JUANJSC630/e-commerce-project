@@ -2683,6 +2683,21 @@ son los que más frecuentemente fallan en producción.
   `rawPayload`). "Sin intentos de pago registrados." cuando no hay logs. Query
   `paymentLogs` ordenada desc en el include del pedido.
 
+**[UX-9] Form de producto: campo de Colores es texto plano con hex a mano** ⏳
+
+- Hoy `Colores (separados por coma)` en `product-form.tsx` es un `<input>` de texto
+  donde el admin escribe códigos hex crudos (`#CDD5C6, #A6A19F`) — sin preview del
+  color, sin color picker, propenso a errores de tipeo y nada amigable.
+- **Mejora propuesta:** componente reutilizable `ColorsField` (seguir el patrón de
+  componente reutilizable de STANDARDS §2) con: swatches/chips por color con su
+  muestra visual + nombre opcional, color picker nativo (`<input type="color">`)
+  para agregar, y quitar por chip. Guardar como hex normalizado. Idealmente soportar
+  par `{ nombre, hex }` (ej. "Rosa palo" → #CDD5C6) para mostrar el nombre en el
+  storefront en vez del hex.
+- Mismo tratamiento conviene para `Tallas` (chips en vez de texto coma-separado).
+- Archivos: `src/components/admin/products/product-form.tsx` (+ nuevo
+  `colors-field.tsx`).
+
 ---
 
 ### 14.6 - Deuda Técnica & Arquitectura

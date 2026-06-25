@@ -45,9 +45,7 @@ export async function notifyBackInStock(productId: string): Promise<number> {
   const BATCH_SIZE = 10
   for (let i = 0; i < alerts.length; i += BATCH_SIZE) {
     const batch = alerts.slice(i, i + BATCH_SIZE)
-    await Promise.allSettled(
-      batch.map((alert) => sendEmail({ to: alert.email, subject, html })),
-    )
+    await Promise.allSettled(batch.map((alert) => sendEmail({ to: alert.email, subject, html })))
   }
 
   // Mark all as notified

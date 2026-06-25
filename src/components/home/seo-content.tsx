@@ -6,9 +6,7 @@ export function SeoContent({ brandName }: SeoContentProps) {
   return (
     <section className="py-16 px-4 bg-brand-surface/50 border-t border-border">
       <div className="container mx-auto max-w-3xl prose prose-sm prose-slate">
-        <h2 className="text-xl font-bold text-brand-ink">
-          Ropa Infantil de Calidad — {brandName}
-        </h2>
+        <h2 className="text-xl font-bold text-brand-ink">Ropa Infantil de Calidad — {brandName}</h2>
         <p className="text-brand-muted leading-relaxed">
           En {brandName} creemos que la infancia merece ropa tan especial como cada momento que la
           acompaña. Nuestra tienda de ropa infantil online ofrece prendas diseñadas con materiales

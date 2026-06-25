@@ -11,6 +11,7 @@ import { SettingsProvider } from "@/components/providers/settings-provider"
 import { ThemeStyle } from "@/components/theme/theme-style"
 import { FontStyle } from "@/components/theme/font-style"
 import { NewsletterPopup } from "@/components/home/newsletter-popup"
+import { WhatsAppFloat } from "@/components/layout/whatsapp-float"
 
 const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
 
@@ -38,6 +39,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             <main className="min-h-screen">{children}</main>
             <Footer navItems={navItems} />
             <NewsletterPopup />
+            <WhatsAppFloat />
           </FavoritesProvider>
         </CartProvider>
       </div>

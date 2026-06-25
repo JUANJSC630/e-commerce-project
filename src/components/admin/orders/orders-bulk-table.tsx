@@ -138,10 +138,7 @@ export function OrdersBulkTable({
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={canUpdate ? 8 : 6}
-                    className="text-center py-10 text-slate-400"
-                  >
+                  <td colSpan={canUpdate ? 8 : 6} className="text-center py-10 text-slate-400">
                     No hay pedidos
                   </td>
                 </tr>

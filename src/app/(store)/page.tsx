@@ -18,10 +18,7 @@ export function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [settings, activeCategories] = await Promise.all([
-    loadAllSettings(),
-    getActiveCategories(),
-  ])
+  const [settings, activeCategories] = await Promise.all([loadAllSettings(), getActiveCategories()])
   const { homeContent, brand } = settings
   const { heroBanners, featuredCategories, homeFeatures, copy } = homeContent
   const { hero, categories, promise, products } = copy

@@ -96,8 +96,14 @@ try {
   await adminPage.goto(`${BASE}/admin/pedidos/${orderId}`, { waitUntil: "networkidle" })
   await adminPage.waitForTimeout(1000)
 
-  const carrierVal = await adminPage.locator('input[placeholder="Transportadora"]').inputValue().catch(() => "")
-  const trackingVal = await adminPage.locator('input[placeholder="Número de guía"]').inputValue().catch(() => "")
+  const carrierVal = await adminPage
+    .locator('input[placeholder="Transportadora"]')
+    .inputValue()
+    .catch(() => "")
+  const trackingVal = await adminPage
+    .locator('input[placeholder="Número de guía"]')
+    .inputValue()
+    .catch(() => "")
   check("Admin editor carrier pre-filled", carrierVal === CARRIER, carrierVal)
   check("Admin editor tracking pre-filled", trackingVal === TRACKING_NUM, trackingVal)
 
@@ -109,7 +115,6 @@ try {
   // checked). A full E2E with payments is covered by verify-payments.mjs.
   console.log("  ℹ️  Storefront rendering verified via type-check + component logic.")
   check("Storefront tracking component type-checks", true)
-
 } catch (err) {
   console.error("💥 Error fatal:", err)
   check("Script completed without fatal error", false, err.message)

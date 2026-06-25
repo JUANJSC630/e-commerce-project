@@ -47,36 +47,36 @@ categorías son dinámicas desde la DB vía `src/lib/categories.ts` — Bloque 9
 
 ## Módulos Existentes
 
-| Módulo               | Ruta                | Estado          | Notas                                                               |
-| -------------------- | ------------------- | --------------- | ------------------------------------------------------------------- |
+| Módulo               | Ruta                | Estado          | Notas                                                                                         |
+| -------------------- | ------------------- | --------------- | --------------------------------------------------------------------------------------------- |
 | Home                 | `/`                 | ✅ Sólido       | Hero split 45/55, trust bar marquee, category pills, gender tabs, SEO block, newsletter popup |
-| Categoría Bebés      | `/category/babies`  | ✅ Funcional    | 5 productos                                                         |
-| Categoría Niñas      | `/category/girls`   | ✅ Funcional    | 4 productos                                                         |
-| Categoría Niños      | `/category/boys`    | ✅ Funcional    | 4 productos                                                         |
-| Ofertas              | `/category/sales`   | ✅ Funcional    | Filtra `isOnSale: true`                                             |
-| Esenciales           | `/essentials`       | ✅ Funcional    | 3 productos                                                         |
-| Todos los productos  | `/products`         | ✅ Funcional    | Server Component async desde Prisma                                 |
-| Detalle de producto  | `/products/[id]`    | ✅ Funcional    | Prisma + relacionados por props + badge de stock                    |
-| Carrito              | `/carrito`          | ✅ Funcional    | AlertDialog, edición de cantidad                                    |
-| Checkout             | `/checkout-flow`    | ✅ Funcional    | Guarda el pedido vía `POST /api/orders` → `/order-success/[id]`     |
-| 404 (store)          | —                   | ✅ Funcional    | Branding + CTAs                                                     |
-| Error (store)        | —                   | ✅ Funcional    | Botón reset + branding                                              |
-| Cart Context         | —                   | ✅ Sólido       | localStorage, extensible                                            |
-| useFavorites         | —                   | ✅ Funcional    | localStorage, persiste entre navegaciones                           |
-| Sistema de tema      | —                   | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                                 |
-| store.config.ts      | —                   | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                       |
-| validation.ts        | —                   | ✅ Centralizado | Luhn, shipping, payment                                             |
-| products.ts (lib)    | —                   | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts)     |
-| **Admin Dashboard**  | `/admin`            | ✅ Completo     | Stats, gráficos, accesos rápidos                                    |
-| **Admin Login**      | `/admin/login`      | ✅ Funcional    | NextAuth JWT + Credentials                                          |
-| **Admin Productos**  | `/admin/productos`  | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                             |
-| **Admin Categorías** | `/admin/categorias` | ✅ CRUD         | Crear/editar/eliminar/ordenar, imagen, SEO — permiso `categories`   |
-| **Admin Pedidos**    | `/admin/pedidos`    | ✅ CRUD         | Lista, detalle, cambio de estado                                    |
-| **Admin Usuarios**   | `/admin/usuarios`   | ✅ CRUD         | Gestión con asignación de rol                                       |
-| **Admin Roles**      | `/admin/roles`      | ✅ CRUD         | Permisos granulares por módulo                                      |
-| **Admin Settings**   | `/admin/settings`   | ✅ Modular      | Subpáginas por sección (marca, tema, envíos…) + nav, gate en layout |
-| **Admin 404**        | `/admin/*`          | ✅ Profesional  | Página personalizada con branding                                   |
-| **Admin Error**      | `/admin/*`          | ✅ Profesional  | Error boundary con retry + navegación                               |
+| Categoría Bebés      | `/category/babies`  | ✅ Funcional    | 5 productos                                                                                   |
+| Categoría Niñas      | `/category/girls`   | ✅ Funcional    | 4 productos                                                                                   |
+| Categoría Niños      | `/category/boys`    | ✅ Funcional    | 4 productos                                                                                   |
+| Ofertas              | `/category/sales`   | ✅ Funcional    | Filtra `isOnSale: true`                                                                       |
+| Esenciales           | `/essentials`       | ✅ Funcional    | 3 productos                                                                                   |
+| Todos los productos  | `/products`         | ✅ Funcional    | Server Component async desde Prisma                                                           |
+| Detalle de producto  | `/products/[id]`    | ✅ Funcional    | Prisma + relacionados por props + badge de stock                                              |
+| Carrito              | `/carrito`          | ✅ Funcional    | AlertDialog, edición de cantidad                                                              |
+| Checkout             | `/checkout-flow`    | ✅ Funcional    | Guarda el pedido vía `POST /api/orders` → `/order-success/[id]`                               |
+| 404 (store)          | —                   | ✅ Funcional    | Branding + CTAs                                                                               |
+| Error (store)        | —                   | ✅ Funcional    | Botón reset + branding                                                                        |
+| Cart Context         | —                   | ✅ Sólido       | localStorage, extensible                                                                      |
+| useFavorites         | —                   | ✅ Funcional    | localStorage, persiste entre navegaciones                                                     |
+| Sistema de tema      | —                   | ✅ Sólido       | OKLCH, Nunito, beige + verde salvia                                                           |
+| store.config.ts      | —                   | ✅ Centralizado | Brand, nav, rutas, pagos, social, homeContent                                                 |
+| validation.ts        | —                   | ✅ Centralizado | Luhn, shipping, payment                                                                       |
+| products.ts (lib)    | —                   | ✅ Activo       | Repositorio server-only Prisma→Product (reemplazó mock-data.ts)                               |
+| **Admin Dashboard**  | `/admin`            | ✅ Completo     | Stats, gráficos, accesos rápidos                                                              |
+| **Admin Login**      | `/admin/login`      | ✅ Funcional    | NextAuth JWT + Credentials                                                                    |
+| **Admin Productos**  | `/admin/productos`  | ✅ CRUD         | Lista, crear, editar, eliminar — Prisma                                                       |
+| **Admin Categorías** | `/admin/categorias` | ✅ CRUD         | Crear/editar/eliminar/ordenar, imagen, SEO — permiso `categories`                             |
+| **Admin Pedidos**    | `/admin/pedidos`    | ✅ CRUD         | Lista, detalle, cambio de estado                                                              |
+| **Admin Usuarios**   | `/admin/usuarios`   | ✅ CRUD         | Gestión con asignación de rol                                                                 |
+| **Admin Roles**      | `/admin/roles`      | ✅ CRUD         | Permisos granulares por módulo                                                                |
+| **Admin Settings**   | `/admin/settings`   | ✅ Modular      | Subpáginas por sección (marca, tema, envíos…) + nav, gate en layout                           |
+| **Admin 404**        | `/admin/*`          | ✅ Profesional  | Página personalizada con branding                                                             |
+| **Admin Error**      | `/admin/*`          | ✅ Profesional  | Error boundary con retry + navegación                                                         |
 
 ---
 
@@ -2911,17 +2911,18 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 #### Competidores Analizados
 
-| Competidor | Plataforma | Enfoque | Ubicación |
-|---|---|---|---|
-| **Offcorss.us** | Custom/Shopify | Ropa infantil premium (0-16 años) | Medellín |
-| **Tomaticos.com** | Shopify | Ropa infantil económica | Ibagué (Grupo Carolina) |
-| **BabyFresh.co** | Shopify | Ropa bebé/niño algodón (0-6 años) | Sabaneta (Crystal S.A.S) |
-| **MagicBabyCol.com** | Shopify | Productos/juguetes bebé variado | Colombia |
-| **BabyCentro.com** | Shopify | Productos premium/importados | Bogotá |
+| Competidor           | Plataforma     | Enfoque                           | Ubicación                |
+| -------------------- | -------------- | --------------------------------- | ------------------------ |
+| **Offcorss.us**      | Custom/Shopify | Ropa infantil premium (0-16 años) | Medellín                 |
+| **Tomaticos.com**    | Shopify        | Ropa infantil económica           | Ibagué (Grupo Carolina)  |
+| **BabyFresh.co**     | Shopify        | Ropa bebé/niño algodón (0-6 años) | Sabaneta (Crystal S.A.S) |
+| **MagicBabyCol.com** | Shopify        | Productos/juguetes bebé variado   | Colombia                 |
+| **BabyCentro.com**   | Shopify        | Productos premium/importados      | Bogotá                   |
 
 #### Hallazgos por Competidor
 
 **Offcorss.us** — Marca líder, referente de UX:
+
 - Newsletter pop-up con incentivo (10-15% OFF)
 - Category pills tipo "TOPS / BOTTOMS / SETS" debajo del hero
 - Gender tabs "Shop Boys" / "Shop Girls" con productos filtrados
@@ -2932,6 +2933,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - Recomendaciones "Complete the look" en detalle de producto
 
 **Tomaticos.com** — Ropa infantil económica:
+
 - Homepage con tabs: "Más Vendidos" / "Lo Nuevo" / "Grandes Descuentos"
 - Badge de descuento prominente (-50%) en cada card de producto
 - Hover swap: segunda imagen se muestra al pasar el mouse sobre la card
@@ -2943,6 +2945,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - Sello "Marca País" como trust signal
 
 **BabyFresh.co** — Marca grande (Crystal S.A.S):
+
 - 3 promo banners rotativos en header ("Rebajas", "Envío gratis >$149.990", "Paga con ADDI")
 - Subcategoría pills: "Camisetas", "Vestidos", "Conjuntos", "Pijamas"
 - "Descubre más de Baby Fresh" — banners por segmento (Bebés Niñas, Bebés Niños, Niñas, Niños)
@@ -2959,6 +2962,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - "Añadir a favoritos" en cada card con corazón
 
 **MagicBabyCol.com** — Productos variados bebé:
+
 - Secciones del home organizadas **por uso/ocasión**: "Alimentación y Lactancia", "Hora de Dormir", "Juegos para Aprender", "Ropa Niño y Niña"
 - "Los Más Vendidos" como primera sección del home (social proof)
 - **Testimonios masivos con fotos** — app Revie con 80+ reseñas con imagen real del producto
@@ -2972,6 +2976,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 - Footer con links de políticas, categorías y redes sociales
 
 **BabyCentro.com** — Premium/importado:
+
 - Banners full-width por categoría con copy + CTA ("La Seguridad Primero", "Es Hora de Comer!")
 - Tabs por subcategoría dentro de secciones (Sillas/Coches/De Paseo/Equipo Viaje)
 - Showcase de marcas/logos (Globber, Sophie La Girafe, Pigeon, Palmers, etc.)
@@ -2989,38 +2994,38 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 #### Matriz Comparativa — Estado Actual de Dulce Infancia
 
-| Patrón UX | Dulce Infancia | Offcorss | Tomaticos | BabyFresh | MagicBaby | BabyCentro |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| Newsletter popup | ✅ | ✅ | ✅ | — | — | ✅ |
-| Category pills | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Gender/age tabs | ✅ | ✅ | — | ✅ | — | ✅ |
-| SEO content block | ✅ | ✅ | — | ✅ | — | — |
-| Reviews/ratings | ✅ | ✅ | — | ✅ | ✅ | — |
-| Cupones/descuentos | ✅ | ✅ | ✅ | ✅ | — | ✅ |
-| Favoritos/wishlist | ✅ | ✅ | ✅ | ✅ | — | ✅ |
-| Envío gratis (umbral) | ✅ | ✅ | — | ✅ | — | ✅ |
-| Trust bar | ✅ | ✅ | — | — | — | — |
-| Promo banner | ✅ | ✅ | — | ✅ (×3) | ✅ | — |
-| Back-in-stock | ✅ | — | — | — | — | — |
-| Variantes (talla×color) | ✅ | ✅ | ✅ | ✅ | — | ✅ |
-| Galería multi-imagen | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Zonas de envío | ✅ | ✅ | — | — | — | ✅ |
-| Tracking de pedido | ✅ | ✅ | — | ✅ | — | — |
-| **WhatsApp flotante** | ❌ | — | — | — | ✅ | ✅ |
-| **Badge % descuento** | ❌ | ✅ | ✅ | ✅ | — | ✅ |
-| **Hover swap (2da img)** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **"Más Vendidos" section** | ❌ | — | ✅ | — | ✅ | — |
-| **Quick add-to-cart** | ❌ | — | — | — | ✅ | ✅ |
-| **Cookie consent** | ❌ | — | — | ✅ | ✅ | — |
-| **Instagram feed** | ❌ | — | ✅ | — | ✅ | ✅ |
-| **Blog / contenido** | ❌ | ✅ | — | ✅ | — | ✅ |
-| **Logos métodos de pago** | ❌ | ✅ | — | — | — | ✅ |
-| **BNPL (ADDI)** | ❌ | — | — | ✅ | — | — |
-| **Testimonios con foto** | ❌ | — | — | — | ✅ | — |
-| **Secciones por ocasión** | ❌ | — | — | — | ✅ | ✅ |
-| **Shop the Look (outfits)** | ❌ | ✅ | — | — | — | — |
-| **Gift registry** | ❌ | — | — | — | — | ✅ |
-| **Store locator** | ❌ | — | — | ✅ | — | — |
+| Patrón UX                   | Dulce Infancia | Offcorss | Tomaticos | BabyFresh | MagicBaby | BabyCentro |
+| --------------------------- | :------------: | :------: | :-------: | :-------: | :-------: | :--------: |
+| Newsletter popup            |       ✅       |    ✅    |    ✅     |     —     |     —     |     ✅     |
+| Category pills              |       ✅       |    ✅    |    ✅     |    ✅     |    ✅     |     ✅     |
+| Gender/age tabs             |       ✅       |    ✅    |     —     |    ✅     |     —     |     ✅     |
+| SEO content block           |       ✅       |    ✅    |     —     |    ✅     |     —     |     —      |
+| Reviews/ratings             |       ✅       |    ✅    |     —     |    ✅     |    ✅     |     —      |
+| Cupones/descuentos          |       ✅       |    ✅    |    ✅     |    ✅     |     —     |     ✅     |
+| Favoritos/wishlist          |       ✅       |    ✅    |    ✅     |    ✅     |     —     |     ✅     |
+| Envío gratis (umbral)       |       ✅       |    ✅    |     —     |    ✅     |     —     |     ✅     |
+| Trust bar                   |       ✅       |    ✅    |     —     |     —     |     —     |     —      |
+| Promo banner                |       ✅       |    ✅    |     —     |  ✅ (×3)  |    ✅     |     —      |
+| Back-in-stock               |       ✅       |    —     |     —     |     —     |     —     |     —      |
+| Variantes (talla×color)     |       ✅       |    ✅    |    ✅     |    ✅     |     —     |     ✅     |
+| Galería multi-imagen        |       ✅       |    ✅    |    ✅     |    ✅     |    ✅     |     ✅     |
+| Zonas de envío              |       ✅       |    ✅    |     —     |     —     |     —     |     ✅     |
+| Tracking de pedido          |       ✅       |    ✅    |     —     |    ✅     |     —     |     —      |
+| **WhatsApp flotante**       |       ❌       |    —     |     —     |     —     |    ✅     |     ✅     |
+| **Badge % descuento**       |       ❌       |    ✅    |    ✅     |    ✅     |     —     |     ✅     |
+| **Hover swap (2da img)**    |       ❌       |    ✅    |    ✅     |    ✅     |    ✅     |     ✅     |
+| **"Más Vendidos" section**  |       ❌       |    —     |    ✅     |     —     |    ✅     |     —      |
+| **Quick add-to-cart**       |       ❌       |    —     |     —     |     —     |    ✅     |     ✅     |
+| **Cookie consent**          |       ❌       |    —     |     —     |    ✅     |    ✅     |     —      |
+| **Instagram feed**          |       ❌       |    —     |    ✅     |     —     |    ✅     |     ✅     |
+| **Blog / contenido**        |       ❌       |    ✅    |     —     |    ✅     |     —     |     ✅     |
+| **Logos métodos de pago**   |       ❌       |    ✅    |     —     |     —     |     —     |     ✅     |
+| **BNPL (ADDI)**             |       ❌       |    —     |     —     |    ✅     |     —     |     —      |
+| **Testimonios con foto**    |       ❌       |    —     |     —     |     —     |    ✅     |     —      |
+| **Secciones por ocasión**   |       ❌       |    —     |     —     |     —     |    ✅     |     ✅     |
+| **Shop the Look (outfits)** |       ❌       |    ✅    |     —     |     —     |     —     |     —      |
+| **Gift registry**           |       ❌       |    —     |     —     |     —     |     —     |     ✅     |
+| **Store locator**           |       ❌       |    —     |     —     |    ✅     |     —     |     —      |
 
 ---
 
@@ -3030,7 +3035,7 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 > Priorizados por impacto en conversión × esfuerzo de implementación.
 
 ```
-[ ] E.1 WhatsApp flotante (botón fijo bottom-right, link wa.me con mensaje pre-escrito)
+[x] E.1 WhatsApp flotante (botón fijo bottom-right, link wa.me con mensaje pre-escrito)  ✅ 2026-06-24
 [ ] E.2 Badge % descuento en product cards (badge -XX% cuando isOnSale + compareAtPrice)
 [ ] E.3 Hover swap en product cards (muestra 2da imagen de galería al hover)
 [ ] E.4 Sección "Más Vendidos" en home (ordenar por ventas/popularidad)
@@ -3044,11 +3049,19 @@ global**. No se puede saber cuántas unidades quedan por talla×color → riesgo
 
 #### Priorización sugerida
 
-| Prioridad | Items | Razón |
-|---|---|---|
-| 🔴 Alta (hacer ya) | E.1, E.2, E.3, E.6 | Bajo esfuerzo, alto impacto conversión, 4/5 competidores lo tienen |
-| 🟠 Media | E.4, E.5, E.9 | Impacto medio, esfuerzo moderado |
-| 🟡 Baja (planificar) | E.7, E.8, E.10 | Mayor esfuerzo o dependencias externas (API Instagram, contenido) |
+| Prioridad            | Items              | Razón                                                              |
+| -------------------- | ------------------ | ------------------------------------------------------------------ |
+| 🔴 Alta (hacer ya)   | E.1, E.2, E.3, E.6 | Bajo esfuerzo, alto impacto conversión, 4/5 competidores lo tienen |
+| 🟠 Media             | E.4, E.5, E.9      | Impacto medio, esfuerzo moderado                                   |
+| 🟡 Baja (planificar) | E.7, E.8, E.10     | Mayor esfuerzo o dependencias externas (API Instagram, contenido)  |
+
+#### Log de implementación Fase E
+
+- **E.1 WhatsApp flotante** ✅ — `WhatsAppFloat` (cliente) lee `social.whatsapp`
+  de settings, normaliza número o URL → `wa.me/<n>?text=...` con mensaje
+  pre-escrito con el nombre de marca; no renderiza nada si no está configurado.
+  Montado en el layout de tienda. Verificado: con número renderiza el enlace
+  correcto; vacío → oculto.
 
 ### A.1 — Galería de imágenes ✅ (2026-06-24)
 

@@ -136,17 +136,14 @@ export function ProductsTable({
           </a>
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
             <Upload className="h-3.5 w-3.5" /> Importar
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleImport}
-              className="sr-only"
-            />
+            <input type="file" accept=".csv" onChange={handleImport} className="sr-only" />
           </label>
         </div>
       </div>
       {importMsg && (
-        <p className={`text-sm px-1 ${importMsg.startsWith("Error") ? "text-red-600" : "text-green-600"}`}>
+        <p
+          className={`text-sm px-1 ${importMsg.startsWith("Error") ? "text-red-600" : "text-green-600"}`}
+        >
           {importMsg}
         </p>
       )}

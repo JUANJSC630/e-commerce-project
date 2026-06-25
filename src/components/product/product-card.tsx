@@ -26,6 +26,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
 
+  // First gallery photo distinct from the cover — revealed on hover (E.3).
+  const hoverImage = product.images?.find((img) => img.url && img.url !== product.image)?.url
+
   return (
     <div className="group relative bg-card text-card-foreground rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border">
       <Link
@@ -44,10 +47,22 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           className={cn(
             "object-cover transition-all duration-500 group-hover:scale-105",
             isImageLoaded ? "opacity-100" : "opacity-0",
+            // Fade the cover out on hover when a swap image is available.
+            hoverImage && "group-hover:opacity-0",
           )}
           onLoad={() => setIsImageLoaded(true)}
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
         />
+        {hoverImage && (
+          <Image
+            src={hoverImage}
+            alt=""
+            aria-hidden="true"
+            fill
+            className="object-cover opacity-0 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          />
+        )}
 
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.isNew && <Badge variant="new">Nuevo</Badge>}

@@ -15,6 +15,7 @@ import { useSettings } from "@/components/providers/settings-provider"
 import { validateShippingData, validatePaymentData, type PaymentData } from "@/lib/validation"
 import { trackBeginCheckout } from "@/lib/analytics"
 import { loadCheckoutDraft, saveCheckoutDraft, clearCheckoutDraft } from "@/lib/checkout-draft"
+import { cn } from "@/lib/utils"
 
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
 
@@ -73,6 +74,14 @@ export default function CheckoutPage() {
     }
     saveCheckoutDraft({ currentStep, shipping: shippingData, method: paymentData.method })
   }, [hydrated, items.length, currentStep, shippingData, paymentData])
+
+  // Direction of the last step change, so the entering step slides in from the
+  // side it's coming from (forward → from the right, back → from the left).
+  const prevStepRef = useRef(currentStep)
+  const direction = currentStep >= prevStepRef.current ? "forward" : "back"
+  useEffect(() => {
+    prevStepRef.current = currentStep
+  }, [currentStep])
 
   // Fire begin_checkout once when the checkout loads with items in the cart.
   const beganCheckout = useRef(false)
@@ -193,7 +202,13 @@ export default function CheckoutPage() {
         </div>
         <CheckoutProgress currentStep={currentStep} steps={steps} />
         <div className="grid lg:grid-cols-3 gap-8 mt-8">
-          <div className="lg:col-span-2">
+          <div
+            key={currentStep}
+            className={cn(
+              "lg:col-span-2 animate-in fade-in duration-300 ease-out motion-reduce:animate-none",
+              direction === "back" ? "slide-in-from-left-4" : "slide-in-from-right-4",
+            )}
+          >
             {currentStep === 1 && (
               <div>
                 <h2 className="font-display font-semibold text-xl mb-6">Tu carrito de compras</h2>

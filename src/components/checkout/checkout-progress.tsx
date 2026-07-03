@@ -38,7 +38,10 @@ export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) 
                   }`}
                 >
                   {isCompleted ? (
-                    <Check className="h-5 w-5" aria-hidden="true" />
+                    <Check
+                      className="h-5 w-5 animate-in zoom-in-50 duration-300 motion-reduce:animate-none"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   )}

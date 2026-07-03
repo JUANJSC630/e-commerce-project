@@ -14,6 +14,7 @@ import { routes } from "@/config/store.config"
 import { useSettings } from "@/components/providers/settings-provider"
 import { validateShippingData, validatePaymentData, type PaymentData } from "@/lib/validation"
 import { trackBeginCheckout } from "@/lib/analytics"
+import { loadCheckoutDraft, saveCheckoutDraft, clearCheckoutDraft } from "@/lib/checkout-draft"
 
 const steps = ["Carrito", "Envío", "Pago", "Confirmación"]
 
@@ -39,6 +40,39 @@ export default function CheckoutPage() {
   const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [discount, setDiscount] = useState<AppliedDiscount | null>(null)
+  // Gate persistence until the saved draft has been read, so the first render's
+  // empty defaults never overwrite it.
+  const [hydrated, setHydrated] = useState(false)
+
+  // Restore an in-progress checkout (shipping fields + payment method + step)
+  // saved on a previous visit, so a closed tab or refresh doesn't lose what the
+  // customer typed. Runs once on mount, before the step forms mount (they seed
+  // their local state from `data`), so the prefill lands in the fields.
+  useEffect(() => {
+    const draft = loadCheckoutDraft()
+    if (draft) {
+      setShippingData((prev) => ({ ...prev, ...draft.shipping }))
+      setPaymentData({ method: draft.method })
+      if (draft.currentStep >= 1 && draft.currentStep <= steps.length) {
+        setCurrentStep(draft.currentStep)
+      }
+    }
+    setHydrated(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Persist the draft as the customer fills the form - but only while the cart
+  // has items. An empty cart means the purchase completed or was abandoned, so
+  // drop the draft rather than saving an empty one. It's also cleared on payment
+  // success via the cart provider's clearCart.
+  useEffect(() => {
+    if (!hydrated) return
+    if (items.length === 0) {
+      clearCheckoutDraft()
+      return
+    }
+    saveCheckoutDraft({ currentStep, shipping: shippingData, method: paymentData.method })
+  }, [hydrated, items.length, currentStep, shippingData, paymentData])
 
   // Fire begin_checkout once when the checkout loads with items in the cart.
   const beganCheckout = useRef(false)

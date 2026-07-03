@@ -89,6 +89,14 @@ export function ShippingForm({
     }
   }, [externalErrors])
 
+  // Mirror the fields up to the parent as they're typed (not just on submit), so
+  // the checkout draft can persist a partially-filled form - closing the tab
+  // mid-shipping won't lose it. `onUpdate` is the parent's stable setState and
+  // `data` is never synced back into `formData`, so this can't loop.
+  useEffect(() => {
+    onUpdate(formData)
+  }, [formData, onUpdate])
+
   // Function to validate a single field
   const validateField = (field: keyof ShippingData, value: string) => {
     const error = ""

@@ -95,6 +95,17 @@ export interface ThemeOptions {
   toastText: string
   /** Custom toast border color */
   toastBorder: string
+  /** With custom colors on, give each toast type its own colors below */
+  toastPerType: boolean
+  toastSuccessBg: string
+  toastSuccessText: string
+  toastSuccessBorder: string
+  toastErrorBg: string
+  toastErrorText: string
+  toastErrorBorder: string
+  toastInfoBg: string
+  toastInfoText: string
+  toastInfoBorder: string
   /** Product card density across listing grids */
   cardSize: CardSize
 }
@@ -114,6 +125,16 @@ export const THEME_OPTION_DEFAULTS: ThemeOptions = {
   toastBg: "oklch(0.99 0.005 90)",
   toastText: "oklch(0.25 0.02 60)",
   toastBorder: "oklch(0.9 0.015 80)",
+  toastPerType: false,
+  toastSuccessBg: "oklch(0.96 0.04 150)",
+  toastSuccessText: "oklch(0.44 0.12 150)",
+  toastSuccessBorder: "oklch(0.85 0.08 150)",
+  toastErrorBg: "oklch(0.96 0.04 25)",
+  toastErrorText: "oklch(0.5 0.18 25)",
+  toastErrorBorder: "oklch(0.85 0.09 25)",
+  toastInfoBg: "oklch(0.96 0.035 250)",
+  toastInfoText: "oklch(0.48 0.13 250)",
+  toastInfoBorder: "oklch(0.85 0.07 250)",
   cardSize: "medium",
 }
 
@@ -354,6 +375,9 @@ const clampNumber = (value: unknown, min: number, max: number, fallback: number)
 export function sanitizeThemeOptions(
   input: Partial<Record<keyof ThemeOptions, unknown>>,
 ): ThemeOptions {
+  // Validated color pick that falls back to the field's default when invalid.
+  const color = (k: keyof ThemeOptions) =>
+    isValidColor(input[k]) ? (input[k] as string) : (THEME_OPTION_DEFAULTS[k] as string)
   return {
     success: isValidColor(input.success)
       ? (input.success as string)
@@ -382,15 +406,22 @@ export function sanitizeThemeOptions(
       typeof input.toastCustomColors === "boolean"
         ? input.toastCustomColors
         : THEME_OPTION_DEFAULTS.toastCustomColors,
-    toastBg: isValidColor(input.toastBg)
-      ? (input.toastBg as string)
-      : THEME_OPTION_DEFAULTS.toastBg,
-    toastText: isValidColor(input.toastText)
-      ? (input.toastText as string)
-      : THEME_OPTION_DEFAULTS.toastText,
-    toastBorder: isValidColor(input.toastBorder)
-      ? (input.toastBorder as string)
-      : THEME_OPTION_DEFAULTS.toastBorder,
+    toastBg: color("toastBg"),
+    toastText: color("toastText"),
+    toastBorder: color("toastBorder"),
+    toastPerType:
+      typeof input.toastPerType === "boolean"
+        ? input.toastPerType
+        : THEME_OPTION_DEFAULTS.toastPerType,
+    toastSuccessBg: color("toastSuccessBg"),
+    toastSuccessText: color("toastSuccessText"),
+    toastSuccessBorder: color("toastSuccessBorder"),
+    toastErrorBg: color("toastErrorBg"),
+    toastErrorText: color("toastErrorText"),
+    toastErrorBorder: color("toastErrorBorder"),
+    toastInfoBg: color("toastInfoBg"),
+    toastInfoText: color("toastInfoText"),
+    toastInfoBorder: color("toastInfoBorder"),
     cardSize: oneOf(input.cardSize, CARD_SIZES, THEME_OPTION_DEFAULTS.cardSize),
   }
 }

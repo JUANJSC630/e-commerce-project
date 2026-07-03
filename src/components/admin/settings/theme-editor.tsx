@@ -39,6 +39,18 @@ const TOAST_RADIUS_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
   { value: "1.5rem", label: "Píldora" },
 ]
 
+/** Per-type custom toast color fields (bg/text/border keys on ThemeConfig). */
+const TOAST_TYPE_FIELDS = [
+  { label: "Éxito", bg: "toastSuccessBg", text: "toastSuccessText", border: "toastSuccessBorder" },
+  { label: "Error", bg: "toastErrorBg", text: "toastErrorText", border: "toastErrorBorder" },
+  { label: "Info", bg: "toastInfoBg", text: "toastInfoText", border: "toastInfoBorder" },
+] as const satisfies ReadonlyArray<{
+  label: string
+  bg: keyof ThemeConfig
+  text: keyof ThemeConfig
+  border: keyof ThemeConfig
+}>
+
 // ─── Two-option segmented control ─────────────────────────────────────────────
 
 function Segmented<T extends string>({
@@ -327,6 +339,15 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
       error: "Algo salió mal, intenta de nuevo",
       info: "Así se verán tus notificaciones",
     } as const
+    const perType = {
+      success: [form.toastSuccessBg, form.toastSuccessText, form.toastSuccessBorder],
+      error: [form.toastErrorBg, form.toastErrorText, form.toastErrorBorder],
+      info: [form.toastInfoBg, form.toastInfoText, form.toastInfoBorder],
+    } as const
+    const [bg, text, border] =
+      form.toastCustomColors && form.toastPerType
+        ? perType[kind]
+        : [form.toastBg, form.toastText, form.toastBorder]
     toast[kind](messages[kind], {
       position: form.toastPosition,
       duration: form.toastDuration * 1000,
@@ -334,13 +355,7 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
       style: {
         borderRadius: form.toastRadius,
         ...(form.toastCustomColors
-          ? {
-              backgroundColor: form.toastBg,
-              color: form.toastText,
-              borderColor: form.toastBorder,
-              borderWidth: 1,
-              borderStyle: "solid",
-            }
+          ? { backgroundColor: bg, color: text, borderColor: border, borderWidth: 1, borderStyle: "solid" }
           : {}),
       },
     })
@@ -567,6 +582,9 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
                 />
                 {form.toastCustomColors ? (
                   <div className="space-y-2 pl-0.5">
+                    <div className="text-[11px] font-semibold text-slate-500">
+                      Normal (por defecto)
+                    </div>
                     <ColorRow
                       label="Fondo"
                       hint="Fondo del toast"
@@ -585,6 +603,39 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
                       value={form.toastBorder}
                       onChange={(v) => set("toastBorder", v)}
                     />
+
+                    <Toggle
+                      label="Colores por tipo (éxito/error/info)"
+                      checked={form.toastPerType}
+                      onChange={(v) => set("toastPerType", v)}
+                    />
+                    {form.toastPerType &&
+                      TOAST_TYPE_FIELDS.map((t) => (
+                        <div
+                          key={t.label}
+                          className="space-y-1.5 rounded-md border border-slate-100 p-2"
+                        >
+                          <div className="text-[11px] font-semibold text-slate-500">{t.label}</div>
+                          <ColorRow
+                            label="Fondo"
+                            hint=""
+                            value={form[t.bg]}
+                            onChange={(v) => set(t.bg, v)}
+                          />
+                          <ColorRow
+                            label="Texto"
+                            hint=""
+                            value={form[t.text]}
+                            onChange={(v) => set(t.text, v)}
+                          />
+                          <ColorRow
+                            label="Borde"
+                            hint=""
+                            value={form[t.border]}
+                            onChange={(v) => set(t.border, v)}
+                          />
+                        </div>
+                      ))}
                   </div>
                 ) : (
                   <Toggle

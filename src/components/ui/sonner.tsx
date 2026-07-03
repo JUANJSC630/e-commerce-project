@@ -8,9 +8,11 @@ type ToasterCustomProps = ToasterProps & {
   normalBg?: string
   normalText?: string
   normalBorder?: string
+  /** Extra CSS vars merged onto the toaster (per-type sonner colors). */
+  vars?: Record<string, string>
 }
 
-const Toaster = ({ normalBg, normalText, normalBorder, ...props }: ToasterCustomProps) => {
+const Toaster = ({ normalBg, normalText, normalBorder, vars, ...props }: ToasterCustomProps) => {
   const { theme = "system" } = useTheme()
 
   return (
@@ -22,6 +24,7 @@ const Toaster = ({ normalBg, normalText, normalBorder, ...props }: ToasterCustom
           "--normal-bg": normalBg ?? "var(--popover)",
           "--normal-text": normalText ?? "var(--popover-foreground)",
           "--normal-border": normalBorder ?? "var(--border)",
+          ...vars,
         } as React.CSSProperties
       }
       {...props}

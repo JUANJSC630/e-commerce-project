@@ -43,11 +43,19 @@ export default async function RootLayout({
           {children}
           <Toaster
             position={theme.toastPosition}
-            richColors={theme.toastRichColors}
+            // Custom colors are a uniform look, so they override per-type rich colors.
+            richColors={theme.toastCustomColors ? false : theme.toastRichColors}
             closeButton={theme.toastCloseButton}
             expand={theme.toastExpand}
             duration={theme.toastDuration * 1000}
             toastOptions={{ style: { borderRadius: theme.toastRadius } }}
+            {...(theme.toastCustomColors
+              ? {
+                  normalBg: theme.toastBg,
+                  normalText: theme.toastText,
+                  normalBorder: theme.toastBorder,
+                }
+              : {})}
           />
         </RadixThemeProvider>
       </body>

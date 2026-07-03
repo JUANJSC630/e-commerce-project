@@ -3,7 +3,14 @@
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, ToasterProps } from "sonner"
 
-const Toaster = ({ ...props }: ToasterProps) => {
+type ToasterCustomProps = ToasterProps & {
+  /** Custom toast colors; each falls back to the site theme when omitted. */
+  normalBg?: string
+  normalText?: string
+  normalBorder?: string
+}
+
+const Toaster = ({ normalBg, normalText, normalBorder, ...props }: ToasterCustomProps) => {
   const { theme = "system" } = useTheme()
 
   return (
@@ -12,9 +19,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
+          "--normal-bg": normalBg ?? "var(--popover)",
+          "--normal-text": normalText ?? "var(--popover-foreground)",
+          "--normal-border": normalBorder ?? "var(--border)",
         } as React.CSSProperties
       }
       {...props}

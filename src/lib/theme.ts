@@ -87,6 +87,14 @@ export interface ThemeOptions {
   toastDuration: number
   /** Corner radius of toasts (rem/px/em) */
   toastRadius: string
+  /** Use the custom toast colors below instead of theme/rich-color styling */
+  toastCustomColors: boolean
+  /** Custom toast background (applied when toastCustomColors is on) */
+  toastBg: string
+  /** Custom toast text color */
+  toastText: string
+  /** Custom toast border color */
+  toastBorder: string
   /** Product card density across listing grids */
   cardSize: CardSize
 }
@@ -102,6 +110,10 @@ export const THEME_OPTION_DEFAULTS: ThemeOptions = {
   toastExpand: false,
   toastDuration: 4,
   toastRadius: "0.5rem",
+  toastCustomColors: false,
+  toastBg: "oklch(0.99 0.005 90)",
+  toastText: "oklch(0.25 0.02 60)",
+  toastBorder: "oklch(0.9 0.015 80)",
   cardSize: "medium",
 }
 
@@ -366,6 +378,19 @@ export function sanitizeThemeOptions(
     toastRadius: isValidRadius(input.toastRadius)
       ? (input.toastRadius as string)
       : THEME_OPTION_DEFAULTS.toastRadius,
+    toastCustomColors:
+      typeof input.toastCustomColors === "boolean"
+        ? input.toastCustomColors
+        : THEME_OPTION_DEFAULTS.toastCustomColors,
+    toastBg: isValidColor(input.toastBg)
+      ? (input.toastBg as string)
+      : THEME_OPTION_DEFAULTS.toastBg,
+    toastText: isValidColor(input.toastText)
+      ? (input.toastText as string)
+      : THEME_OPTION_DEFAULTS.toastText,
+    toastBorder: isValidColor(input.toastBorder)
+      ? (input.toastBorder as string)
+      : THEME_OPTION_DEFAULTS.toastBorder,
     cardSize: oneOf(input.cardSize, CARD_SIZES, THEME_OPTION_DEFAULTS.cardSize),
   }
 }

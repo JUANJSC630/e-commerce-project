@@ -331,7 +331,18 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
       position: form.toastPosition,
       duration: form.toastDuration * 1000,
       closeButton: form.toastCloseButton,
-      style: { borderRadius: form.toastRadius },
+      style: {
+        borderRadius: form.toastRadius,
+        ...(form.toastCustomColors
+          ? {
+              backgroundColor: form.toastBg,
+              color: form.toastText,
+              borderColor: form.toastBorder,
+              borderWidth: 1,
+              borderStyle: "solid",
+            }
+          : {}),
+      },
     })
   }
 
@@ -550,10 +561,38 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
 
               <div className="space-y-2 border-t border-slate-100 pt-2">
                 <Toggle
-                  label="Colores por tipo"
-                  checked={form.toastRichColors}
-                  onChange={(v) => set("toastRichColors", v)}
+                  label="Colores personalizados"
+                  checked={form.toastCustomColors}
+                  onChange={(v) => set("toastCustomColors", v)}
                 />
+                {form.toastCustomColors ? (
+                  <div className="space-y-2 pl-0.5">
+                    <ColorRow
+                      label="Fondo"
+                      hint="Fondo del toast"
+                      value={form.toastBg}
+                      onChange={(v) => set("toastBg", v)}
+                    />
+                    <ColorRow
+                      label="Texto"
+                      hint="Texto e íconos"
+                      value={form.toastText}
+                      onChange={(v) => set("toastText", v)}
+                    />
+                    <ColorRow
+                      label="Borde"
+                      hint="Borde del toast"
+                      value={form.toastBorder}
+                      onChange={(v) => set("toastBorder", v)}
+                    />
+                  </div>
+                ) : (
+                  <Toggle
+                    label="Colores por tipo (verde/rojo/azul)"
+                    checked={form.toastRichColors}
+                    onChange={(v) => set("toastRichColors", v)}
+                  />
+                )}
                 <Toggle
                   label="Botón de cerrar (×)"
                   checked={form.toastCloseButton}
@@ -567,8 +606,9 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
               </div>
 
               <p className="text-[11px] leading-snug text-slate-400">
-                Los botones de arriba prueban posición, redondez, duración y cierre al instante.
-                “Colores por tipo” y “Expandir apiladas” se ven al guardar y recargar.
+                Los botones de arriba (Éxito/Error/Info) prueban posición, redondez, duración,
+                cierre y colores personalizados al instante. “Colores por tipo” y “Expandir
+                apiladas” se aplican al guardar y recargar.
               </p>
             </div>
           </div>

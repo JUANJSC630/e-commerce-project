@@ -1,4 +1,5 @@
-import { Check } from "lucide-react"
+import { Fragment } from "react"
+import { ShoppingCart, Truck, CreditCard, PackageCheck, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface CheckoutProgressProps {
@@ -6,68 +7,80 @@ interface CheckoutProgressProps {
   steps: string[]
 }
 
+/** One icon per checkout stage, in step order (Carrito → Envío → Pago → Confirmación). */
+const STEP_ICONS = [ShoppingCart, Truck, CreditCard, PackageCheck]
+
 export function CheckoutProgress({ currentStep, steps }: CheckoutProgressProps) {
   return (
-    <div className="w-full py-6">
-      <div
-        className="flex items-center justify-between"
-        role="navigation"
-        aria-label="Checkout progress"
-      >
+    <nav className="w-full py-2" aria-label="Progreso del checkout">
+      <ol className="flex items-center">
         {steps.map((step, index) => {
           const stepNumber = index + 1
           const isCompleted = stepNumber < currentStep
           const isCurrent = stepNumber === currentStep
+          const isLast = index === steps.length - 1
+          const Icon = STEP_ICONS[index] ?? ShoppingCart
 
           return (
-            <div key={step} className="flex items-center">
-              <div className="flex items-center">
-                <div
+            <Fragment key={step}>
+              <li className="flex shrink-0 items-center gap-3">
+                <span
                   className={cn(
-                    "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-200",
-                    isCompleted && "bg-brand-base border-brand-base text-brand-ink",
-                    isCurrent && "border-brand-base text-brand-base bg-brand-base/10",
-                    !isCompleted && !isCurrent && "border-border text-muted-foreground",
+                    "grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 transition-all duration-300",
+                    isCompleted && "border-brand-base bg-brand-base text-brand-on-base",
+                    isCurrent &&
+                      "border-brand-base bg-brand-base/10 text-brand-base ring-4 ring-brand-base/15",
+                    !isCompleted && !isCurrent && "border-border bg-muted/40 text-muted-foreground",
                   )}
-                  role="status"
-                  aria-label={`Step ${stepNumber}: ${step} - ${isCompleted ? "completed" : isCurrent ? "current" : "upcoming"}`}
-                  tabIndex={0}
                   aria-current={isCurrent ? "step" : undefined}
-                  aria-labelledby={`step-label-${stepNumber}`}
+                  aria-label={`Paso ${stepNumber}: ${step} - ${
+                    isCompleted ? "completado" : isCurrent ? "actual" : "pendiente"
+                  }`}
                 >
                   {isCompleted ? (
-                    <Check className="w-5 h-5" aria-hidden="true" />
+                    <Check className="h-5 w-5" aria-hidden="true" />
                   ) : (
-                    <span className="text-sm font-semibold">{stepNumber}</span>
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   )}
-                </div>
-                <div className="ml-3 hidden sm:block">
+                </span>
+                <div className="hidden sm:block">
                   <p
                     className={cn(
-                      "text-sm font-medium",
-                      (isCompleted || isCurrent) && "text-foreground",
-                      !isCompleted && !isCurrent && "text-muted-foreground",
+                      "text-[11px] font-medium uppercase tracking-[0.12em]",
+                      isCurrent ? "text-brand-base" : "text-muted-foreground",
                     )}
-                    id={`step-label-${stepNumber}`}
+                  >
+                    Paso {stepNumber}
+                  </p>
+                  <p
+                    className={cn(
+                      "text-sm font-semibold leading-tight",
+                      isCompleted || isCurrent ? "text-foreground" : "text-muted-foreground",
+                    )}
                   >
                     {step}
                   </p>
                 </div>
-              </div>
-              {index < steps.length - 1 && (
+              </li>
+
+              {!isLast && (
                 <div
-                  className={cn(
-                    "flex-1 h-0.5 mx-4 transition-all duration-200",
-                    isCompleted ? "bg-brand-base" : "bg-border",
-                  )}
+                  className="mx-2 h-1 flex-1 overflow-hidden rounded-full bg-border sm:mx-4"
                   role="presentation"
                   aria-hidden="true"
-                />
+                >
+                  <div
+                    className={cn(
+                      "h-full rounded-full bg-brand-base transition-all duration-500",
+                      isCompleted ? "w-full" : "w-0",
+                    )}
+                  />
+                </div>
               )}
-            </div>
+            </Fragment>
           )
         })}
-      </div>
-    </div>
+      </ol>
+    </nav>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, MapPin, CreditCard, Truck } from "lucide-react"
+import { Check, MapPin, CreditCard, Truck, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { routes } from "@/config/store.config"
 import { useSettings, useFormatPrice } from "@/components/providers/settings-provider"
@@ -56,14 +56,6 @@ const validateOrderData = (orderData: OrderConfirmationProps["orderData"]) => {
   }
 }
 
-interface SectionData {
-  icon: React.ElementType
-  title: string
-  data: Record<string, string | number | undefined>
-  fields: string[]
-  bgColor: string
-}
-
 export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirmationProps) {
   const { shipping } = useSettings()
   const formatPrice = useFormatPrice()
@@ -102,36 +94,12 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
     }
   }
 
-  const subtotal = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const { shipping: ship, payment, items } = orderData
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shippingCost = subtotal > shipping.freeThreshold ? 0 : shipping.standardCost
   const total = subtotal + shippingCost
-
-  const sections: SectionData[] = [
-    {
-      icon: MapPin,
-      title: "Información de envío",
-      data: orderData.shipping,
-      fields: ["firstName", "lastName", "address", "city", "phone", "email"],
-      bgColor: "bg-brand-surface-alt/30", // Fondo Silver claro
-    },
-    {
-      icon: CreditCard,
-      title: "Método de pago",
-      data: orderData.payment,
-      fields: ["method"],
-      bgColor: "bg-brand-surface-alt/30",
-    },
-    {
-      icon: Truck,
-      title: "Información de entrega",
-      data: {
-        estimated: shipping.estimatedDays,
-        cost: shippingCost === 0 ? "Gratis" : formatPrice(shippingCost),
-      },
-      fields: ["estimated", "cost"],
-      bgColor: "bg-brand-surface-alt/30",
-    },
-  ]
+  const paymentLabel =
+    payment.method === "pse" ? "PSE · Transferencia bancaria" : "Tarjeta de crédito o débito"
 
   return (
     <div className="max-w-2xl text-foreground">
@@ -146,65 +114,100 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
         </div>
       )}
 
-      <div className="space-y-6">
-        {sections.map((section) => (
-          <div key={section.title} className={`${section.bgColor} rounded-xl p-4`}>
-            <div className="flex items-center gap-3 mb-3">
-              <section.icon className="w-5 h-5 text-brand-base" />
-              <h3 className="font-semibold">{section.title}</h3>
+      <div className="space-y-5">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <section className="rounded-xl border border-border bg-card p-4">
+            <header className="mb-3 flex items-center gap-2.5">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-base/10 text-brand-base">
+                <MapPin className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <h3 className="font-semibold text-brand-ink">Envío a</h3>
+            </header>
+            <div className="text-sm leading-relaxed text-brand-muted">
+              <p className="font-medium text-brand-ink">
+                {ship.firstName} {ship.lastName}
+              </p>
+              <p>{ship.address}</p>
+              <p>{ship.city}</p>
+              {ship.phone && <p>{ship.phone}</p>}
+              {ship.email && <p className="truncate">{ship.email}</p>}
             </div>
-            <div className="text-sm space-y-1">
-              {section.fields.map((field) => {
-                let value = (section.data as Record<string, string | number | undefined>)[field]
-                if (field === "method" && typeof value === "string") {
-                  if (value === "card") value = "Tarjeta de crédito o débito"
-                  else if (value === "pse") value = "PSE"
-                }
-                return value ? (
-                  <p key={field}>
-                    {typeof value === "string" && field.match(/Name|Address|City|Email|Phone/i)
-                      ? value
-                      : `${field.charAt(0).toUpperCase() + field.slice(1)}: ${value}`}
-                  </p>
-                ) : null
-              })}
+          </section>
+
+          <section className="rounded-xl border border-border bg-card p-4">
+            <header className="mb-3 flex items-center gap-2.5">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-base/10 text-brand-base">
+                <CreditCard className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <h3 className="font-semibold text-brand-ink">Método de pago</h3>
+            </header>
+            <p className="text-sm font-medium text-brand-ink">{paymentLabel}</p>
+            <p className="mt-1 text-sm text-brand-muted">
+              Completarás el pago de forma segura en el siguiente paso.
+            </p>
+          </section>
+        </div>
+
+        <section className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-base/10 text-brand-base">
+            <Truck className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <div className="flex flex-1 items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-brand-ink">Entrega estimada</p>
+              <p className="text-sm text-brand-muted">{shipping.estimatedDays}</p>
             </div>
+            <span className="text-sm font-medium">
+              {shippingCost === 0 ? (
+                <span className="text-green-600">Envío gratis</span>
+              ) : (
+                formatPrice(shippingCost)
+              )}
+            </span>
           </div>
-        ))}
-        <div className="bg-card border border-border rounded-xl p-4">
-          <h3 className="font-semibold mb-4">Resumen del pedido</h3>
-          <div className="space-y-3 mb-4">
-            {orderData.items.map((item) => (
-              <div
+        </section>
+
+        <section className="rounded-xl border border-border bg-card p-4">
+          <h3 className="mb-4 flex items-center gap-2 font-semibold text-brand-ink">
+            <Package className="h-5 w-5 text-brand-base" aria-hidden="true" />
+            Resumen del pedido
+          </h3>
+          <ul className="divide-y divide-border">
+            {items.map((item) => (
+              <li
                 key={`${item.id}-${item.size}-${item.color}`}
-                className="flex justify-between text-sm"
+                className="flex justify-between gap-3 py-2.5 text-sm first:pt-0 last:pb-0"
               >
                 <div>
-                  <p className="font-medium">{item.name}</p>
-                  <p className="text-muted-foreground">
-                    Talla: {item.size} • Color: {item.color} • Cant: {item.quantity}
+                  <p className="font-medium text-brand-ink">{item.name}</p>
+                  <p className="mt-0.5 text-brand-muted">
+                    {[item.size, item.color].filter(Boolean).join(" • ") || "Estándar"} · Cant:{" "}
+                    {item.quantity}
                   </p>
                 </div>
-                <p className="font-medium">${(item.price * item.quantity).toLocaleString()}</p>
-              </div>
+                <p className="whitespace-nowrap font-medium text-brand-ink">
+                  {formatPrice(item.price * item.quantity)}
+                </p>
+              </li>
             ))}
-          </div>
-          <div className="border-t border-border pt-3 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span>{formatPrice(subtotal)}</span>
+          </ul>
+          <dl className="mt-3 space-y-2 border-t border-border pt-3 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-brand-muted">Subtotal</dt>
+              <dd>{formatPrice(subtotal)}</dd>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Envío</span>
-              <span>{shippingCost === 0 ? "Gratis" : formatPrice(shippingCost)}</span>
+            <div className="flex justify-between">
+              <dt className="text-brand-muted">Envío</dt>
+              <dd>{shippingCost === 0 ? "Gratis" : formatPrice(shippingCost)}</dd>
             </div>
-            <div className="flex justify-between text-lg font-semibold pt-2 border-t border-border">
-              <span>Total</span>
-              <span className="text-brand-base">{formatPrice(total)}</span>
+            <div className="flex justify-between border-t border-border pt-2 text-lg font-semibold">
+              <dt>Total</dt>
+              <dd className="text-brand-base">{formatPrice(total)}</dd>
             </div>
-          </div>
-        </div>
-        <div className="text-xs text-muted-foreground bg-brand-surface rounded-xl p-4 border border-border">
+          </dl>
+        </section>
+
+        <div className="rounded-xl border border-border bg-brand-surface p-4 text-xs text-muted-foreground">
           <p>
             Al confirmar tu pedido, aceptas nuestros{" "}
             <a href={routes.policies} className="text-brand-base hover:underline">
@@ -217,7 +220,8 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
             .
           </p>
         </div>
-        <div className="flex gap-4 pt-6">
+
+        <div className="flex gap-4 pt-2">
           <Button
             type="button"
             variant="outline"
@@ -234,12 +238,12 @@ export function OrderConfirmation({ orderData, onConfirm, onBack }: OrderConfirm
           >
             {isProcessing ? (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />{" "}
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />{" "}
                 Procesando...
               </div>
             ) : (
               <>
-                <Check className="w-4 h-4 mr-2" /> Confirmar pedido
+                <Check className="mr-2 h-4 w-4" /> Confirmar pedido
               </>
             )}
           </Button>

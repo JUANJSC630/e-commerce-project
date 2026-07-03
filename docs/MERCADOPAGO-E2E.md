@@ -155,6 +155,15 @@ Esto valida `markOrderFailed()` (el restock idempotente). Usa el pedido del Caso
 
 ## 7. Caso D - PSE (opcional)
 
+> ⚠️ **Limitación conocida del sandbox de MP (verificado 2026-07-03).** PSE con las
+> credenciales `APP_USR-` de una cuenta de prueba vendedor devuelve
+> `401 "Unauthorized use of live credentials"` (code 7) en `POST /v1/payments` con
+> `payment_method_id: pse`. El token autentica bien para `/users/me` y `getBanks`;
+> MP bloquea **solo** la creación de pagos PSE porque las cuentas de prueba **no
+> están homologadas para recaudar PSE**. No es un bug del código. **PSE solo se puede
+> validar de verdad en producción con credenciales reales homologadas.** El resto del
+> runbook (Casos A/B/C) cubre todo el motor de pagos; PSE usa el mismo motor.
+
 PSE requiere las credenciales de una **cuenta de prueba vendedor** (`APP_USR-...`),
 no tus `TEST-`. Ver `MERCADOPAGO-SETUP.md` Fase 4 y 5b. Resumen:
 

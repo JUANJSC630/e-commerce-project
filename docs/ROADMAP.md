@@ -665,8 +665,10 @@ resuelve el brand vivo; `pageSeo`/`seo` en config son funciones de `brand`.
 > 47 bancos), `MERCADOPAGO_WEBHOOK_SECRET` configurado, cuentas de prueba
 > Vendedor/Comprador Colombia creadas. Archivos env reorganizados: `.env` solo
 > `DATABASE_URL` (Prisma CLI), `.env.local` todo lo demás (prioridad Next.js).
-> **Falta:** prueba sandbox end-to-end con ngrok (tarjetas APRO/FUND + PSE +
-> webhook). **Guía paso a paso: [`docs/MERCADOPAGO-SETUP.md`](MERCADOPAGO-SETUP.md)**.
+> **E2E (2026-07-03):** tarjetas APRO/FUND + cancelación + webhook firmado ✅
+> verificados con ngrok. PSE bloqueado por el sandbox de MP (cuenta test-seller no
+> homologada para PSE → `401 unauthorized live credentials`); código PSE revisado y
+> correcto, a validar en producción. **Guía: [`docs/MERCADOPAGO-SETUP.md`](MERCADOPAGO-SETUP.md)**.
 >
 > Las especificaciones detalladas de abajo quedan como **referencia de diseño**
 > (y para Wompi/Stripe, Bloques 10.5/10.6).
@@ -2839,8 +2841,22 @@ Archivos existentes relacionados: [listar].
 
 **Bloqueante (antes de cobrar de verdad):**
 
-- [ ] Prueba sandbox E2E de MercadoPago con ngrok: tarjeta APRO (pago + stock−),
-      tarjeta FUND (rechazo reintentable), cancelación (restock), PSE, webhook firmado.
+- [x] Prueba sandbox E2E de MercadoPago con ngrok (2026-07-03): **Casos A/B/C ✅**
+      verificados contra la DB. A - APRO: pedido `DI-2026-030` PAID/CONFIRMED, stock
+      10→9, `webhook.payment.approved` firmado entregado vía ngrok (2s después del
+      `initiate.card`). B - FUND: pedido `DI-2026-031` PENDING (reintentable), mensaje
+      amigable, reserva de stock intacta, y validado el guard `paymentProviderId`
+      (webhook rejected con providerId NULL = no-op, no tumba el pedido). C - cancelar:
+      pedido CANCELLED/FAILED, `markOrderFailed()` restauró stock 21→22.
+      **Caso D (PSE): bloqueado por sandbox de MP**, no por el código. El token del
+      vendedor de prueba (`APP_USR-`) devuelve `401 "Unauthorized use of live
+      credentials"` en `POST /v1/payments` con `payment_method_id: pse` (las cuentas
+      de prueba no están homologadas para recaudar PSE). El token autentica bien para
+      `/users/me` y `getBanks`; solo PSE lo bloquea MP. **Código PSE revisado y correcto:**
+      `initiate` setea `paymentProviderId` en `pending` + guarda `pseRedirectUrl`;
+      `pse-return` re-verifica el estado contra MP (ignora los query params del banco),
+      enruta a success/fallido y restock en rechazo vía el mismo motor validado con
+      tarjetas. **PSE queda code-complete; validar en producción real homologada.**
       **Runbook paso a paso: [`docs/MERCADOPAGO-E2E.md`](MERCADOPAGO-E2E.md)** (Bloque 10)
 - [ ] `RESEND_API_KEY` real + verificar entrega de los 5 emails. (Bloque 11)
 - [ ] `CRON_SECRET` en Vercel para activar el recordatorio de pago abandonado.
@@ -3579,6 +3595,83 @@ funciones serverless (cold starts, duración, concurrencia).
 - Reporte con score P0–P3 (de `/audit`) + lista priorizada de fixes.
 - Correcciones aplicadas por pantalla (commits separados) + re-verificación.
 - Actualizar esta sección a ✅ con el antes/después de las métricas Lighthouse mobile.
+
+---
+
+## 🏛️ Bloque 18 — Elevar calidad: patrones de Bagisto aplicados
+
+> ⏳ Pendiente. Diagnóstico (2026-07-03) tras evaluar reescribir el e-commerce
+> en **Bagisto** (Laravel/PHP). **Decisión: NO reescribir.** Nuestro código ya
+> implementa 5 de los 7 patrones de calidad de Bagisto — en pagos y ACL estamos
+> por encima. Lo que buscamos ("alta calidad") no está en cambiar de stack, sino
+> en cerrar **5 brechas concretas** con refactors incrementales sobre la base
+> Next/Prisma que ya conocemos. Bagisto se estudió como **referencia de patrones**,
+> no como plataforma destino (stack incompatible: PHP/Laravel/MySQL vs. nuestro
+> Next.js/Prisma/Postgres).
+
+### 18.1 — Scorecard vs. patrones Bagisto
+
+| # | Patrón Bagisto                    | Nuestro estado           | Nota  |
+| - | --------------------------------- | ------------------------ | ----- |
+| 1 | Modular por dominio               | 🟡 Parcial               | 7/10  |
+| 2 | Repository pattern                | 🟢 Fuerte                | 7/10  |
+| 3 | Contracts / swappable providers   | 🟢 Excelente (pagos)     | 8/10  |
+| 4 | EAV / atributos dinámicos         | 🟠 Limitado              | 5/10  |
+| 5 | Multi-canal / moneda / i18n       | 🔴 Débil                 | 3/10  |
+| 6 | ACL granular (resource×action)    | 🟢 Excelente             | 9/10  |
+| 7 | Event-driven / cart persistido    | 🟠 Mixto                 | 5/10  |
+
+### 18.2 — Lo que ya hacemos mejor que Bagisto (no tocar) ✅
+
+- `PaymentProvider` interface + `getPaymentProvider()` switch → arquitectura
+  multi-proveedor limpia (mock/MercadoPago/Wompi/Stripe). Es el patrón Contracts.
+- `PaymentLog` append-only + `idempotencyKey @unique` → auditoría de pagos y
+  anti-doble-cobro. Muchos e-commerce "serios" no lo tienen.
+- ACL `resource×action` en JSON (`hasPermission(perms, "orders", "delete")`).
+- `products.ts` como capa de datos única ("never on Prisma directly").
+- Snapshots en `OrderItem` (price/size/color) y snapshot de descuento en Order.
+- Server = única fuente de verdad del dinero; stock con `updateMany` guardado
+  anti-oversell.
+
+### 18.3 — Las 5 brechas a cerrar (calidad por esfuerzo)
+
+1. **🔴 Dinero + moneda (brecha #5, prioridad #1).** Precios en `Float` sin
+   moneda es riesgoso (redondeo). Migrar a **enteros en minor units (centavos)**
+   o `Decimal`, añadir columna `currency` en Product/Order, e introducir un value
+   object `Money`. Refactor localizado en la capa de datos ya aislada. **Mayor
+   impacto en "calidad de producción real".**
+2. **🟠 Event bus para órdenes (brecha #7).** Hoy `orders.ts` llama
+   `sendOrderPaidEmail()` directo. Emitir eventos (`order.paid`, `order.placed`)
+   y mover side-effects (email, inventario, futura factura electrónica) a
+   listeners desacoplados. Barato, escala features sin tocar `createOrder`.
+3. **🟡 State machine de órdenes (brecha #1b).** `OrderStatus` es enum pero las
+   transiciones no se validan (nada impide `DELIVERED → PENDING`). Definir
+   transiciones permitidas explícitas. Barato, previene bugs de estado.
+4. **🟠 Atributos dinámicos / EAV ligero (brecha #4).** `sizes[]`/`colors[]` y
+   `ProductVariant(size,color)` son fijos; agregar "material"/"sabor" toca schema.
+   Versión pragmática: `Attribute`/`AttributeValue` + variante con JSON
+   `{attribute: value}`. Solo si el catálogo lo pide (EAV completo de Bagisto es
+   overkill).
+5. **🟡 Cart persistido + modularidad vertical (brechas #7b, #1a).** No hay modelo
+   `Cart` (vive client-side) → modelo `Cart`/`CartItem` habilita recuperación de
+   abandonados (potencia el cron `abandoned-orders`), cross-device y analítica.
+   Aparte: agrupar código **vertical por dominio** al crecer (hoy separado por
+   capa técnica `lib/`/`components/`/`api/`). No urgente.
+
+### 18.4 — Orden de ejecución sugerido
+
+```
+[ ] 1. Dinero como centavos/Decimal + columna currency + value object Money
+[ ] 2. Event bus de órdenes (emit → listeners para email/inventario)
+[ ] 3. State machine de OrderStatus (transiciones válidas explícitas)
+[ ] 4. Atributos dinámicos (EAV ligero) — solo si el catálogo lo requiere
+[ ] 5. Cart persistido en DB + (más adelante) modularidad vertical por dominio
+```
+
+> **Resumen para el dueño:** el proyecto NO necesita reescribirse. La base es
+> sólida y en pagos/ACL supera a plataformas maduras. La "alta calidad" que
+> buscamos son 5 refactors incrementales; el #1 (manejo de dinero) es el que más
+> separa un e-commerce de portafolio de uno de producción real.
 
 ---
 

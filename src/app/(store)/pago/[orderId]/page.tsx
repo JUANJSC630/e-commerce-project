@@ -1,13 +1,16 @@
 import type { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
+import { getServerSession } from "next-auth"
 import { ShieldCheck } from "lucide-react"
-import { MAX_PAYMENT_ATTEMPTS, getOrderPaymentInfo } from "@/lib/orders"
+import { MAX_PAYMENT_ATTEMPTS, getOrderPaymentInfo, getOrderForConfirmation } from "@/lib/orders"
 import { getPaymentProvider, isMockPaymentsEnabled } from "@/lib/payments"
+import { authOptions } from "@/lib/auth-options"
 import { formatPrice } from "@/lib/utils"
 import { loadAllSettings } from "@/lib/settings"
 import { privatePageMetadata } from "@/lib/seo"
 import { SimulatedPaymentActions } from "@/components/checkout/simulated-payment-actions"
 import { MercadoPagoCheckout } from "@/components/payment/mercadopago-checkout"
+import { OrderSummary } from "@/components/order/order-summary"
 
 interface PageProps {
   params: Promise<{ orderId: string }>
@@ -19,7 +22,15 @@ export function generateMetadata(): Promise<Metadata> {
 
 export default async function PaymentPage({ params }: PageProps) {
   const { orderId } = await params
-  const [order, { locale }] = await Promise.all([getOrderPaymentInfo(orderId), loadAllSettings()])
+  const session = await getServerSession(authOptions)
+  const [order, summary, { locale }] = await Promise.all([
+    getOrderPaymentInfo(orderId),
+    // Order breakdown for the summary column. Same link-as-capability trust as
+    // the payment info: guests see their own order via the unguessable id; an
+    // account order returns null to a non-owner and the form just renders alone.
+    getOrderForConfirmation(orderId, session?.user?.id),
+    loadAllSettings(),
+  ])
 
   if (!order) notFound()
   if (order.paymentStatus === "PAID") redirect(`/order-success/${orderId}`)
@@ -42,14 +53,31 @@ export default async function PaymentPage({ params }: PageProps) {
       )
     }
 
+    const checkout = (
+      <MercadoPagoCheckout
+        orderId={order.id}
+        orderNumber={order.orderNumber}
+        amount={order.total}
+        {...(order.paymentMethod ? { preferredMethod: order.paymentMethod } : {})}
+      />
+    )
+
+    // Rectangular two-column layout: the order breakdown (what they're paying
+    // for, with their details) sits beside the payment form on desktop and
+    // stacks above it on mobile. Falls back to a centered single column when the
+    // summary isn't available (e.g. an account order opened by a non-owner).
+    if (!summary) {
+      return <div className="container mx-auto px-4 py-12 max-w-md">{checkout}</div>
+    }
+
     return (
-      <div className="container mx-auto px-4 py-12 max-w-md">
-        <MercadoPagoCheckout
-          orderId={order.id}
-          orderNumber={order.orderNumber}
-          amount={order.total}
-          {...(order.paymentMethod ? { preferredMethod: order.paymentMethod } : {})}
-        />
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start">
+          <aside className="lg:sticky lg:top-24">
+            <OrderSummary order={summary} />
+          </aside>
+          <div>{checkout}</div>
+        </div>
       </div>
     )
   }

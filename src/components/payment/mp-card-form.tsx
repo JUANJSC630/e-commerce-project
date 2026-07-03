@@ -213,8 +213,8 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
   }
 
   return (
-    <form id="mp-card-form" className="space-y-5">
-      <div className="space-y-1.5">
+    <form id="mp-card-form" className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+      <div className="space-y-1.5 sm:col-span-2">
         <label htmlFor="mp-card-holder" className="text-sm font-medium block">
           Titular de la tarjeta
         </label>
@@ -226,41 +226,37 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
         />
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 sm:col-span-2">
         <span className="text-sm font-medium block">Número de tarjeta</span>
         <div id="mp-card-number" className={fieldClass("cardNumber", FIELD_BOX)} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <span className="text-sm font-medium block">Vencimiento</span>
-          <div id="mp-card-expiration" className={fieldClass("expirationDate", FIELD_BOX)} />
-        </div>
-        <div className="space-y-1.5">
-          <span className="text-sm font-medium block">CVV</span>
-          <div id="mp-card-cvv" className={fieldClass("securityCode", FIELD_BOX)} />
-        </div>
+      <div className="space-y-1.5">
+        <span className="text-sm font-medium block">Vencimiento</span>
+        <div id="mp-card-expiration" className={fieldClass("expirationDate", FIELD_BOX)} />
+      </div>
+      <div className="space-y-1.5">
+        <span className="text-sm font-medium block">CVV</span>
+        <div id="mp-card-cvv" className={fieldClass("securityCode", FIELD_BOX)} />
       </div>
 
-      <div className="grid grid-cols-[1.4fr_1fr] gap-3">
-        <div className="space-y-1.5 min-w-0">
-          <label htmlFor="mp-card-doc-type" className="text-sm font-medium block">
-            Tipo de documento
-          </label>
-          <SelectShell>
-            <select id="mp-card-doc-type" className={SELECT_CLASS} />
-          </SelectShell>
-        </div>
-        <div className="space-y-1.5 min-w-0">
-          <label htmlFor="mp-card-doc-number" className="text-sm font-medium block">
-            Número
-          </label>
-          <input
-            id="mp-card-doc-number"
-            className={fieldClass("identificationNumber", INPUT_CLASS)}
-            inputMode="numeric"
-          />
-        </div>
+      <div className="space-y-1.5 min-w-0">
+        <label htmlFor="mp-card-doc-type" className="text-sm font-medium block">
+          Tipo de documento
+        </label>
+        <SelectShell>
+          <select id="mp-card-doc-type" className={SELECT_CLASS} />
+        </SelectShell>
+      </div>
+      <div className="space-y-1.5 min-w-0">
+        <label htmlFor="mp-card-doc-number" className="text-sm font-medium block">
+          Número
+        </label>
+        <input
+          id="mp-card-doc-number"
+          className={fieldClass("identificationNumber", INPUT_CLASS)}
+          inputMode="numeric"
+        />
       </div>
 
       <div className="space-y-1.5">
@@ -290,14 +286,14 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
       {error && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3"
+          className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3 sm:col-span-2"
         >
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" aria-hidden="true" />
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
 
-      <div className="space-y-3 pt-1">
+      <div className="pt-1 sm:col-span-2">
         <Button
           type="submit"
           size="lg"
@@ -316,10 +312,6 @@ export function MpCardForm({ orderId, amount }: MpCardFormProps) {
             </>
           )}
         </Button>
-
-        <p className="text-xs text-muted-foreground text-center">
-          No almacenamos los datos de tu tarjeta.
-        </p>
       </div>
     </form>
   )

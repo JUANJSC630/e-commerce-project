@@ -141,8 +141,8 @@ export function PseForm({ orderId }: PseFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-1.5">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
+      <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor="pse-bank">Tu banco</Label>
         <Combobox
           id="pse-bank"
@@ -163,7 +163,7 @@ export function PseForm({ orderId }: PseFormProps) {
         )}
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 min-w-0">
         <Label htmlFor="pse-entity">Tipo de persona</Label>
         <StyledSelect id="pse-entity" value={entityType} onChange={handleEntityChange}>
           <option value="individual">Persona natural</option>
@@ -171,41 +171,40 @@ export function PseForm({ orderId }: PseFormProps) {
         </StyledSelect>
       </div>
 
-      <div className="grid grid-cols-[1.4fr_1fr] gap-3">
-        <div className="space-y-1.5 min-w-0">
-          <Label htmlFor="pse-doc-type">Tipo de documento</Label>
-          <StyledSelect id="pse-doc-type" value={docType} onChange={setDocType}>
-            {DOC_TYPES[entityType].map((doc) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.label}
-              </option>
-            ))}
-          </StyledSelect>
-        </div>
-        <div className="space-y-1.5 min-w-0">
-          <Label htmlFor="pse-doc-number">Número</Label>
-          <Input
-            id="pse-doc-number"
-            className={FIELD_HEIGHT}
-            inputMode="numeric"
-            value={docNumber}
-            onChange={(e) => setDocNumber(e.target.value)}
-            placeholder="1234567890"
-          />
-        </div>
+      <div className="space-y-1.5 min-w-0">
+        <Label htmlFor="pse-doc-type">Tipo de documento</Label>
+        <StyledSelect id="pse-doc-type" value={docType} onChange={setDocType}>
+          {DOC_TYPES[entityType].map((doc) => (
+            <option key={doc.id} value={doc.id}>
+              {doc.label}
+            </option>
+          ))}
+        </StyledSelect>
+      </div>
+
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor="pse-doc-number">Número de documento</Label>
+        <Input
+          id="pse-doc-number"
+          className={FIELD_HEIGHT}
+          inputMode="numeric"
+          value={docNumber}
+          onChange={(e) => setDocNumber(e.target.value)}
+          placeholder="1234567890"
+        />
       </div>
 
       {error && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3"
+          className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3 sm:col-span-2"
         >
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" aria-hidden="true" />
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
 
-      <div className="space-y-3 pt-1">
+      <div className="space-y-3 pt-1 sm:col-span-2">
         <Button
           type="submit"
           size="lg"

@@ -57,6 +57,26 @@ export interface CreateOrderResult {
 
 const MAX_ATTEMPTS = 3
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// Prisma error codes worth retrying: a unique clash on the generated order
+// number (P2002 - another order slipped in concurrently), and transient DB
+// failures common on the pooled Prisma Postgres when cold/idle - it can refuse
+// or drop a connection ("unable to start a transaction" P2028, connection
+// errors P100x). Retrying is safe: the transaction rolls back on throw, so no
+// partial writes and no charge (payment only starts after the order exists).
+const RETRIABLE_DB_CODES = new Set(["P2002", "P2028", "P1001", "P1002", "P1008", "P1017"])
+
+function isRetriableOrderError(err: unknown): boolean {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) return RETRIABLE_DB_CODES.has(err.code)
+  // Connection resets and engine panics surface without a code - also transient.
+  return (
+    err instanceof Prisma.PrismaClientUnknownRequestError ||
+    err instanceof Prisma.PrismaClientRustPanicError ||
+    err instanceof Prisma.PrismaClientInitializationError
+  )
+}
+
 /** Sequential, human-friendly number reset per year: DI-2026-001. */
 async function nextOrderNumber(tx: Prisma.TransactionClient): Promise<string> {
   const year = new Date().getFullYear()
@@ -220,11 +240,13 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         { maxWait: 8000, timeout: 15000 },
       )
     } catch (err) {
-      // A unique clash on the generated number means another order slipped in
-      // concurrently - recompute and retry.
-      const isNumberClash =
-        err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002"
-      if (isNumberClash && attempt < MAX_ATTEMPTS) continue
+      // Retry a concurrent order-number clash or a transient DB hiccup (see
+      // isRetriableOrderError). A short backoff gives the pooled connection a
+      // moment to recover before recomputing the number and trying again.
+      if (isRetriableOrderError(err) && attempt < MAX_ATTEMPTS) {
+        await sleep(attempt * 150)
+        continue
+      }
       throw err
     }
   }

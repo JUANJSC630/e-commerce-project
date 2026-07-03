@@ -72,6 +72,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: err.message, code: err.code }, { status: err.status })
     }
     console.error("Order creation failed:", err)
-    return NextResponse.json({ error: "No se pudo crear el pedido" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error:
+          "No pudimos crear tu pedido y no se realizó ningún cargo. Por favor intenta de nuevo en unos momentos.",
+      },
+      { status: 500 },
+    )
   }
 }

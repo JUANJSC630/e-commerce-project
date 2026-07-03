@@ -1,6 +1,6 @@
 # Roadmap - Dulce Infancia Shop
 
-> Actualizado: 2026-06-25 (Bloque 15 - paridad Shopify completo: Fase A ✅ (A.1/A.2), B ✅, C ✅, D ✅, E ✅. Sesión de pulido UI+Admin (logos pago, galería con lupa/expandir, cards configurables, health-check de pagos). Backlog: UX-9/UX-10, Bloque 16 escalabilidad. Bloque 14 completo salvo E2E; Bloque 11 emails 4/5) | Score técnico frontend: **20/20** ✅ | Build prod ✅ 94/94
+> Actualizado: 2026-07-03 (Bloque 19 - pulido UI/UX checkout+pagos y config de toasts; E2E pagos A/B/C ✅ (PSE bloqueado por sandbox MP); Bloque 18 - no reescribir en Bagisto. Backlog: emails (Bloque 11, 4/5) + deploy, Bloque 16 escalabilidad, Bloque 17 responsive) | Score técnico frontend: **20/20** ✅ | Build prod ✅ 94/94
 > **Objetivo final**: e-commerce 100% administrable - productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -3672,6 +3672,49 @@ funciones serverless (cold starts, duración, concurrencia).
 > sólida y en pagos/ACL supera a plataformas maduras. La "alta calidad" que
 > buscamos son 5 refactors incrementales; el #1 (manejo de dinero) es el que más
 > separa un e-commerce de portafolio de uno de producción real.
+
+---
+
+## 🎨 Bloque 19 — Pulido UI/UX del checkout y pagos + config de toasts (2026-07-03)
+
+> ✅ Completado. Sesión de mejoras de UX/UI sobre el flujo de compra, más el
+> cierre del E2E de pagos (casos A/B/C ✅, PSE bloqueado por sandbox de MP — ver
+> `docs/MERCADOPAGO-E2E.md`). 8 commits ordenados por tema en `master`.
+
+### 19.1 — Página de pago (`/pago/[orderId]`)
+
+- **Layout rectangular de 2 columnas**: resumen del pedido (reutiliza `OrderSummary`
+  con ítems, desglose y dirección → el cliente ve sus detalles) + formulario de pago.
+- **Formulario horizontal**: `MpCardForm` y `PseForm` en grilla de 2 columnas;
+  total como fila compacta, pestañas de método horizontales, altura recortada para
+  **caber en pantalla sin scroll** (`max-w-6xl`, columnas 0.85fr/1.15fr).
+
+### 19.2 — Checkout (`/checkout-flow`)
+
+- **Más vistoso**: `CheckoutProgress` con un icono por paso (🛒→🚚→💳→📦) y estados
+  claros; `OrderConfirmation` con tarjetas de jerarquía, iconos de marca y datos limpios.
+- **Animaciones**: transición direccional entre pasos (slide+fade según avanza/retrocede)
+  y pop del check al completar. Respeta `prefers-reduced-motion`. Sin libs nuevas
+  (usa `tailwindcss-animate`).
+- **Borrador persistente** (`src/lib/checkout-draft.ts`): guarda envío + método + paso
+  en `localStorage` (envío capturado en vivo); prefill al reabrir; se limpia al
+  completar el pago o vaciar el carrito. Nunca guarda datos de tarjeta (PCI).
+
+### 19.3 — Robustez y fixes
+
+- **Creación de pedido resiliente**: `createOrder` reintenta ante errores transitorios
+  de DB (`P2028`, conexión `P100x`) además del choque de número (`P2002`); rollback
+  seguro, sin doble cargo. Mensaje 500 reescrito a texto cálido y accionable.
+- **Bug de toasts duplicados** al pagar: eliminado (el toast salía del `clearCart`,
+  que se llamaba dos veces). El feedback vive ahora en el call-site.
+
+### 19.4 — Config completa de apariencia de toasts (admin → Tema)
+
+- `ThemeOptions` extendido con `toastCloseButton`, `toastExpand`, `toastDuration`,
+  `toastRadius` (sanitización estricta; retro-compatible vía `sanitizeThemeConfig`).
+- Editor con posición, redondez, duración (slider), colores por tipo, botón de cerrar,
+  expandir, y **preview en vivo** (Éxito/Error/Info) sin guardar. El `<Toaster>` del
+  layout consume todo.
 
 ---
 

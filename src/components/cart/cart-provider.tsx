@@ -5,6 +5,7 @@ import type { CartItem, Product, CartContextType } from "@/lib/types"
 import { toast } from "sonner"
 import Image from "next/image"
 import { trackAddToCart } from "@/lib/analytics"
+import { clearCheckoutDraft } from "@/lib/checkout-draft"
 
 export const CartContext = createContext<CartContextType | undefined>(undefined)
 
@@ -143,8 +144,15 @@ export function CartProvider({ children }: CartProviderProps) {
   )
 
   const clearCart = useCallback(() => {
+    // Low-level state mutation only. Any user-facing feedback belongs at the
+    // call site (e.g. the cart page shows "Carrito vaciado con éxito"); the
+    // payment flow clears the cart silently. Toasting here double-fired it -
+    // once from the card form on approval and again from the confirmation
+    // page's poller (initialStatus=PAID).
     setItems([])
-    toast.info("Carrito vaciado.")
+    // An emptied cart means the checkout is over (payment succeeded or the
+    // customer cleared it), so the saved in-progress checkout draft is stale.
+    clearCheckoutDraft()
   }, [])
 
   const getItemCount = useCallback(() => {

@@ -361,6 +361,14 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
     })
   }
 
+  // Single three-way choice for how toasts are colored, derived from the two
+  // stored flags so the UI stays clear (theme / vivid preset / custom).
+  const colorMode: "tema" | "vivos" | "custom" = form.toastCustomColors
+    ? "custom"
+    : form.toastRichColors
+      ? "vivos"
+      : "tema"
+
   return (
     <SectionCard
       icon={Palette}
@@ -574,13 +582,25 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
                 />
               </div>
 
-              <div className="space-y-2 border-t border-slate-100 pt-2">
-                <Toggle
-                  label="Colores personalizados"
-                  checked={form.toastCustomColors}
-                  onChange={(v) => set("toastCustomColors", v)}
+              <div className="space-y-3 border-t border-slate-100 pt-2">
+                <Segmented
+                  label="Estilo de color"
+                  value={colorMode}
+                  onChange={(m) => {
+                    if (m === "custom") set("toastCustomColors", true)
+                    else {
+                      set("toastCustomColors", false)
+                      set("toastRichColors", m === "vivos")
+                    }
+                  }}
+                  options={[
+                    { value: "tema", label: "Tema" },
+                    { value: "vivos", label: "Vivos" },
+                    { value: "custom", label: "Personalizado" },
+                  ]}
                 />
-                {form.toastCustomColors ? (
+
+                {colorMode === "custom" && (
                   <div className="space-y-2 pl-0.5">
                     <div className="text-[11px] font-semibold text-slate-500">
                       Normal (por defecto)
@@ -605,7 +625,7 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
                     />
 
                     <Toggle
-                      label="Colores por tipo (éxito/error/info)"
+                      label="Un color por tipo (éxito/error/info)"
                       checked={form.toastPerType}
                       onChange={(v) => set("toastPerType", v)}
                     />
@@ -637,29 +657,27 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
                         </div>
                       ))}
                   </div>
-                ) : (
-                  <Toggle
-                    label="Colores por tipo (verde/rojo/azul)"
-                    checked={form.toastRichColors}
-                    onChange={(v) => set("toastRichColors", v)}
-                  />
                 )}
-                <Toggle
-                  label="Botón de cerrar (×)"
-                  checked={form.toastCloseButton}
-                  onChange={(v) => set("toastCloseButton", v)}
-                />
-                <Toggle
-                  label="Expandir apiladas"
-                  checked={form.toastExpand}
-                  onChange={(v) => set("toastExpand", v)}
-                />
+
+                <div className="space-y-2 pt-1">
+                  <Toggle
+                    label="Botón de cerrar (×)"
+                    checked={form.toastCloseButton}
+                    onChange={(v) => set("toastCloseButton", v)}
+                  />
+                  <Toggle
+                    label="Expandir apiladas"
+                    checked={form.toastExpand}
+                    onChange={(v) => set("toastExpand", v)}
+                  />
+                </div>
               </div>
 
               <p className="text-[11px] leading-snug text-slate-400">
-                Los botones de arriba (Éxito/Error/Info) prueban posición, redondez, duración,
-                cierre y colores personalizados al instante. “Colores por tipo” y “Expandir
-                apiladas” se aplican al guardar y recargar.
+                <strong className="font-medium text-slate-500">Estilo de color:</strong> Tema (usa
+                los colores del sitio) · Vivos (verde/rojo/azul) · Personalizado (eliges tú). Los
+                botones Éxito/Error/Info prueban todo al instante; “Vivos” y “Expandir apiladas” se
+                aplican al guardar y recargar.
               </p>
             </div>
           </div>

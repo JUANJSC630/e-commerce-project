@@ -79,6 +79,14 @@ export interface ThemeOptions {
   toastPosition: ToastPosition
   /** Sonner's per-type accent colors */
   toastRichColors: boolean
+  /** Show the × dismiss button on every toast */
+  toastCloseButton: boolean
+  /** Expand stacked toasts by default instead of collapsing them into a pile */
+  toastExpand: boolean
+  /** How long a toast stays on screen, in seconds (1–30) */
+  toastDuration: number
+  /** Corner radius of toasts (rem/px/em) */
+  toastRadius: string
   /** Product card density across listing grids */
   cardSize: CardSize
 }
@@ -90,6 +98,10 @@ export const THEME_OPTION_DEFAULTS: ThemeOptions = {
   bannerStyle: "solid",
   toastPosition: "top-right",
   toastRichColors: true,
+  toastCloseButton: true,
+  toastExpand: false,
+  toastDuration: 4,
+  toastRadius: "0.5rem",
   cardSize: "medium",
 }
 
@@ -320,6 +332,12 @@ const oneOf = <T extends readonly string[]>(
   fallback: T[number],
 ): T[number] => (allowed.includes(value as T[number]) ? (value as T[number]) : fallback)
 
+/** Coerce to an integer within [min, max], falling back when not a finite number. */
+const clampNumber = (value: unknown, min: number, max: number, fallback: number): number => {
+  const n = typeof value === "number" ? value : Number(value)
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : fallback
+}
+
 /** Coerce arbitrary input into safe ThemeOptions (colors validated, enums clamped). */
 export function sanitizeThemeOptions(
   input: Partial<Record<keyof ThemeOptions, unknown>>,
@@ -336,6 +354,18 @@ export function sanitizeThemeOptions(
       typeof input.toastRichColors === "boolean"
         ? input.toastRichColors
         : THEME_OPTION_DEFAULTS.toastRichColors,
+    toastCloseButton:
+      typeof input.toastCloseButton === "boolean"
+        ? input.toastCloseButton
+        : THEME_OPTION_DEFAULTS.toastCloseButton,
+    toastExpand:
+      typeof input.toastExpand === "boolean"
+        ? input.toastExpand
+        : THEME_OPTION_DEFAULTS.toastExpand,
+    toastDuration: clampNumber(input.toastDuration, 1, 30, THEME_OPTION_DEFAULTS.toastDuration),
+    toastRadius: isValidRadius(input.toastRadius)
+      ? (input.toastRadius as string)
+      : THEME_OPTION_DEFAULTS.toastRadius,
     cardSize: oneOf(input.cardSize, CARD_SIZES, THEME_OPTION_DEFAULTS.cardSize),
   }
 }

@@ -30,6 +30,15 @@ const TOAST_POSITION_LABELS: Record<(typeof TOAST_POSITIONS)[number], string> = 
   "bottom-right": "Abajo derecha",
 }
 
+const TOAST_RADIUS_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+  { value: "0px", label: "Recto" },
+  { value: "0.25rem", label: "Sutil" },
+  { value: "0.5rem", label: "Medio" },
+  { value: "0.75rem", label: "Redondeado" },
+  { value: "1rem", label: "Muy redondeado" },
+  { value: "1.5rem", label: "Píldora" },
+]
+
 // ─── Two-option segmented control ─────────────────────────────────────────────
 
 function Segmented<T extends string>({
@@ -309,6 +318,23 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
     })
   }
 
+  // Live preview of the (unsaved) toast look. Position, duration, close button
+  // and radius are per-call overridable, so they show instantly; rich colors and
+  // expand are Toaster-level and only take effect once saved.
+  function previewToast(kind: "success" | "error" | "info") {
+    const messages = {
+      success: "Cambios guardados con éxito",
+      error: "Algo salió mal, intenta de nuevo",
+      info: "Así se verán tus notificaciones",
+    } as const
+    toast[kind](messages[kind], {
+      position: form.toastPosition,
+      duration: form.toastDuration * 1000,
+      closeButton: form.toastCloseButton,
+      style: { borderRadius: form.toastRadius },
+    })
+  }
+
   return (
     <SectionCard
       icon={Palette}
@@ -433,46 +459,118 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
                 { value: "large", label: "Grandes" },
               ]}
             />
-            <div>
-              <div className="flex items-end justify-between gap-2 mb-1">
-                <label className="block text-xs font-medium text-slate-600">
-                  Posición de las notificaciones
-                </label>
-                <button
-                  type="button"
-                  onClick={() =>
-                    toast.success("Así se verán tus notificaciones", {
-                      position: form.toastPosition,
-                    })
-                  }
-                  className="text-[11px] font-medium text-indigo-600 hover:text-indigo-700"
-                >
-                  Probar →
-                </button>
+            <div className="space-y-3 rounded-lg border border-slate-200 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Notificaciones (toasts)
+                </h4>
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => previewToast("success")}
+                    className="rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100"
+                  >
+                    Éxito
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => previewToast("error")}
+                    className="rounded-md bg-red-50 px-2 py-1 text-[11px] font-medium text-red-700 hover:bg-red-100"
+                  >
+                    Error
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => previewToast("info")}
+                    className="rounded-md bg-indigo-50 px-2 py-1 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100"
+                  >
+                    Info
+                  </button>
+                </div>
               </div>
-              <select
-                value={form.toastPosition}
-                onChange={(e) =>
-                  set("toastPosition", e.target.value as ThemeConfig["toastPosition"])
-                }
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
-              >
-                {TOAST_POSITIONS.map((p) => (
-                  <option key={p} value={p}>
-                    {TOAST_POSITION_LABELS[p]}
-                  </option>
-                ))}
-              </select>
-              <ToastPositionPreview
-                position={form.toastPosition}
-                richColors={form.toastRichColors}
-              />
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">Posición</label>
+                <select
+                  value={form.toastPosition}
+                  onChange={(e) =>
+                    set("toastPosition", e.target.value as ThemeConfig["toastPosition"])
+                  }
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+                >
+                  {TOAST_POSITIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {TOAST_POSITION_LABELS[p]}
+                    </option>
+                  ))}
+                </select>
+                <ToastPositionPreview
+                  position={form.toastPosition}
+                  richColors={form.toastRichColors}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  Redondez de las esquinas
+                </label>
+                <select
+                  value={form.toastRadius}
+                  onChange={(e) => set("toastRadius", e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+                >
+                  {TOAST_RADIUS_OPTIONS.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="text-xs font-medium text-slate-600" htmlFor="toast-duration">
+                    Duración en pantalla
+                  </label>
+                  <span className="text-xs font-semibold text-slate-700">
+                    {form.toastDuration}s
+                  </span>
+                </div>
+                <input
+                  id="toast-duration"
+                  type="range"
+                  min={1}
+                  max={15}
+                  step={1}
+                  value={form.toastDuration}
+                  onChange={(e) => set("toastDuration", Number(e.target.value))}
+                  className="w-full accent-indigo-600"
+                />
+              </div>
+
+              <div className="space-y-2 border-t border-slate-100 pt-2">
+                <Toggle
+                  label="Colores por tipo"
+                  checked={form.toastRichColors}
+                  onChange={(v) => set("toastRichColors", v)}
+                />
+                <Toggle
+                  label="Botón de cerrar (×)"
+                  checked={form.toastCloseButton}
+                  onChange={(v) => set("toastCloseButton", v)}
+                />
+                <Toggle
+                  label="Expandir apiladas"
+                  checked={form.toastExpand}
+                  onChange={(v) => set("toastExpand", v)}
+                />
+              </div>
+
+              <p className="text-[11px] leading-snug text-slate-400">
+                Los botones de arriba prueban posición, redondez, duración y cierre al instante.
+                “Colores por tipo” y “Expandir apiladas” se ven al guardar y recargar.
+              </p>
             </div>
-            <Toggle
-              label="Notificaciones con colores por tipo"
-              checked={form.toastRichColors}
-              onChange={(v) => set("toastRichColors", v)}
-            />
           </div>
         </div>
 

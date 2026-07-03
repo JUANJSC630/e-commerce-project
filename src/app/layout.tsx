@@ -41,7 +41,14 @@ export default async function RootLayout({
       <body>
         <RadixThemeProvider>
           {children}
-          <Toaster position={theme.toastPosition} richColors={theme.toastRichColors} closeButton />
+          <Toaster
+            position={theme.toastPosition}
+            richColors={theme.toastRichColors}
+            closeButton={theme.toastCloseButton}
+            expand={theme.toastExpand}
+            duration={theme.toastDuration * 1000}
+            toastOptions={{ style: { borderRadius: theme.toastRadius } }}
+          />
         </RadixThemeProvider>
       </body>
     </html>

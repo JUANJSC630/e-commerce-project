@@ -3710,11 +3710,19 @@ funciones serverless (cold starts, duración, concurrencia).
 
 ### 19.4 — Config completa de apariencia de toasts (admin → Tema)
 
-- `ThemeOptions` extendido con `toastCloseButton`, `toastExpand`, `toastDuration`,
-  `toastRadius` (sanitización estricta; retro-compatible vía `sanitizeThemeConfig`).
-- Editor con posición, redondez, duración (slider), colores por tipo, botón de cerrar,
-  expandir, y **preview en vivo** (Éxito/Error/Info) sin guardar. El `<Toaster>` del
-  layout consume todo.
+- `ThemeOptions` extendido con comportamiento (`toastCloseButton`, `toastExpand`,
+  `toastDuration`, `toastRadius`) y **colores** (`toastCustomColors` + normal
+  `toastBg/Text/Border`; modo por tipo `toastPerType` + `toastSuccess/Error/Info` ×
+  bg/text/border). Sanitización estricta con helper `color()`; retro-compatible vía
+  `sanitizeThemeConfig`. Sin riesgo de inyección CSS (`isValidColor`/`isValidRadius`).
+- Editor con **selector único "Estilo de color"** (Tema / Vivos / Personalizado) que
+  reemplazó dos toggles confusos; posición (mini-mapa), redondez, duración (slider),
+  botón de cerrar, expandir. En Personalizado: colores Normal + opción "por tipo"
+  (Éxito/Error/Info). **Preview en vivo** (Éxito/Error/Info) que refleja todos los
+  ajustes sin guardar.
+- `sonner.tsx` acepta `normalBg/Text/Border` + `vars` (CSS vars por tipo
+  `--success/-error/-info-*`); `layout.tsx` elige el modo y activa rich colors cuando
+  corresponde. 5 commits adicionales de esta iteración de toasts.
 
 ---
 

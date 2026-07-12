@@ -15,15 +15,11 @@ import bcrypt from "bcryptjs"
 
 import { productsSeed } from "./products-data"
 import { categoriesSeed } from "./categories-data"
+import { poolConfig } from "../src/lib/db-connection"
 
 const { Pool } = pg
 
-const adapter = new PrismaPg(
-  new Pool({
-    connectionString: process.env.DATABASE_URL?.replace(/sslmode=require/, "sslmode=verify-full"),
-    ssl: { rejectUnauthorized: true },
-  }),
-)
+const adapter = new PrismaPg(new Pool(poolConfig()))
 const prisma = new PrismaClient({ adapter })
 
 // ─── Permission definitions ────────────────────────────────────────────────────

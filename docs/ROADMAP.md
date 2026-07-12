@@ -3797,7 +3797,28 @@ funciones serverless (cold starts, duración, concurrencia).
 - Si se despliega en Vercel, el `vercel.json` ya trae el cron: hay que usar **uno de
   los dos**, no ambos (la idempotencia evita correos duplicados, pero es redundante).
 
-### 20.6 — Pendiente (bloqueante para escribirle a clientes)
+### 20.6 — Separación de entornos: DB local para dev, la nube para producción ✅
+
+> Hasta ahora **desarrollo apuntaba a la base de la nube**: cada prueba local escribía
+> en la que iba a ser la base de producción. De ahí que acumulara 34 pedidos falsos.
+
+- **Desarrollo → Postgres local** (`postgresql@16` por Homebrew, base `dulceinfancia_dev`),
+  con las 23 migraciones aplicadas y sembrada (roles, admin, 16 productos, 4 categorías).
+  `DATABASE_URL` en `.env`.
+- **Producción → Prisma Postgres** (`pooled.db.prisma.io`). Su URL vive en
+  `.env.production.local` (fuera de git) y en las variables del hosting.
+- `src/lib/db-connection.ts` (nuevo): `poolConfig()` decide el TLS según el destino —
+  local sin TLS, gestionada con `sslmode=verify-full` + verificación del certificado.
+  Antes se forzaba TLS siempre, lo que hacía **imposible** usar un Postgres local.
+  Lo comparten la app y el seed, que duplicaban la configuración.
+- **Limpieza de la base de producción** (2026-07-12): borrados 34 pedidos de prueba,
+  37 registros de pago, 39 líneas de pedido, 1 favorito y 3 usuarios de prueba.
+  Conservados catálogo (16), categorías, roles y los 5 ajustes.
+- **Rotada la contraseña del super-admin.** Venía del seed (`Admin123!`), que está
+  **publicada en el repositorio**: cualquiera con acceso al GitHub podía entrar al
+  panel. Ahora es una clave fuerte fuera del código (ver 20.3 del seed).
+
+### 20.7 — Pendiente (bloqueante para escribirle a clientes)
 
 - **Verificar un dominio en Resend.** La cuenta hoy no tiene ninguno, así que Resend
   solo entrega al correo dueño de la cuenta (`juansc0630@gmail.com`) y rechaza con 403

@@ -76,16 +76,22 @@ function itemsTable(order: OrderConfirmationDTO, locale: PriceLocale): string {
     })
     .join("")
 
-  const totalsRow = (label: string, value: string, bold = false) =>
+  const totalsRow = (label: string, value: string, bold = false, color = COLORS.ink) =>
     `<tr>
       <td style="padding:6px 0;color:${bold ? COLORS.ink : COLORS.muted};${bold ? "font-weight:700;" : ""}">${label}</td>
-      <td style="padding:6px 0;text-align:right;color:${COLORS.ink};${bold ? "font-weight:700;" : ""}white-space:nowrap;">${value}</td>
+      <td style="padding:6px 0;text-align:right;color:${color};${bold ? "font-weight:700;" : ""}white-space:nowrap;">${value}</td>
     </tr>`
+
+  // Mismo desglose que `OrderSummary` en la app: sin las líneas de descuento e IVA
+  // el total no cuadraría con el subtotal y el cliente vería una diferencia sin explicar.
+  const discountLabel = `Descuento${order.discountCode ? ` (${order.discountCode})` : ""}`
 
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;font-size:14px;">
     ${rows}
     ${totalsRow("Subtotal", formatPrice(order.subtotal, locale))}
+    ${order.discountAmount > 0 ? totalsRow(discountLabel, `−${formatPrice(order.discountAmount, locale)}`, false, COLORS.accent) : ""}
     ${totalsRow("Envío", order.shippingCost === 0 ? "Gratis" : formatPrice(order.shippingCost, locale))}
+    ${order.taxAmount > 0 ? totalsRow("IVA", formatPrice(order.taxAmount, locale)) : ""}
     ${totalsRow("Total", formatPrice(order.total, locale), true)}
   </table>`
 }

@@ -115,13 +115,20 @@ async function main() {
   const superAdminRole = await prisma.role.findUnique({ where: { slug: "super_admin" } })
   if (!superAdminRole) throw new Error("super_admin role not found")
 
-  const hashedPassword = await bcrypt.hash("Admin123!", 12)
+  // Las credenciales por defecto son solo para desarrollo. Al sembrar una base de
+  // producción hay que pasar SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD: si no, la tienda
+  // nacería con un super-admin de contraseña pública y conocida.
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@dulceinfancia.com"
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin123!"
+  const usingDefaults = !process.env.SEED_ADMIN_PASSWORD
+
+  const hashedPassword = await bcrypt.hash(adminPassword, 12)
 
   await prisma.user.upsert({
-    where: { email: "admin@dulceinfancia.com" },
+    where: { email: adminEmail },
     update: {},
     create: {
-      email: "admin@dulceinfancia.com",
+      email: adminEmail,
       password: hashedPassword,
       name: "Administrador",
       roleId: superAdminRole.id,
@@ -129,7 +136,12 @@ async function main() {
     },
   })
 
-  console.log("  ✓ admin@dulceinfancia.com  (password: Admin123!)")
+  console.log(
+    `  ✓ ${adminEmail}${usingDefaults ? "  (password: Admin123! - SOLO DESARROLLO)" : ""}`,
+  )
+  if (usingDefaults) {
+    console.warn("  ⚠️  Contraseña por defecto. En producción define SEED_ADMIN_PASSWORD.")
+  }
 
   console.log("Seeding products…")
 

@@ -2858,8 +2858,17 @@ Archivos existentes relacionados: [listar].
       enruta a success/fallido y restock en rechazo vía el mismo motor validado con
       tarjetas. **PSE queda code-complete; validar en producción real homologada.**
       **Runbook paso a paso: [`docs/MERCADOPAGO-E2E.md`](MERCADOPAGO-E2E.md)** (Bloque 10)
-- [ ] `RESEND_API_KEY` real + verificar entrega de los 5 emails. (Bloque 11)
-- [ ] `CRON_SECRET` en Vercel para activar el recordatorio de pago abandonado.
+- [x] Los **5 emails verificados** (2026-07-12) con `yarn verify:emails`: renderizan y
+      se entregan con la marca real leída de la DB. Ver Bloque 20.
+- [ ] **Verificar el dominio en Resend** (bloqueante para enviar a clientes): hoy la
+      cuenta no tiene ninguno (`resend.com/domains` solo lista un dominio ajeno en
+      estado `failed`), así que Resend solo entrega al correo dueño de la cuenta
+      (`juansc0630@gmail.com`). Requiere comprar `dulceinfancia.co` y publicar SPF/DKIM.
+      Hasta entonces, en local se usa Mailpit (`SMTP_HOST`). (Bloque 11)
+- [x] **Cron de pago abandonado verificado** (2026-07-12) con `yarn verify:cron`: 7/7,
+      falla cerrado, envía, marca `reminderSentAt` y es idempotente. Ver Bloque 20.
+- [ ] Definir `CRON_SECRET` en el hosting y **enganchar el cron a una URL pública**
+      (cron-job.org o Vercel Cron). Depende del deploy.
 
 **Importante (no bloqueante):**
 
@@ -3723,6 +3732,78 @@ funciones serverless (cold starts, duración, concurrencia).
 - `sonner.tsx` acepta `normalBg/Text/Border` + `vars` (CSS vars por tipo
   `--success/-error/-info-*`); `layout.tsx` elige el modo y activa rich colors cuando
   corresponde. 5 commits adicionales de esta iteración de toasts.
+
+---
+
+## 📧 Bloque 20 — Verificación de los emails transaccionales (2026-07-12)
+
+> Cierra el pendiente "verificar entrega de los 5 emails" del Bloque 11. El código
+> ya estaba completo (5/5 implementados y cableados); lo que faltaba era **probarlo**
+> y no había forma de hacerlo sin un dominio verificado.
+
+### 20.1 — Transporte SMTP para desarrollo
+
+- `src/lib/email/client.ts` ahora tiene **dos backends**: SMTP (`SMTP_HOST`) y Resend
+  (`RESEND_API_KEY`). **SMTP gana cuando está configurado**, para que un `.env.local`
+  de desarrollo nunca dispare correos reales por accidente aunque tenga la API key.
+- En local se usa **Mailpit** (viene con Herd, `127.0.0.1:1025`, bandeja en
+  http://localhost:8025): acepta cualquier remitente y destinatario y no entrega nada
+  al mundo real. Nueva dependencia: `nodemailer`.
+- Se mantiene la semántica best-effort: un fallo de entrega nunca rompe el flujo que
+  lo disparó (crear pedido, confirmar pago).
+
+### 20.2 — Script de verificación
+
+- `yarn verify:emails [destinatario]` (`scripts/verify-emails.mts`) envía los 5 emails
+  usando las piezas de producción: templates reales, transporte real y **marca/locale
+  leídos de la DB**. Solo el pedido es simulado (un DTO de ejemplo), para no ensuciar
+  la base. Con `SMTP_HOST` van a Mailpit; al comentarlo, prueban la entrega real.
+- No llama a los `send*Email()` de `@/lib/email` porque leen los ajustes con
+  `loadAllSettings`, envuelto en `unstable_cache` de Next, que revienta fuera del
+  runtime del servidor (`Invariant: incrementalCache missing`). El script replica ese
+  merge sin la caché; lo único que queda sin ejercitar es el guard `if (!customerEmail)`.
+
+### 20.3 — Bug encontrado y corregido: el total no cuadraba
+
+- `itemsTable()` en `src/lib/email/templates.ts` pintaba **Subtotal + Envío + Total**,
+  pero **nunca las líneas de descuento ni de IVA**, aunque ambos ya existen en el DTO
+  (cupones del Bloque 15 B.1, IVA del B.3). Un pedido con cupón le mostraba al cliente
+  `Subtotal $189.000 + Envío $12.000` y luego `Total $182.100`: **$18.900 de diferencia
+  sin explicación**, en 4 de los 5 emails.
+- Corregido replicando el desglose de `OrderSummary`: Subtotal → Descuento (con el
+  código, en negativo) → Envío → IVA → Total. Verificado: 189.000 − 18.900 + 12.000 =
+  182.100 ✅.
+
+### 20.4 — Cron de pago abandonado verificado ✅
+
+- `yarn verify:cron` (`scripts/verify-cron.mts`) golpea el endpoint real
+  `GET /api/cron/abandoned-orders` igual que lo hará el llamador en producción
+  (mismo método y cabecera `Authorization: Bearer <CRON_SECRET>`). **7/7 en verde**:
+  falla cerrado sin cabecera y con secreto malo (401), con el correcto envía el
+  recordatorio y marca `reminderSentAt`, el correo llega a Mailpit, y una segunda
+  corrida devuelve `reminded: 0` (idempotente, nadie recibe el email dos veces).
+- Crea su propio pedido de prueba (PENDING, 2 días, dentro de la ventana 24h–7d) y
+  lo borra al final: no toca pedidos reales.
+- `CRON_SECRET` generado y puesto en `.env.local`. El mismo valor debe ir en el
+  hosting y en cron-job.org.
+
+### 20.5 — Pendiente: enganchar cron-job.org (necesita URL pública)
+
+- El endpoint está listo y probado, pero **cron-job.org solo puede llamar una URL
+  pública** y la app aún no está desplegada. Se configura después del deploy:
+  - **URL**: `https://<dominio>/api/cron/abandoned-orders`
+  - **Método**: GET · **Schedule**: diario (el `vercel.json` usa `0 15 * * *`)
+  - **Header**: `Authorization: Bearer <CRON_SECRET>`
+- Si se despliega en Vercel, el `vercel.json` ya trae el cron: hay que usar **uno de
+  los dos**, no ambos (la idempotencia evita correos duplicados, pero es redundante).
+
+### 20.6 — Pendiente (bloqueante para escribirle a clientes)
+
+- **Verificar un dominio en Resend.** La cuenta hoy no tiene ninguno, así que Resend
+  solo entrega al correo dueño de la cuenta (`juansc0630@gmail.com`) y rechaza con 403
+  cualquier otro destinatario. Requiere comprar `dulceinfancia.co`, agregarlo en
+  `resend.com/domains` y publicar los registros SPF/DKIM. Después: quitar `SMTP_HOST`
+  de producción y dejar `EMAIL_FROM=noreply@dulceinfancia.co`.
 
 ---
 

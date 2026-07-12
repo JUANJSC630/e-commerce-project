@@ -3787,15 +3787,32 @@ funciones serverless (cold starts, duración, concurrencia).
 - `CRON_SECRET` generado y puesto en `.env.local`. El mismo valor debe ir en el
   hosting y en cron-job.org.
 
-### 20.5 — Pendiente: enganchar cron-job.org (necesita URL pública)
+### 20.5 — Deploy en Vercel ✅ (2026-07-12)
 
-- El endpoint está listo y probado, pero **cron-job.org solo puede llamar una URL
-  pública** y la app aún no está desplegada. Se configura después del deploy:
-  - **URL**: `https://<dominio>/api/cron/abandoned-orders`
-  - **Método**: GET · **Schedule**: diario (el `vercel.json` usa `0 15 * * *`)
-  - **Header**: `Authorization: Bearer <CRON_SECRET>`
-- Si se despliega en Vercel, el `vercel.json` ya trae el cron: hay que usar **uno de
-  los dos**, no ambos (la idempotencia evita correos duplicados, pero es redundante).
+**La tienda está en línea: https://e-commerce-project-tau-lime.vercel.app**
+
+- Proyecto `e-commerce-project` (plan Hobby, Node 24). 12 variables en el entorno
+  Production. **`SMTP_HOST` NO se subió a propósito**: con ella, producción intentaría
+  enviar los correos al Mailpit del portátil. Sin ella, el transporte cae en Resend.
+- `NEXTAUTH_SECRET` nuevo, distinto al de desarrollo. `NEXTAUTH_URL` y
+  `NEXT_PUBLIC_APP_URL` apuntan al dominio de arriba (la segunda se compila dentro
+  del bundle, por eso hubo que desplegar dos veces: una para descubrir la URL).
+- **Bloqueo encontrado**: el primer deploy compiló pero Vercel lo abortó con
+  *"Vulnerable version of Next.js detected"*. La plataforma rechaza versiones de Next
+  con CVE conocido. Resuelto subiendo **Next 15.3.3 → 15.5.20** (última de la línea 15,
+  sin cambios de ruptura; no se saltó a la 16).
+- **Otro bloqueo**: faltaba `prisma generate` en `postinstall`. En local pasaba
+  inadvertido porque el cliente ya estaba generado; en un hosting limpio el build
+  habría fallado.
+- Humo verificado en producción: home 200, catálogo servido desde la base de la nube,
+  cron 401 sin cabecera y `{"reminded":0}` con el `CRON_SECRET` real.
+
+**El cron ya está activo vía `vercel.json`** (diario, `0 15 * * *`; Vercel manda solo
+la cabecera `Authorization: Bearer $CRON_SECRET`). Si se prefiere cron-job.org por sus
+logs y reintentos, la config es: GET a
+`https://e-commerce-project-tau-lime.vercel.app/api/cron/abandoned-orders` con la
+cabecera `Authorization: Bearer <CRON_SECRET>`. Da igual si se dispara dos veces: es
+idempotente.
 
 ### 20.6 — Separación de entornos: DB local para dev, la nube para producción ✅
 

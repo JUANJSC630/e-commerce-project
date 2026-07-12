@@ -20,6 +20,7 @@
     "verify:admin-guard": "node scripts/verify-admin-guard.mjs",
     "verify:payments": "node scripts/verify-payments.mjs",
     "verify:emails": "tsx --conditions=react-server scripts/verify-emails.mts",
+    "verify:cron": "tsx scripts/verify-cron.mts",
     "db:clean-images": "tsx scripts/clean-broken-images.ts",
     "db:seed-blog": "tsx scripts/seed-blog.ts"
   },

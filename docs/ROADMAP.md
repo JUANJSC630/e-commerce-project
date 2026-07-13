@@ -1,13 +1,53 @@
 # Roadmap - Dulce Infancia Shop
 
-> Actualizado: 2026-07-03 (Bloque 19 - pulido UI/UX checkout+pagos y config de toasts; E2E pagos A/B/C ✅ (PSE bloqueado por sandbox MP); Bloque 18 - no reescribir en Bagisto. Backlog: emails (Bloque 11, 4/5) + deploy, Bloque 16 escalabilidad, Bloque 17 responsive) | Score técnico frontend: **20/20** ✅ | Build prod ✅ 94/94
+> Actualizado: 2026-07-12 (Bloque 20 - emails y cron verificados, entornos separados, **deploy en Vercel ✅**) | Score técnico frontend: **20/20** ✅ | Build prod ✅
 > **Objetivo final**: e-commerce 100% administrable - productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
+
+---
+
+## 🔖 POR DÓNDE RETOMAR (leer esto primero)
+
+**La tienda está desplegada y funcionando: https://e-commerce-project-tau-lime.vercel.app**
+
+Todo el producto está construido y verificado. **Lo que falta NO es código**, son dos
+trámites externos. Hasta que se hagan, la tienda no puede cobrar ni escribirle a un cliente:
+
+| # | Bloqueante | Qué hay que hacer | Después, en el código |
+| - | ---------- | ----------------- | --------------------- |
+| 1 | **Dominio propio** | Comprar `dulceinfancia.co`, agregarlo en `resend.com/domains` y publicar los registros SPF/DKIM en el DNS | Cambiar `EMAIL_FROM` en Vercel de `onboarding@resend.dev` a `noreply@dulceinfancia.co`. Sin dominio verificado, **Resend solo entrega al correo dueño de la cuenta** (`juansc0630@gmail.com`) y rechaza a cualquier cliente con 403 |
+| 2 | **MercadoPago producción** | Sacar el access token y la public key de producción del panel de MP (hoy Vercel tiene las `TEST-`) | Actualizar `MERCADOPAGO_ACCESS_TOKEN` y `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` en Vercel. Recién ahí se puede **validar PSE**, que el sandbox nunca dejó probar (ver `MERCADOPAGO-E2E.md`, Caso D) |
+
+**Lo primero al abrir el proyecto** (desarrollo corre contra Postgres **local**, no la nube):
+
+```bash
+brew services start postgresql@16     # la base de desarrollo: dulceinfancia_dev
+yarn dev                              # http://localhost:3000
+# admin local: admin@dulceinfancia.com / Admin123!   (en producción la clave es otra)
+```
+
+Los correos en local **no salen a internet**: los captura Mailpit (viene con Herd).
+Bandeja en **http://localhost:8025**.
+
+```bash
+yarn verify:emails tu@correo.com   # envía los 5 transaccionales
+yarn verify:cron                   # E2E del recordatorio de pago abandonado (requiere yarn dev)
+```
+
+**Siguiente trabajo de valor, ya sin bloqueos** (por orden sugerido):
+1. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda.
+2. **Analytics (Bloque 12)** — GA4 + Meta Pixel, 0% hecho. Sin esto no se puede medir la conversión.
+3. **Bug 13.5** — el login no reclama los pedidos hechos como invitado (el registro sí).
+4. Post-lanzamiento: Bloque 16 (escalabilidad), Bloque 17 (responsive), Bloque 18 (patrones Bagisto, empezar por dinero como centavos).
+
+Detalle completo de lo hecho en esta sesión: **Bloque 20**, al final del documento.
 
 ---
 
 ## Estado General
 
-El **frontend y el panel de administración están construidos**. Flujo completo: home → categoría → detalle → carrito → checkout + dashboard admin multi-rol con CRUD de productos, pedidos, usuarios, roles y configuración. **El storefront lee productos reales desde Prisma**, el admin sube imágenes con UploadThing y el **checkout guarda pedidos reales** (transaccional, con descuento de stock y número `DI-2026-001`). Lo que falta para cerrar el flujo: **pagos reales** (MercadoPago) y emails transaccionales.
+El **producto está completo y desplegado**. Flujo completo: home → categoría → detalle → carrito → checkout → pago → emails, más un dashboard admin multi-rol con CRUD de productos, pedidos, usuarios, roles y configuración. El storefront lee productos reales desde Prisma, el admin sube imágenes con UploadThing, el checkout guarda pedidos reales (transaccional, con descuento de stock y número `DI-2026-001`), **los pagos con MercadoPago están verificados E2E** (tarjetas A/B/C; PSE code-complete, pendiente de credenciales de producción) y **los 5 emails transaccionales y el cron de pago abandonado están verificados**.
+
+Lo único que falta es externo al código: **dominio propio** (para que Resend entregue a clientes) y **credenciales de producción de MercadoPago** (para cobrar dinero real). Ver "Por dónde retomar" arriba.
 
 ---
 
@@ -16,7 +56,8 @@ El **frontend y el panel de administración están construidos**. Flujo completo
 | Decisión      | Elegida                                   | Razón                                                                   |
 | ------------- | ----------------------------------------- | ----------------------------------------------------------------------- |
 | Stack backend | **Custom: Next.js + Prisma + PostgreSQL** | Máximo control, todo en un solo proyecto, sin dependencias externas     |
-| Base de datos | **Prisma Postgres** (pooled)              | Prisma v7 con driver adapters, `PrismaPg` + `pg.Pool`, SSL verify-full  |
+| Base de datos | **Postgres local en dev / Prisma Postgres en prod** | Prisma v7 con driver adapters (`PrismaPg` + `pg.Pool`). `src/lib/db-connection.ts` elige el TLS: local sin TLS, gestionada con `verify-full` |
+| Hosting       | **Vercel** (Hobby, Node 24)               | Deploy desde el CLI; cron diario vía `vercel.json`                     |
 | Autenticación | **NextAuth.js v4** (JWT + Credentials)    | Flexible, integrado con Prisma, roles y permisos custom                 |
 | Imágenes      | **UploadThing** (v7, `UPLOADTHING_TOKEN`) | Upload directo desde el admin, CDN propio, router con auth por permisos |
 | Panel admin   | **Custom en `/admin`** (Next.js)          | Dashboard completo propio, no Sanity Studio                             |
@@ -2867,8 +2908,13 @@ Archivos existentes relacionados: [listar].
       Hasta entonces, en local se usa Mailpit (`SMTP_HOST`). (Bloque 11)
 - [x] **Cron de pago abandonado verificado** (2026-07-12) con `yarn verify:cron`: 7/7,
       falla cerrado, envía, marca `reminderSentAt` y es idempotente. Ver Bloque 20.
-- [ ] Definir `CRON_SECRET` en el hosting y **enganchar el cron a una URL pública**
-      (cron-job.org o Vercel Cron). Depende del deploy.
+- [x] **`CRON_SECRET` definido en Vercel y cron enganchado** (2026-07-12): el `vercel.json`
+      ya lo dispara a diario (`0 15 * * *`). Verificado contra producción: 401 sin cabecera,
+      `{"reminded":0}` con el secreto real. Ver Bloque 20.
+- [x] **Deploy en producción** (2026-07-12): https://e-commerce-project-tau-lime.vercel.app
+      Ver Bloque 20.
+- [ ] **Credenciales de producción de MercadoPago** (bloqueante para cobrar): Vercel tiene
+      las `TEST-`, así que la tienda aún no cobra dinero real. Al ponerlas, validar PSE.
 
 **Importante (no bloqueante):**
 
@@ -3735,11 +3781,16 @@ funciones serverless (cold starts, duración, concurrencia).
 
 ---
 
-## 📧 Bloque 20 — Verificación de los emails transaccionales (2026-07-12)
+## 🚀 Bloque 20 — Emails, cron, entornos y **deploy a producción** (2026-07-12)
 
-> Cierra el pendiente "verificar entrega de los 5 emails" del Bloque 11. El código
-> ya estaba completo (5/5 implementados y cableados); lo que faltaba era **probarlo**
-> y no había forma de hacerlo sin un dominio verificado.
+> Empezó como "verificar la entrega de los 5 emails" (pendiente del Bloque 11) y
+> terminó dejando **la tienda en línea**. El código de emails ya estaba completo
+> (5/5 implementados y cableados); lo que faltaba era **probarlo**, y no había forma
+> de hacerlo sin un dominio verificado — de ahí el transporte SMTP local. Por el
+> camino aparecieron un bug real en los correos, la mezcla de datos entre desarrollo
+> y producción, y dos trampas que rompían el deploy.
+>
+> **Resumen**: 12 commits. Emails ✅, cron ✅, entornos separados ✅, deploy ✅.
 
 ### 20.1 — Transporte SMTP para desarrollo
 
@@ -3835,13 +3886,20 @@ idempotente.
   **publicada en el repositorio**: cualquiera con acceso al GitHub podía entrar al
   panel. Ahora es una clave fuerte fuera del código (ver 20.3 del seed).
 
-### 20.7 — Pendiente (bloqueante para escribirle a clientes)
+### 20.7 — Lo que queda (ambos son trámites externos, no código)
 
-- **Verificar un dominio en Resend.** La cuenta hoy no tiene ninguno, así que Resend
-  solo entrega al correo dueño de la cuenta (`juansc0630@gmail.com`) y rechaza con 403
-  cualquier otro destinatario. Requiere comprar `dulceinfancia.co`, agregarlo en
-  `resend.com/domains` y publicar los registros SPF/DKIM. Después: quitar `SMTP_HOST`
-  de producción y dejar `EMAIL_FROM=noreply@dulceinfancia.co`.
+1. **Verificar un dominio en Resend** — bloqueante para escribirle a clientes.
+   La cuenta hoy no tiene ninguno, así que Resend solo entrega al correo dueño de la
+   cuenta (`juansc0630@gmail.com`) y rechaza con 403 a cualquier otro destinatario.
+   Requiere comprar `dulceinfancia.co`, agregarlo en `resend.com/domains` y publicar
+   los registros SPF/DKIM en el DNS. Después, en Vercel: cambiar `EMAIL_FROM` de
+   `onboarding@resend.dev` a `noreply@dulceinfancia.co`. (`SMTP_HOST` nunca se subió a
+   producción, así que no hay nada que quitar: allí el transporte ya es Resend.)
+
+2. **Credenciales de producción de MercadoPago** — bloqueante para cobrar dinero real.
+   Vercel tiene las `TEST-`. Al reemplazarlas por las de producción se puede por fin
+   **validar PSE**, que el sandbox de MP nunca permitió probar (`MERCADOPAGO-E2E.md`,
+   Caso D).
 
 ---
 

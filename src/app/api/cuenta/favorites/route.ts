@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth-options"
+import { getSessionUserId } from "@/lib/session"
 import { addFavorite, getFavoriteIds, mergeFavorites, removeFavorite } from "@/lib/favorites"
 
-async function requireUserId(): Promise<string | null> {
-  const session = await getServerSession(authOptions)
-  return session?.user.id ?? null
-}
+const requireUserId = getSessionUserId
 
 export async function GET() {
   const userId = await requireUserId()

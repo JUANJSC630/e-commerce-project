@@ -101,15 +101,26 @@ export const authOptions: NextAuthOptions = {
             role: { select: { id: true, name: true, slug: true, permissions: true } },
           },
         })
-        token.role =
-          !fresh || fresh.status !== "ACTIVE"
-            ? REVOKED_ROLE
-            : {
-                id: fresh.role.id,
-                name: fresh.role.name,
-                slug: fresh.role.slug,
-                permissions: fresh.role.permissions as Permissions,
-              }
+        if (!fresh) {
+          // The user this token points at no longer exists - a deleted account,
+          // or a token minted against a different database (e.g. switching dev
+          // to a local Postgres). Drop the identity, not just the role: keeping
+          // token.id would let the stale token reach userId-keyed writes and
+          // blow up with a foreign-key violation (P2003) instead of a clean 401.
+          // The empty-string sentinel is what getSessionUserId() reads as logged
+          // out (see src/lib/session.ts).
+          token.id = ""
+          token.role = REVOKED_ROLE
+        } else if (fresh.status !== "ACTIVE") {
+          token.role = REVOKED_ROLE
+        } else {
+          token.role = {
+            id: fresh.role.id,
+            name: fresh.role.name,
+            slug: fresh.role.slug,
+            permissions: fresh.role.permissions as Permissions,
+          }
+        }
         token.roleSyncedAt = Date.now()
       }
       return token

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
+import { getSessionUserId } from "@/lib/session"
 import { createReview, ReviewError } from "@/lib/reviews"
 
 type Params = { params: Promise<{ id: string }> }
@@ -11,7 +12,8 @@ type Params = { params: Promise<{ id: string }> }
  */
 export async function POST(request: Request, { params }: Params) {
   const session = await getServerSession(authOptions)
-  if (!session) {
+  const userId = await getSessionUserId()
+  if (!session || !userId) {
     return NextResponse.json({ error: "Inicia sesión para dejar una reseña" }, { status: 401 })
   }
 
@@ -22,7 +24,7 @@ export async function POST(request: Request, { params }: Params) {
   const authorName = session.user.name?.trim() || session.user.email || "Cliente"
 
   try {
-    await createReview({ productId: id, userId: session.user.id, authorName, rating, comment })
+    await createReview({ productId: id, userId, authorName, rating, comment })
     return NextResponse.json({ ok: true }, { status: 201 })
   } catch (err) {
     if (err instanceof ReviewError) {

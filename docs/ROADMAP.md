@@ -3903,4 +3903,34 @@ idempotente.
 
 ---
 
+## Bloque 21 — Hardening de sesión: tokens JWT huérfanos (2026-07-19)
+
+**Síntoma:** al hacer merge de favoritos tras login, `PUT /api/cuenta/favorites`
+devolvía **500** con `Foreign key constraint violated: Favorite_userId_fkey` (P2003).
+
+**Causa raíz:** con `session.strategy = "jwt"`, la cookie sobrevive a la base que la
+firmó. Tras separar dev a un Postgres local, el navegador aún tenía un JWT que apuntaba
+a un `userId` inexistente en esa base. El callback `jwt` ya detectaba al usuario ausente
+(`!fresh`) pero **solo revocaba el rol y conservaba `token.id`**, así que el id huérfano
+llegaba a cualquier escritura con FK a `User` y reventaba. Alcance real: `favorites`,
+`reviews` y `orders` (los tres escriben `userId`); admin/uploadthing ya estaban a salvo
+por permisos.
+
+**Solución (dos capas):**
+1. **Origen** — `src/lib/auth-options.ts`: el callback `jwt` ahora distingue *borrado*
+   (`!fresh` → `token.id = ""`, identidad invalidada) de *desactivado* (existe pero no
+   `ACTIVE` → conserva id, revoca rol). Un token huérfano queda tratado como deslogueado
+   en todas partes.
+2. **Frontera** — `src/lib/session.ts` (nuevo) `getSessionUserId()` mapea el id vacío a
+   `null`. Lo usan `favorites`, `reviews`, `orders` y `password`: ahora responden **401
+   limpio** en vez de 500, incluso dentro de la ventana de re-sync de 5 min.
+
+**Corroborado:** `verify:favorites` E2E 2/2 (registro → merge → favorito logueado) +
+prueba de token forjado a usuario inexistente → 401 `No autorizado`. `type-check` ✅.
+
+> Nota operativa: una cookie huérfana ya emitida deja de crashear, pero para volver a
+> usar la cuenta hay que **cerrar sesión y entrar de nuevo** contra la base local.
+
+---
+
 _Para estándares de calidad y arquitectura de datos ver `STANDARDS.md`. Para visión de negocio ver `PROJECT.md`._

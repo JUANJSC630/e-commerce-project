@@ -7,6 +7,7 @@ import { sendOrderPlacedEmail } from "@/lib/email"
 import { validateShippingData } from "@/lib/validation"
 import type { ShippingData } from "@/lib/validation"
 import { isCustomer } from "@/lib/permissions"
+import { getSessionUserId } from "@/lib/session"
 
 interface OrderRequestBody {
   items?: unknown
@@ -56,8 +57,13 @@ export async function POST(request: Request) {
   const discountCode = typeof body.discountCode === "string" ? body.discountCode : undefined
 
   // Link the order to a logged-in customer so it shows in their history.
+  // getSessionUserId() returns null for an orphaned token (user no longer in
+  // the DB), so those checkouts fall through to a guest order instead of
+  // failing the Order.userId foreign key.
   const session = await getServerSession(authOptions)
-  const userId = session && isCustomer(session.user.role.slug) ? session.user.id : undefined
+  const sessionUserId = await getSessionUserId()
+  const userId =
+    session && sessionUserId && isCustomer(session.user.role.slug) ? sessionUserId : undefined
 
   try {
     const result = await createOrder({ items, customer, paymentMethod, userId, discountCode })

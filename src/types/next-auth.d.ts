@@ -30,6 +30,11 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
+    /**
+     * The user id, or "" once the jwt callback finds the user no longer exists
+     * in the DB (orphaned token). Read it through getSessionUserId(), which maps
+     * the empty sentinel to null so callers treat it as logged out.
+     */
     id: string
     role: {
       id: string

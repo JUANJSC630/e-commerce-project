@@ -3933,4 +3933,26 @@ prueba de token forjado a usuario inexistente → 401 `No autorizado`. `type-che
 
 ---
 
+## Bloque 22 — Rediseño del login de admin (2026-07-19)
+
+**Motivo:** el login en `/admin/login` se veía genérico y, además, tenía un bug visual:
+`AdminLayout` envolvía **todas** las rutas `/admin/*` con el `AdminSidebar` completo,
+incluida `/admin/login` — donde todavía no hay sesión. Eso dejaba una columna vacía a la
+izquierda del formulario en vez de la pantalla centrada.
+
+**Solución:**
+1. `src/components/admin/admin-shell.tsx` (nuevo) — wrapper cliente que decide si
+   renderizar el sidebar según el pathname; en `/admin/login` devuelve solo `children`.
+   `src/app/admin/layout.tsx` ahora delega en él (mismo JSX de antes, solo movido).
+2. `src/app/admin/login/page.tsx` — rediseñado con el lenguaje visual **propio del
+   admin** (slate/indigo-600, `rounded-lg/2xl`, iconos Lucide), no el tema de marca del
+   storefront (ese es configurable por el comerciante vía `theme.*` y no aplica aquí).
+   Suma iconos en los campos, toggle mostrar/ocultar contraseña y spinner `Loader2` en
+   el botón (mismo patrón que `media-manager-page.tsx`).
+
+**Corroborado:** capturas en desktop (1440px), estado de error y mobile (390px) — sin
+fuga de sidebar, sin scroll horizontal. `type-check` y `prettier --check` ✅.
+
+---
+
 _Para estándares de calidad y arquitectura de datos ver `STANDARDS.md`. Para visión de negocio ver `PROJECT.md`._

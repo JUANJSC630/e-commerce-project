@@ -34,10 +34,11 @@ yarn verify:cron                   # E2E del recordatorio de pago abandonado (re
 ```
 
 **Siguiente trabajo de valor, ya sin bloqueos** (por orden sugerido):
-1. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda.
-2. **Analytics (Bloque 12)** — GA4 + Meta Pixel, 0% hecho. Sin esto no se puede medir la conversión.
-3. **Bug 13.5** — el login no reclama los pedidos hechos como invitado (el registro sí).
-4. Post-lanzamiento: Bloque 16 (escalabilidad), Bloque 17 (responsive), Bloque 18 (patrones Bagisto, empezar por dinero como centavos).
+1. **Login en modal, sin salir de la página (Bloque 23, Fase 1)** — ver detalle abajo. Es lo próximo a implementar.
+2. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda. En progreso: 2/16 productos ya tienen foto real (copiada de producción), quedan 14.
+3. **Analytics (Bloque 12)** — GA4 + Meta Pixel, 0% hecho. Sin esto no se puede medir la conversión.
+4. **Bug 13.5** — el login no reclama los pedidos hechos como invitado (el registro sí).
+5. Post-lanzamiento: Bloque 16 (escalabilidad), Bloque 17 (responsive), Bloque 18 (patrones Bagisto, empezar por dinero como centavos).
 
 Detalle completo de lo hecho en esta sesión: **Bloque 20**, al final del documento.
 
@@ -3952,6 +3953,51 @@ izquierda del formulario en vez de la pantalla centrada.
 
 **Corroborado:** capturas en desktop (1440px), estado de error y mobile (390px) — sin
 fuga de sidebar, sin scroll horizontal. `type-check` y `prettier --check` ✅.
+
+---
+
+## Bloque 23 — Login en modal + código por e-mail (planificado, 2026-07-19)
+
+**Origen:** referencia visual de otro sitio (Trendy) — login como modal (imagen a un lado,
+formulario al otro) con dos opciones: "Recibir código de acceso por e-mail" o "Entrar con
+e-mail y contraseña". El pedido concreto: que iniciar sesión no saque al usuario de la
+página en la que está.
+
+**Estado actual verificado:** el flujo hoy es 100% navegación de página completa. El botón
+"Cuenta" del header (`site-header.tsx:73-79`) es un `<Link href={routes.account}>` a
+`/cuenta`; si no hay sesión, la página server-side redirige a `/cuenta/login`, que renderiza
+`LoginForm` dentro de `AuthShell` (`src/components/account/login-form.tsx`,
+`auth-shell.tsx`) — sin modal, sin `middleware.ts` (no existe; el guard es por página). Ya
+existe un `Dialog` de Radix en `src/components/ui/dialog.tsx`, sin usar todavía para auth.
+
+### Fase 1 — Modal de login (sin bloqueos, siguiente a implementar)
+
+1. **Provider global** (nuevo, ej. `AccountDialogProvider`) montado en el layout de
+   `(store)`: expone `openLogin()` / `openRegister()` y el estado abierto/cerrado del modal.
+2. **Header:** el link "Cuenta" deja de navegar cuando no hay sesión - en su lugar abre el
+   modal. Con sesión activa, sigue yendo a `/cuenta` como hoy.
+3. **Reusar, no duplicar:** el mismo `LoginForm`/formulario de registro se monta dentro del
+   `Dialog` existente en vez de dentro de `AuthShell` de página completa. Misma lógica de
+   `signIn`, mismas validaciones.
+4. **Tras login exitoso:** cerrar el modal + `router.refresh()` para que header/carrito/
+   favoritos reflejen la sesión — sin abandonar la página donde estaba el usuario. Ese es
+   el punto central del pedido.
+5. **No borrar `/cuenta/login` ni `/cuenta/registro`:** siguen existiendo como páginas
+   reales (fallback para enlaces directos, SEO, sin-JS). El modal es una mejora progresiva
+   encima, no un reemplazo. Cualquier redirect server-side existente a esas rutas sigue
+   funcionando igual.
+
+### Fase 2 — Código de acceso por e-mail (EN ESPERA)
+
+**Bloqueada por el mismo trámite del bloqueante #1 de la tabla de arriba** (dominio propio +
+verificación en Resend). Sin eso, un código enviado a un cliente real rebota con 403 - solo
+llegaría al correo dueño de la cuenta de Resend. No implementar antes de resolver eso.
+
+Cuando se desbloquee: tabla/mecanismo de código de un solo uso con expiración corta,
+throttling (reusar `isRateLimited`/`recordRateLimitHit` de `src/lib/rate-limit.ts`, mismo
+patrón que ya protege los intentos de login por contraseña), envío vía Resend, y una segunda
+vista dentro del mismo modal ("Recibir código por e-mail" vs "Entrar con e-mail y
+contraseña"), como en la referencia visual.
 
 ---
 

@@ -1,6 +1,6 @@
 # Roadmap - Dulce Infancia Shop
 
-> Actualizado: 2026-07-12 (Bloque 20 - emails y cron verificados, entornos separados, **deploy en Vercel ✅**) | Score técnico frontend: **20/20** ✅ | Build prod ✅
+> Actualizado: 2026-07-23 (Bloque 23 Fase 1 - **login en modal ✅**; Bloque 24 Fase A - **dashboard de cuenta + perfil editable ✅**) | Score técnico frontend: **20/20** ✅ | Build prod ✅
 > **Objetivo final**: e-commerce 100% administrable - productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -34,11 +34,12 @@ yarn verify:cron                   # E2E del recordatorio de pago abandonado (re
 ```
 
 **Siguiente trabajo de valor, ya sin bloqueos** (por orden sugerido):
-1. **Login en modal, sin salir de la página (Bloque 23, Fase 1)** — ver detalle abajo. Es lo próximo a implementar.
-2. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda. En progreso: 2/16 productos ya tienen foto real (copiada de producción), quedan 14.
-3. **Analytics (Bloque 12)** — GA4 + Meta Pixel, 0% hecho. Sin esto no se puede medir la conversión.
-4. **Bug 13.5** — el login no reclama los pedidos hechos como invitado (el registro sí).
-5. Post-lanzamiento: Bloque 16 (escalabilidad), Bloque 17 (responsive), Bloque 18 (patrones Bagisto, empezar por dinero como centavos).
+1. ~~Login en modal (Bloque 23, Fase 1)~~ — ✅ **IMPLEMENTADO (2026-07-23)**, verificado con type-check/lint/build + smoke test. Falta el click-through E2E en navegador. Ver detalle en Bloque 23.
+2. **Dashboard de cuenta / perfil de usuario (Bloque 24)** — **Fase A ✅ implementada (2026-07-23)**: layout con sidebar + guard, Perfil editable (nuevos campos + API), Pedidos/Favoritos/Seguridad reubicados. Siguiente: **Fase B (Direcciones)**, luego Fase C (Listas guardadas, antes "Carritos guardados").
+3. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda. En progreso: 2/16 productos ya tienen foto real (copiada de producción), quedan 14.
+4. **Analytics (Bloque 12)** — GA4 + Meta Pixel, 0% hecho. Sin esto no se puede medir la conversión.
+5. **Bug 13.5** — el login no reclama los pedidos hechos como invitado (el registro sí).
+6. Post-lanzamiento: Bloque 16 (escalabilidad), Bloque 17 (responsive), Bloque 18 (patrones Bagisto, empezar por dinero como centavos).
 
 Detalle completo de lo hecho en esta sesión: **Bloque 20**, al final del documento.
 
@@ -3970,22 +3971,36 @@ página en la que está.
 `auth-shell.tsx`) — sin modal, sin `middleware.ts` (no existe; el guard es por página). Ya
 existe un `Dialog` de Radix en `src/components/ui/dialog.tsx`, sin usar todavía para auth.
 
-### Fase 1 — Modal de login (sin bloqueos, siguiente a implementar)
+### Fase 1 — Modal de login ✅ IMPLEMENTADO (2026-07-23)
 
-1. **Provider global** (nuevo, ej. `AccountDialogProvider`) montado en el layout de
-   `(store)`: expone `openLogin()` / `openRegister()` y el estado abierto/cerrado del modal.
-2. **Header:** el link "Cuenta" deja de navegar cuando no hay sesión - en su lugar abre el
-   modal. Con sesión activa, sigue yendo a `/cuenta` como hoy.
-3. **Reusar, no duplicar:** el mismo `LoginForm`/formulario de registro se monta dentro del
-   `Dialog` existente en vez de dentro de `AuthShell` de página completa. Misma lógica de
-   `signIn`, mismas validaciones.
-4. **Tras login exitoso:** cerrar el modal + `router.refresh()` para que header/carrito/
-   favoritos reflejen la sesión — sin abandonar la página donde estaba el usuario. Ese es
-   el punto central del pedido.
-5. **No borrar `/cuenta/login` ni `/cuenta/registro`:** siguen existiendo como páginas
-   reales (fallback para enlaces directos, SEO, sin-JS). El modal es una mejora progresiva
-   encima, no un reemplazo. Cualquier redirect server-side existente a esas rutas sigue
-   funcionando igual.
+**Verificado:** `yarn type-check` ✅ · `yarn lint` ✅ · `yarn build` ✅ · smoke test en dev
+(deslogueado, el control "Cuenta" del header renderiza como `<button>` que abre el modal, no
+como link; home sin errores SSR). Falta pendiente el click-through E2E en navegador real.
+
+**Lo que se construyó:**
+- `src/components/account/account-dialog.tsx` — `AccountDialogProvider` + hook
+  `useAccountDialog()` (`openLogin` / `openRegister` / `close`). Renderiza el modal con dos
+  vistas (login/registro) que se alternan sin recargar, siguiendo el patrón de overlay del
+  proyecto (`size-guide-modal.tsx`: `fixed inset-0`, Escape, scroll-lock), **no** el
+  `ui/dialog.tsx` (estaba sin usar, sin CSS y roto — se descartó). Panel decorativo a un
+  lado + formulario al otro, como la referencia visual.
+- `login-form.tsx` / `register-form.tsx` — refactor: se extrajo `LoginFormFields` /
+  `RegisterFormFields` (el `<form>` puro, con prop `onSuccess`) reutilizado por la página
+  completa (dentro de `AuthShell`) **y** por el modal. Cero duplicación de lógica `signIn`.
+- `account-button.tsx` (nuevo) — control de cuenta del header desktop: con sesión = `Link` a
+  `/cuenta`; sin sesión = botón que abre el modal.
+- `site-header.tsx` / `mobile-nav.tsx` — reciben `isAuthenticated`; el ítem de cuenta abre el
+  modal cuando no hay sesión (en móvil dice "Iniciar sesión").
+- `(store)/layout.tsx` — resuelve la sesión con `getServerSession` y monta
+  `AccountDialogProvider`; pasa `isAuthenticated` al header. Tras login: modal cierra +
+  `router.refresh()` re-ejecuta el layout server → header/carrito/favoritos reflejan la
+  sesión **sin abandonar la página**. `/cuenta/login` y `/cuenta/registro` siguen intactas
+  como fallback (deep-link, SEO, sin-JS).
+
+> **Idea futura (2026-07-23, pedido del dueño):** ofrecer un login **más ágil que no dependa
+> de contraseña** — magic link o código de un solo uso por e-mail como método primario, no
+> solo como alternativa. Encaja directamente con la Fase 2 de abajo; queda **bloqueado por el
+> mismo trámite** (dominio propio + verificación en Resend). Retomar junto con Fase 2.
 
 ### Fase 2 — Código de acceso por e-mail (EN ESPERA)
 
@@ -3998,6 +4013,114 @@ throttling (reusar `isRateLimited`/`recordRateLimitHit` de `src/lib/rate-limit.t
 patrón que ya protege los intentos de login por contraseña), envío vía Resend, y una segunda
 vista dentro del mismo modal ("Recibir código por e-mail" vs "Entrar con e-mail y
 contraseña"), como en la referencia visual.
+
+---
+
+## Bloque 24 — Dashboard de cuenta / perfil de usuario (planificado, 2026-07-23)
+
+**Origen:** 7 capturas de referencia de otra tienda (Trendy / maquillajetrendyshop). La cuenta
+allí es un **dashboard con sidebar de navegación** persistente y 7 secciones. Hoy `/cuenta` es
+una sola página simple (saludo + link a pedidos + cambiar contraseña). El pedido: reorganizar
+la cuenta en ese dashboard con sidebar y detallar cada sección (una por imagen).
+
+**Estado actual verificado:**
+- `/cuenta` (`page.tsx`): saludo `Hola, {name}`, link "Mis pedidos", `ChangePasswordForm`,
+  `LogoutButton`. Nada más.
+- `/cuenta/pedidos` y `/cuenta/pedidos/[id]`: ✅ existen.
+- `/favoritos`: ✅ página top-level con modelo `Favorite`.
+- Modelo `User` (Prisma): solo `email, password, name, image, roleId, status, createdAt`.
+  **Sin** apellido, cédula, género, fecha de nacimiento ni teléfono.
+- **No existe** modelo `Address` ni `SavedCart`. La dirección hoy vive en el checkout/pedido.
+- Estrategia de sesión = **JWT stateless** (no hay tabla de sesiones en BD).
+
+**Estructura propuesta (el cambio grande):** un layout compartido
+`src/app/(store)/cuenta/layout.tsx` con cabecera "HOLA, {NOMBRE}!" y sidebar:
+Perfil · Direcciones · Pedidos · Tarjetas de crédito · Autenticación · Carritos guardados ·
+Favoritos · Salir. Cada sección = una ruta hija de `/cuenta`. En móvil el sidebar colapsa
+(patrón "← Atrás" como en las capturas).
+
+### Detalle por sección (una por imagen de referencia)
+
+| # | Sección | Qué muestra la referencia | Estado actual | Qué falta | Esfuerzo |
+| - | ------- | ------------------------- | ------------- | --------- | -------- |
+| 1 | **Perfil** | Panel con botón "Editar" que alterna solo-lectura/edición. Campos: Nombre, Apellido, Email, Cédula de ciudadanía, Género, Fecha de nacimiento, Teléfono | Solo `name` + `email` | Migración Prisma: añadir `lastName, docId, gender, birthDate, phone` a `User`. API `PATCH /api/cuenta/profile`. Form con toggle editar; email solo-lectura | Medio |
+| 2 | **Direcciones** | Tarjetas (Dirección, Ciudad, Departamento, País) + "Editar" + "Añadir dirección" | No hay modelo `Address` | Modelo `Address` (1-N con User), CRUD `/api/cuenta/addresses`, UI lista+form. **Reusar** `country-state-city` + `use-locations` + combobox del checkout ya existentes | Medio-alto |
+| 3 | **Pedidos** | Tarjeta con Fecha, Total, #, badge de estado, ítems con miniatura; botones "Hacer pedido de nuevo", "Ver pedido", "Ver todos los ítems" | ✅ `/cuenta/pedidos(+[id])` | Solo mejoras: mover bajo el sidebar; añadir "Hacer pedido de nuevo" (reorder → carga ítems al carrito) | Bajo |
+| 4 | **Tarjetas de crédito** | Estado vacío "¡Aún no tienes ningún método de pago registrado!" + "Añadir tarjeta de crédito" | No existe | ⚠️ **Recomiendo diferir.** Guardar tarjetas = alcance PCI. Con MercadoPago sería vía tokenización (Customers & Cards API), pero el flujo actual cobra sin guardar tarjeta. No aporta hasta que haya recompra frecuente | Alto / diferir |
+| 5 | **Autenticación** | Card "Contraseña" (definir/cambiar) + "Gestión de sesiones" (N sesiones activas, "Ver sesiones") | ✅ `ChangePasswordForm` existe | Password: ya está, solo re-ubicar. ⚠️ "Sesiones activas" **no es viable con JWT stateless** sin añadir tabla de sesiones o pasar a DB sessions. Recomiendo omitir esa card por ahora | Bajo (password) / diferir (sesiones) |
+| 6 | **Carritos guardados** → replantear como **Listas guardadas** | "Vaciar carrito", buscador, tabla (#, Nombre, Productos, fecha, Acciones) | Carrito es client-side (`use-cart`, localStorage) | Modelo `SavedCart`/`SavedList`, CRUD, UI tabla. **Decisión del dueño (2026-07-23):** en vez de "carritos", exponerlo como **listas guardadas con nombre** (tipo wishlists para recompra/regalo), más natural para la tienda. Nice-to-have | Medio |
+| 7 | **Favoritos** | Grid de favoritos con corazón (breadcrumb Home · Mis Favoritos) | ✅ `/favoritos` + modelo `Favorite` | Solo enlazarlo/embeberlo en el sidebar del dashboard | Bajo |
+
+### Fases recomendadas
+- **Fase A (base + quick wins):** ✅ **IMPLEMENTADA (2026-07-23)** — ver abajo.
+- **Fase B:** Direcciones (modelo `Address` + CRUD, reusando las locaciones del checkout).
+- **Fase C:** Listas guardadas (antes "Carritos guardados") — modelo `SavedList`/`SavedCart`,
+  listas con nombre para recompra/regalo. Ver decisión del dueño en la fila 6 de la tabla.
+- **Diferido (documentado, no implementar aún):** Tarjetas de crédito (PCI / tokenización MP) y
+  Gestión de sesiones activas (limitación de JWT stateless). Ver flags ⚠️ en la tabla.
+
+### Fase A — IMPLEMENTADA (2026-07-23)
+
+**Verificado E2E real por HTTP** (dev + Postgres local): registro → login → `GET /cuenta`
+autenticado renderiza el dashboard → `PATCH /api/cuenta/profile` (200) → los 6 campos
+persisten y se re-renderizan. Validación/seguridad probadas: docId no numérico → 400, nombre
+vacío → 400, fecha futura → 400, sin sesión → 401. Además `type-check` ✅ · `lint` ✅ ·
+`build` ✅. (Usuarios de prueba borrados del dev.)
+
+**Arquitectura / lo construido:**
+- **Schema:** migración `20260724023017_add_user_profile_fields` — `User` gana `lastName,
+  phone, docId, gender (enum Gender), birthDate (@db.Date)`. Enum `Gender = MALE|FEMALE|OTHER|
+  UNDISCLOSED`. (Migración corrida con **Node 22**, dev sigue en 18.)
+- **Route group `(store)/cuenta/(dashboard)/`** — no cambia las URLs pero aísla las páginas
+  autenticadas: `layout.tsx` resuelve la sesión con `getSessionUserId()` (redirige a
+  `/cuenta/login` si falta) y pinta la cabecera "HOLA, {NOMBRE}!" + sidebar. `login`/`registro`
+  quedan fuera del grupo → **sin bucle de redirección**. Se movieron ahí `page.tsx` (ahora
+  Perfil) y `pedidos/`.
+- **Dominio** (`src/lib/account.ts`): `getProfile` / `updateProfile` con validación por campo y
+  `AccountError` (mismo patrón que `changePassword`). Email es identidad → **no editable**.
+  Solo se escriben campos en lista blanca. Constantes/tipos puros (`GENDERS`, `GENDER_LABELS`,
+  `Profile`) movidos a `src/lib/account-types.ts` para no arrastrar el módulo `server-only` al
+  bundle cliente.
+- **API** `PATCH /api/cuenta/profile` — `getSessionUserId()` → 401; mapea `AccountError` a su
+  status; 500 + log en lo inesperado.
+- **UI:** `account-nav.tsx` (sidebar client con estado activo por `usePathname` + logout),
+  `profile-section.tsx` (vista solo-lectura ↔ edición con "Editar", `router.refresh()` tras
+  guardar para sincronizar el saludo del sidebar), página `seguridad/` (mueve el cambio de
+  contraseña bajo el dashboard).
+- Sidebar Fase A: Perfil · Pedidos · Favoritos · Seguridad · Cerrar sesión. Direcciones /
+  Carritos / Tarjetas llegan en fases siguientes (no se muestran links rotos).
+
+**Refinamiento (2026-07-23, mismo día):**
+- **Favoritos no saca al usuario del dashboard:** se extrajo `FavoritesGrid`
+  (`src/components/favorites/favorites-grid.tsx`) y ahora hay un tab interno
+  `/cuenta/favoritos` que renderiza el grid dentro del layout con sidebar. La página
+  standalone `/favoritos` (link del header) se mantiene y reusa el mismo `FavoritesGrid`.
+- **Distribución:** el dashboard se capó a `max-w-6xl` centrado (antes se estiraba hasta el
+  ancho del container ~1536px y los campos del perfil quedaban demasiado anchos). El sidebar
+  se rediseñó: etiqueta "Hola," + nombre + email truncado + divisor antes del nav.
+- **Confirmación al cerrar sesión:** el `LogoutButton` (antes sin uso) ahora abre un modal de
+  confirmación ("¿Cerrar sesión?" → Cancelar / Cerrar sesión) antes de `signOut`, y el sidebar
+  lo usa en lugar del `signOut` directo. **Nota:** `src/components/ui/alert-dialog.tsx` es un
+  shell sin estado (hay que controlarlo desde fuera con `{open && ...}` + `onClick`, como en
+  `carrito/page.tsx`); un primer intento lo usó con `AlertDialogTrigger` y quedó montado
+  siempre + Cancelar sin efecto. Se reescribió `LogoutButton` autocontenido con el patrón de
+  modal real del storefront (`useState` + overlay click-para-cerrar + Escape + scroll-lock),
+  sin tocar el stub compartido.
+  - **Bug de stacking context (encontrado con Playwright, no a ojo):** aun tras lo anterior, el
+    modal se veía "transparente" y los botones no respondían. Causa: el `LogoutButton` vive
+    dentro del `<aside>` `md:sticky`, y `position: sticky` **crea un stacking context** que
+    atrapaba al overlay `fixed`; la columna de contenido (el formulario), hermana posterior en
+    el DOM, se pintaba **encima** del modal → tapaba el card y volvía inclicables los botones.
+    Fix: renderizar el overlay con `createPortal` a `document.body` (escapa el contexto), con la
+    clase `dulce-theme` en el nodo portado para reestablecer las variables de marca (`--card`,
+    `--brand-ink`, `--destructive`) que están scopeadas a `.dulce-theme`. Verificado en navegador
+    real (Playwright): `elementFromPoint` en el centro del modal cae dentro del modal (está
+    encima), `--card` opaco resuelve, y Cancelar / overlay / Escape cierran sin cerrar sesión.
+- **Sesión visible en el header:** `AccountButton` muestra el **nombre** del cliente (truncado,
+  enlaza a `/cuenta`) cuando hay sesión, y "Cuenta" (abre modal) cuando no — así el login se
+  nota. El nombre sale de `session.user.name`; tras editar el nombre en el perfil, el header lo
+  refleja al re-loguear (el JWT no se re-emite en caliente). Verificado E2E: logueado el home
+  muestra el nombre, sin sesión muestra "Cuenta" y no filtra datos.
 
 ---
 

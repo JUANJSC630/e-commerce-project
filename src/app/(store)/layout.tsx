@@ -1,5 +1,8 @@
 import type React from "react"
 import dynamic from "next/dynamic"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth-options"
+import { AccountDialogProvider } from "@/components/account/account-dialog"
 import { CartProvider } from "@/components/cart/cart-provider"
 import { FavoritesProvider } from "@/components/favorites/favorites-provider"
 import { PromoBanner } from "@/components/layout/promo-banner"
@@ -18,12 +21,15 @@ import { AnalyticsScripts } from "@/components/analytics/analytics-scripts"
 const MiniCart = dynamic(() => import("@/components/cart/mini-cart").then((m) => m.MiniCart))
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  const [navItems, categoryTree, settings] = await Promise.all([
+  const [navItems, categoryTree, settings, session] = await Promise.all([
     getNavItems(),
     getCategoryTree(),
     loadAllSettings(),
+    getServerSession(authOptions),
   ])
   const { brand, theme, headerLinks } = settings
+  const isAuthenticated = Boolean(session)
+  const userName = session?.user?.name ?? null
 
   return (
     <SettingsProvider settings={settings}>
@@ -36,14 +42,22 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       >
         <CartProvider>
           <FavoritesProvider>
-            <PromoBanner />
-            <SiteHeader brand={brand} categoryTree={categoryTree} headerLinks={headerLinks} />
-            <MiniCart />
-            <main className="min-h-screen">{children}</main>
-            <Footer navItems={navItems} />
-            <NewsletterPopup />
-            <WhatsAppFloat />
-            <CookieConsent />
+            <AccountDialogProvider>
+              <PromoBanner />
+              <SiteHeader
+                brand={brand}
+                categoryTree={categoryTree}
+                headerLinks={headerLinks}
+                isAuthenticated={isAuthenticated}
+                userName={userName}
+              />
+              <MiniCart />
+              <main className="min-h-screen">{children}</main>
+              <Footer navItems={navItems} />
+              <NewsletterPopup />
+              <WhatsAppFloat />
+              <CookieConsent />
+            </AccountDialogProvider>
           </FavoritesProvider>
         </CartProvider>
       </div>

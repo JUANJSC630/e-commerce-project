@@ -6,15 +6,18 @@ import { Menu, X, Search, Heart, User, ChevronDown } from "lucide-react"
 import { routes } from "@/config/store.config"
 import type { NavItem } from "@/config/store.config"
 import type { CategoryNode } from "@/lib/categories"
+import { useAccountDialog } from "@/components/account/account-dialog"
 
 interface MobileNavProps {
   tree: CategoryNode[]
   links: NavItem[]
+  isAuthenticated: boolean
 }
 
 const catHref = (slug: string) => `${routes.categoryBase}/${slug}`
 
-export function MobileNav({ tree, links }: MobileNavProps) {
+export function MobileNav({ tree, links, isAuthenticated }: MobileNavProps) {
+  const { openLogin } = useAccountDialog()
   const [isOpen, setIsOpen] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const close = () => setIsOpen(false)
@@ -146,14 +149,28 @@ export function MobileNav({ tree, links }: MobileNavProps) {
                 <Heart className="h-4 w-4 shrink-0" aria-hidden="true" />
                 Mis favoritos
               </Link>
-              <Link
-                href={routes.account}
-                onClick={close}
-                className="flex items-center gap-3 px-6 py-3 text-brand-ink hover:bg-brand-surface-alt hover:text-brand-base transition-colors text-base font-medium"
-              >
-                <User className="h-4 w-4 shrink-0" aria-hidden="true" />
-                Mi cuenta
-              </Link>
+              {isAuthenticated ? (
+                <Link
+                  href={routes.account}
+                  onClick={close}
+                  className="flex items-center gap-3 px-6 py-3 text-brand-ink hover:bg-brand-surface-alt hover:text-brand-base transition-colors text-base font-medium"
+                >
+                  <User className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Mi cuenta
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    close()
+                    openLogin()
+                  }}
+                  className="flex w-full items-center gap-3 px-6 py-3 text-brand-ink hover:bg-brand-surface-alt hover:text-brand-base transition-colors text-base font-medium"
+                >
+                  <User className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Iniciar sesión
+                </button>
+              )}
             </div>
           </nav>
         </div>

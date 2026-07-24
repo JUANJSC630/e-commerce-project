@@ -10,9 +10,20 @@ import { AuthShell } from "@/components/account/auth-shell"
 
 const PASSWORD_MIN = 8
 
-export function RegisterForm() {
+interface RegisterFormFieldsProps {
+  /** Pre-fill the email field (e.g. carried over from a guest checkout). */
+  prefillEmail?: string
+  /** Modal flow: called instead of navigating, so the user stays on the current page. */
+  onSuccess?: () => void
+}
+
+/**
+ * The registration `<form>` and its create-then-sign-in logic, without page
+ * chrome. Shared by the full-page registration (`RegisterForm` + `AuthShell`)
+ * and the account modal.
+ */
+export function RegisterFormFields({ prefillEmail = "", onSuccess }: RegisterFormFieldsProps) {
   const router = useRouter()
-  const prefillEmail = useSearchParams().get("email") ?? ""
   const [form, setForm] = useState({ name: "", email: prefillEmail, password: "", confirm: "" })
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -47,12 +58,69 @@ export function RegisterForm() {
       return
     }
 
-    // Account created - sign the customer in and send them to their panel.
+    // Account created - sign the customer in and reflect the new session.
     await signIn("credentials", { email: form.email, password: form.password, redirect: false })
     window.dispatchEvent(new Event("auth-changed")) // merge guest favorites into the account
-    router.push("/cuenta")
-    router.refresh()
+    if (onSuccess) {
+      onSuccess()
+    } else {
+      router.push("/cuenta")
+      router.refresh()
+    }
   }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="name">Nombre</Label>
+        <Input id="name" autoComplete="name" required value={form.name} onChange={set("name")} />
+      </div>
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={form.email}
+          onChange={set("email")}
+        />
+      </div>
+      <div>
+        <Label htmlFor="password">Contraseña</Label>
+        <Input
+          id="password"
+          type="password"
+          autoComplete="new-password"
+          required
+          value={form.password}
+          onChange={set("password")}
+        />
+      </div>
+      <div>
+        <Label htmlFor="confirm">Confirmar contraseña</Label>
+        <Input
+          id="confirm"
+          type="password"
+          autoComplete="new-password"
+          required
+          value={form.confirm}
+          onChange={set("confirm")}
+        />
+      </div>
+
+      {error && <p className="text-destructive text-sm">{error}</p>}
+
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Creando cuenta…" : "Crear cuenta"}
+      </Button>
+    </form>
+  )
+}
+
+/** Full-page registration: the shared form wrapped in the centered auth card. */
+export function RegisterForm() {
+  const prefillEmail = useSearchParams().get("email") ?? ""
 
   return (
     <AuthShell
@@ -60,51 +128,7 @@ export function RegisterForm() {
       subtitle="Guarda tus datos y sigue tus pedidos"
       footer={{ prompt: "¿Ya tienes cuenta?", linkLabel: "Inicia sesión", href: "/cuenta/login" }}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="name">Nombre</Label>
-          <Input id="name" autoComplete="name" required value={form.name} onChange={set("name")} />
-        </div>
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={form.email}
-            onChange={set("email")}
-          />
-        </div>
-        <div>
-          <Label htmlFor="password">Contraseña</Label>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            value={form.password}
-            onChange={set("password")}
-          />
-        </div>
-        <div>
-          <Label htmlFor="confirm">Confirmar contraseña</Label>
-          <Input
-            id="confirm"
-            type="password"
-            autoComplete="new-password"
-            required
-            value={form.confirm}
-            onChange={set("confirm")}
-          />
-        </div>
-
-        {error && <p className="text-destructive text-sm">{error}</p>}
-
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Creando cuenta…" : "Crear cuenta"}
-        </Button>
-      </form>
+      <RegisterFormFields prefillEmail={prefillEmail} />
     </AuthShell>
   )
 }

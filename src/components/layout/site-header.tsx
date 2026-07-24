@@ -1,11 +1,12 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Heart, User } from "lucide-react"
+import { Heart } from "lucide-react"
 import { routes } from "@/config/store.config"
 import type { NavItem } from "@/config/store.config"
 import type { CategoryNode } from "@/lib/categories"
 import { CartCounter } from "@/components/cart/cart-counter"
 import { MobileNav } from "@/components/layout/mobile-nav"
+import { AccountButton } from "@/components/layout/account-button"
 import { SearchBar } from "@/components/search/search-bar"
 import { HeaderSearch } from "@/components/layout/header-search"
 import { CategoryMegaMenu } from "@/components/layout/category-mega-menu"
@@ -15,6 +16,8 @@ interface SiteHeaderProps {
   brand: { name: string; logoImage: string | null }
   categoryTree: CategoryNode[]
   headerLinks: NavItem[]
+  isAuthenticated: boolean
+  userName?: string | null
 }
 
 /**
@@ -23,7 +26,13 @@ interface SiteHeaderProps {
  * plus admin-curated links. Built for a wide, mixed-age audience: search is
  * surfaced, actions carry labels on desktop, touch targets stay generous.
  */
-export function SiteHeader({ brand, categoryTree, headerLinks }: SiteHeaderProps) {
+export function SiteHeader({
+  brand,
+  categoryTree,
+  headerLinks,
+  isAuthenticated,
+  userName,
+}: SiteHeaderProps) {
   const logo = brand.logoImage ? (
     <Image
       src={brand.logoImage}
@@ -44,7 +53,7 @@ export function SiteHeader({ brand, categoryTree, headerLinks }: SiteHeaderProps
       <div className="container mx-auto px-4">
         <div className="flex items-center gap-3 md:gap-6 h-16">
           <div className="md:hidden">
-            <MobileNav tree={categoryTree} links={headerLinks} />
+            <MobileNav tree={categoryTree} links={headerLinks} isAuthenticated={isAuthenticated} />
           </div>
 
           <Link
@@ -70,13 +79,7 @@ export function SiteHeader({ brand, categoryTree, headerLinks }: SiteHeaderProps
               <Heart className="h-5 w-5" aria-hidden="true" />
             </Link>
 
-            <Link
-              href={routes.account}
-              className="hidden md:inline-flex items-center gap-2 h-10 px-3 rounded-full text-brand-ink hover:text-brand-base hover:bg-brand-surface-alt transition-colors"
-            >
-              <User className="h-5 w-5" aria-hidden="true" />
-              <span className="text-sm font-medium">Cuenta</span>
-            </Link>
+            <AccountButton isAuthenticated={isAuthenticated} userName={userName} />
 
             <CartCounter />
           </div>

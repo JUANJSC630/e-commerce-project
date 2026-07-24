@@ -25,11 +25,8 @@ export default async function CustomerOrdersPage() {
   ])
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-2xl">
-      <Link href={routes.account} className="text-sm text-brand-muted hover:text-brand-base">
-        ← Mi cuenta
-      </Link>
-      <h1 className="font-display font-bold text-3xl text-brand-ink mt-2 mb-8">Mis pedidos</h1>
+    <section className="rounded-2xl border border-border bg-card p-6 md:p-8">
+      <h1 className="font-display font-bold text-2xl text-brand-ink mb-6">Mis pedidos</h1>
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center gap-5">
@@ -77,6 +74,6 @@ export default async function CustomerOrdersPage() {
           ))}
         </ul>
       )}
-    </div>
+    </section>
   )
 }

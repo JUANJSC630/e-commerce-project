@@ -3,6 +3,10 @@ import "server-only"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { CUSTOMER_ROLE_SLUG } from "@/lib/permissions"
+import { GENDERS, type Gender, type Profile, type ProfileInput } from "@/lib/account-types"
+
+export { GENDERS, GENDER_LABELS } from "@/lib/account-types"
+export type { Gender, Profile, ProfileInput } from "@/lib/account-types"
 
 /** Domain error with an HTTP status for the account API routes to map. */
 export class AccountError extends Error {
@@ -111,4 +115,100 @@ export async function changePassword(
     where: { id: userId },
     data: { password: await bcrypt.hash(newPassword, 12) },
   })
+}
+
+// ─── Profile ────────────────────────────────────────────────────────────────
+
+const NAME_MAX = 80
+const PHONE_RE = /^[0-9+()\-\s]{7,20}$/
+const DOC_ID_RE = /^[0-9]{4,20}$/
+
+export async function getProfile(userId: string): Promise<Profile> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      name: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      docId: true,
+      gender: true,
+      birthDate: true,
+    },
+  })
+  if (!user) throw new AccountError("Usuario no encontrado", 404)
+
+  return {
+    name: user.name,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone,
+    docId: user.docId,
+    gender: user.gender,
+    birthDate: user.birthDate ? user.birthDate.toISOString().slice(0, 10) : null,
+  }
+}
+
+/**
+ * Normalizes an optional free-text field: trims it, turns blank into `null`
+ * (clearing the field), and validates length/format. Throws `AccountError` on
+ * bad input so the API maps it to a 400 with the message.
+ */
+function optionalText(
+  value: unknown,
+  { label, max, pattern }: { label: string; max: number; pattern?: RegExp },
+): string | null {
+  if (value === undefined || value === null) return null
+  if (typeof value !== "string") throw new AccountError(`${label} inválido`)
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  if (trimmed.length > max) throw new AccountError(`${label} es demasiado largo`)
+  if (pattern && !pattern.test(trimmed)) throw new AccountError(`${label} no tiene un formato válido`)
+  return trimmed
+}
+
+function parseGender(value: unknown): Gender | null {
+  if (value === undefined || value === null || value === "") return null
+  if (typeof value === "string" && (GENDERS as readonly string[]).includes(value)) {
+    return value as Gender
+  }
+  throw new AccountError("Género inválido")
+}
+
+function parseBirthDate(value: unknown): Date | null {
+  if (value === undefined || value === null || value === "") return null
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new AccountError("Fecha de nacimiento inválida")
+  }
+  const date = new Date(`${value}T00:00:00.000Z`)
+  if (Number.isNaN(date.getTime())) throw new AccountError("Fecha de nacimiento inválida")
+  if (date.getTime() > Date.now()) throw new AccountError("La fecha de nacimiento no puede ser futura")
+  if (date.getUTCFullYear() < 1900) throw new AccountError("Fecha de nacimiento inválida")
+  return date
+}
+
+/**
+ * Updates the editable profile fields for a user and returns the fresh profile.
+ * Only whitelisted fields are written; `name` is required, the rest are
+ * optional and blank clears them. Validation lives here (not the route) so both
+ * the API and any future caller get the same guarantees.
+ */
+export async function updateProfile(userId: string, input: ProfileInput): Promise<Profile> {
+  const name = typeof input.name === "string" ? input.name.trim() : ""
+  if (!name) throw new AccountError("El nombre es requerido")
+  if (name.length > NAME_MAX) throw new AccountError("El nombre es demasiado largo")
+
+  const data = {
+    name,
+    lastName: optionalText(input.lastName, { label: "El apellido", max: NAME_MAX }),
+    phone: optionalText(input.phone, { label: "El teléfono", max: 20, pattern: PHONE_RE }),
+    docId: optionalText(input.docId, { label: "El documento", max: 20, pattern: DOC_ID_RE }),
+    gender: parseGender(input.gender),
+    birthDate: parseBirthDate(input.birthDate),
+  }
+
+  const updated = await prisma.user.update({ where: { id: userId }, data, select: { id: true } })
+  if (!updated) throw new AccountError("Usuario no encontrado", 404)
+
+  return getProfile(userId)
 }

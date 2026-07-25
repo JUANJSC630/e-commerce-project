@@ -1,6 +1,6 @@
 # Roadmap - Dulce Infancia Shop
 
-> Actualizado: 2026-07-23 (Bloque 23 Fase 1 - **login en modal ✅**; Bloque 24 Fase A - **dashboard de cuenta + perfil editable ✅**) | Score técnico frontend: **20/20** ✅ | Build prod ✅
+> Actualizado: 2026-07-25 (Bloque 24 Fase A - **dashboard + perfil ✅**; Fase B - **direcciones ✅**) | Score técnico frontend: **20/20** ✅ | Build prod ✅
 > **Objetivo final**: e-commerce 100% administrable - productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -35,7 +35,7 @@ yarn verify:cron                   # E2E del recordatorio de pago abandonado (re
 
 **Siguiente trabajo de valor, ya sin bloqueos** (por orden sugerido):
 1. ~~Login en modal (Bloque 23, Fase 1)~~ — ✅ **IMPLEMENTADO (2026-07-23)**, verificado con type-check/lint/build + smoke test. Falta el click-through E2E en navegador. Ver detalle en Bloque 23.
-2. **Dashboard de cuenta / perfil de usuario (Bloque 24)** — **Fase A ✅ implementada (2026-07-23)**: layout con sidebar + guard, Perfil editable (nuevos campos + API), Pedidos/Favoritos/Seguridad reubicados. Siguiente: **Fase B (Direcciones)**, luego Fase C (Listas guardadas, antes "Carritos guardados").
+2. **Dashboard de cuenta / perfil de usuario (Bloque 24)** — **Fase A ✅ (2026-07-23)** y **Fase B Direcciones ✅ (2026-07-25)**: dashboard con sidebar, perfil editable y libreta de direcciones (CRUD + principal). Siguiente: **Fase C (Listas guardadas**, antes "Carritos guardados").
 3. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda. En progreso: 2/16 productos ya tienen foto real (copiada de producción), quedan 14.
 4. **Analytics (Bloque 12)** — GA4 + Meta Pixel, 0% hecho. Sin esto no se puede medir la conversión.
 5. **Bug 13.5** — el login no reclama los pedidos hechos como invitado (el registro sí).
@@ -4053,7 +4053,7 @@ Favoritos · Salir. Cada sección = una ruta hija de `/cuenta`. En móvil el sid
 
 ### Fases recomendadas
 - **Fase A (base + quick wins):** ✅ **IMPLEMENTADA (2026-07-23)** — ver abajo.
-- **Fase B:** Direcciones (modelo `Address` + CRUD, reusando las locaciones del checkout).
+- **Fase B:** Direcciones — ✅ **IMPLEMENTADA (2026-07-25)** — ver abajo.
 - **Fase C:** Listas guardadas (antes "Carritos guardados") — modelo `SavedList`/`SavedCart`,
   listas con nombre para recompra/regalo. Ver decisión del dueño en la fila 6 de la tabla.
 - **Diferido (documentado, no implementar aún):** Tarjetas de crédito (PCI / tokenización MP) y
@@ -4121,6 +4121,34 @@ vacío → 400, fecha futura → 400, sin sesión → 401. Además `type-check` 
   nota. El nombre sale de `session.user.name`; tras editar el nombre en el perfil, el header lo
   refleja al re-loguear (el JWT no se re-emite en caliente). Verificado E2E: logueado el home
   muestra el nombre, sin sesión muestra "Cuenta" y no filtra datos.
+
+### Fase B — Direcciones — IMPLEMENTADA (2026-07-25)
+
+Libreta de direcciones del cliente, siguiendo `STANDARDS.md` (capa server-only con mapper +
+`select` acotado, componentes reutilizables en archivos propios, validación en dominio, guard +
+ownership, E2E con Playwright + limpieza de datos).
+
+**Arquitectura / lo construido:**
+- **Schema:** migración `20260725203512_add_address_model` — modelo `Address` (1-N con `User`,
+  `onDelete: Cascade`, `@@index([userId])`) con `label, recipientName, phone, address, city,
+  state, country, zipCode, isDefault`. (Node 22.)
+- **Dominio** (`src/lib/addresses.ts`, server-only): `listAddresses`, `createAddress`,
+  `updateAddress`, `setDefaultAddress`, `deleteAddress`. Validación por campo con `AddressError`.
+  `isDefault` manejado en `$transaction`: la 1ª dirección es principal; marcar una desmarca las
+  demás; borrar la principal promueve la siguiente. Ownership siempre por `where: { userId }`.
+- **API:** `/api/cuenta/addresses` (GET lista, POST crea) y `/[id]` (PATCH edita o
+  `{action:"default"}` para marcar principal, DELETE). `getSessionUserId()` → 401; mapea
+  `AddressError` a su status.
+- **UI (reutilizable):** `ConfirmModal` genérico en `ui/` (portal a `document.body` + clase
+  `dulce-theme`, aprendido del bug de stacking context; el `LogoutButton` se refactorizó para
+  usarlo). `AddressForm` **reusa `AddressSelectors` del checkout** (país→depto→ciudad geo) con
+  `zipField`. `AddressCard` presentacional (`cn` mergeable). `AddressesSection` orquesta
+  lista/form/borrado y refresca desde la API tras cada mutación.
+- **Ruta** `/cuenta/direcciones` + entrada "Direcciones" en el sidebar (2º, orden recomendado).
+- **Verificado E2E (Playwright)**: crear vía UI con los combobox (persiste city/state/zip/
+  default), 2ª dirección, marcar principal (cambia el default), borrar con `ConfirmModal`
+  (verificado que el modal pinta por encima), validación 400 y sin-sesión 401. type-check ✅ ·
+  lint ✅ · prettier ✅ · build ✅. Datos de prueba borrados (cascade verificado).
 
 ---
 

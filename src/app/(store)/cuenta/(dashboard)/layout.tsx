@@ -13,11 +13,7 @@ import { AccountNav } from "@/components/account/account-nav"
  * proportions on wide screens instead of stretching edge to edge. On mobile the
  * sidebar stacks above the content.
  */
-export default async function AccountDashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function AccountDashboardLayout({ children }: { children: React.ReactNode }) {
   const userId = await getSessionUserId()
   if (!userId) redirect("/cuenta/login")
 
@@ -30,7 +26,9 @@ export default async function AccountDashboardLayout({
         <aside className="md:sticky md:top-24 md:self-start">
           <div className="rounded-2xl border border-border bg-card p-5">
             <div className="mb-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted">Hola,</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted">
+                Hola,
+              </p>
               <p className="font-display text-lg font-bold leading-tight text-brand-base">
                 {greeting}
               </p>

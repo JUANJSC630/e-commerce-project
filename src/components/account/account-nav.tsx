@@ -34,7 +34,9 @@ export function AccountNav() {
   const pathname = usePathname()
 
   const isActive = (item: AccountNavItem) =>
-    item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`)
+    item.exact
+      ? pathname === item.href
+      : pathname === item.href || pathname.startsWith(`${item.href}/`)
 
   return (
     <nav aria-label="Secciones de la cuenta" className="flex flex-col gap-1">

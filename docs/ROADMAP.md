@@ -12,10 +12,10 @@
 Todo el producto está construido y verificado. **Lo que falta NO es código**, son dos
 trámites externos. Hasta que se hagan, la tienda no puede cobrar ni escribirle a un cliente:
 
-| # | Bloqueante | Qué hay que hacer | Después, en el código |
-| - | ---------- | ----------------- | --------------------- |
-| 1 | **Dominio propio** | Comprar `dulceinfancia.co`, agregarlo en `resend.com/domains` y publicar los registros SPF/DKIM en el DNS | Cambiar `EMAIL_FROM` en Vercel de `onboarding@resend.dev` a `noreply@dulceinfancia.co`. Sin dominio verificado, **Resend solo entrega al correo dueño de la cuenta** (`juansc0630@gmail.com`) y rechaza a cualquier cliente con 403 |
-| 2 | **MercadoPago producción** | Sacar el access token y la public key de producción del panel de MP (hoy Vercel tiene las `TEST-`) | Actualizar `MERCADOPAGO_ACCESS_TOKEN` y `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` en Vercel. Recién ahí se puede **validar PSE**, que el sandbox nunca dejó probar (ver `MERCADOPAGO-E2E.md`, Caso D) |
+| #   | Bloqueante                 | Qué hay que hacer                                                                                         | Después, en el código                                                                                                                                                                                                               |
+| --- | -------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Dominio propio**         | Comprar `dulceinfancia.co`, agregarlo en `resend.com/domains` y publicar los registros SPF/DKIM en el DNS | Cambiar `EMAIL_FROM` en Vercel de `onboarding@resend.dev` a `noreply@dulceinfancia.co`. Sin dominio verificado, **Resend solo entrega al correo dueño de la cuenta** (`juansc0630@gmail.com`) y rechaza a cualquier cliente con 403 |
+| 2   | **MercadoPago producción** | Sacar el access token y la public key de producción del panel de MP (hoy Vercel tiene las `TEST-`)        | Actualizar `MERCADOPAGO_ACCESS_TOKEN` y `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` en Vercel. Recién ahí se puede **validar PSE**, que el sandbox nunca dejó probar (ver `MERCADOPAGO-E2E.md`, Caso D)                                    |
 
 **Lo primero al abrir el proyecto** (desarrollo corre contra Postgres **local**, no la nube):
 
@@ -34,6 +34,7 @@ yarn verify:cron                   # E2E del recordatorio de pago abandonado (re
 ```
 
 **Siguiente trabajo de valor, ya sin bloqueos** (por orden sugerido):
+
 1. ~~Login en modal (Bloque 23, Fase 1)~~ — ✅ **IMPLEMENTADO (2026-07-23)**, verificado con type-check/lint/build + smoke test. Falta el click-through E2E en navegador. Ver detalle en Bloque 23.
 2. **Dashboard de cuenta / perfil de usuario (Bloque 24)** — **Fase A ✅ (2026-07-23)** y **Fase B Direcciones ✅ (2026-07-25)**: dashboard con sidebar, perfil editable y libreta de direcciones (CRUD + principal). Siguiente: **Fase C (Listas guardadas**, antes "Carritos guardados").
 3. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda. En progreso: 2/16 productos ya tienen foto real (copiada de producción), quedan 14.
@@ -55,14 +56,14 @@ Lo único que falta es externo al código: **dominio propio** (para que Resend e
 
 ## Decisiones Arquitectónicas - TOMADAS ✅
 
-| Decisión      | Elegida                                   | Razón                                                                   |
-| ------------- | ----------------------------------------- | ----------------------------------------------------------------------- |
-| Stack backend | **Custom: Next.js + Prisma + PostgreSQL** | Máximo control, todo en un solo proyecto, sin dependencias externas     |
+| Decisión      | Elegida                                             | Razón                                                                                                                                        |
+| ------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack backend | **Custom: Next.js + Prisma + PostgreSQL**           | Máximo control, todo en un solo proyecto, sin dependencias externas                                                                          |
 | Base de datos | **Postgres local en dev / Prisma Postgres en prod** | Prisma v7 con driver adapters (`PrismaPg` + `pg.Pool`). `src/lib/db-connection.ts` elige el TLS: local sin TLS, gestionada con `verify-full` |
-| Hosting       | **Vercel** (Hobby, Node 24)               | Deploy desde el CLI; cron diario vía `vercel.json`                     |
-| Autenticación | **NextAuth.js v4** (JWT + Credentials)    | Flexible, integrado con Prisma, roles y permisos custom                 |
-| Imágenes      | **UploadThing** (v7, `UPLOADTHING_TOKEN`) | Upload directo desde el admin, CDN propio, router con auth por permisos |
-| Panel admin   | **Custom en `/admin`** (Next.js)          | Dashboard completo propio, no Sanity Studio                             |
+| Hosting       | **Vercel** (Hobby, Node 24)                         | Deploy desde el CLI; cron diario vía `vercel.json`                                                                                           |
+| Autenticación | **NextAuth.js v4** (JWT + Credentials)              | Flexible, integrado con Prisma, roles y permisos custom                                                                                      |
+| Imágenes      | **UploadThing** (v7, `UPLOADTHING_TOKEN`)           | Upload directo desde el admin, CDN propio, router con auth por permisos                                                                      |
+| Panel admin   | **Custom en `/admin`** (Next.js)                    | Dashboard completo propio, no Sanity Studio                                                                                                  |
 
 ---
 
@@ -2893,7 +2894,7 @@ Archivos existentes relacionados: [listar].
       pedido CANCELLED/FAILED, `markOrderFailed()` restauró stock 21→22.
       **Caso D (PSE): bloqueado por sandbox de MP**, no por el código. El token del
       vendedor de prueba (`APP_USR-`) devuelve `401 "Unauthorized use of live
-      credentials"` en `POST /v1/payments` con `payment_method_id: pse` (las cuentas
+credentials"` en `POST /v1/payments` con `payment_method_id: pse` (las cuentas
       de prueba no están homologadas para recaudar PSE). El token autentica bien para
       `/users/me` y `getBanks`; solo PSE lo bloquea MP. **Código PSE revisado y correcto:**
       `initiate` setea `paymentProviderId` en `pending` + guarda `pseRedirectUrl`;
@@ -3668,15 +3669,15 @@ funciones serverless (cold starts, duración, concurrencia).
 
 ### 18.1 — Scorecard vs. patrones Bagisto
 
-| # | Patrón Bagisto                    | Nuestro estado           | Nota  |
-| - | --------------------------------- | ------------------------ | ----- |
-| 1 | Modular por dominio               | 🟡 Parcial               | 7/10  |
-| 2 | Repository pattern                | 🟢 Fuerte                | 7/10  |
-| 3 | Contracts / swappable providers   | 🟢 Excelente (pagos)     | 8/10  |
-| 4 | EAV / atributos dinámicos         | 🟠 Limitado              | 5/10  |
-| 5 | Multi-canal / moneda / i18n       | 🔴 Débil                 | 3/10  |
-| 6 | ACL granular (resource×action)    | 🟢 Excelente             | 9/10  |
-| 7 | Event-driven / cart persistido    | 🟠 Mixto                 | 5/10  |
+| #   | Patrón Bagisto                  | Nuestro estado       | Nota |
+| --- | ------------------------------- | -------------------- | ---- |
+| 1   | Modular por dominio             | 🟡 Parcial           | 7/10 |
+| 2   | Repository pattern              | 🟢 Fuerte            | 7/10 |
+| 3   | Contracts / swappable providers | 🟢 Excelente (pagos) | 8/10 |
+| 4   | EAV / atributos dinámicos       | 🟠 Limitado          | 5/10 |
+| 5   | Multi-canal / moneda / i18n     | 🔴 Débil             | 3/10 |
+| 6   | ACL granular (resource×action)  | 🟢 Excelente         | 9/10 |
+| 7   | Event-driven / cart persistido  | 🟠 Mixto             | 5/10 |
 
 ### 18.2 — Lo que ya hacemos mejor que Bagisto (no tocar) ✅
 
@@ -3851,7 +3852,7 @@ funciones serverless (cold starts, duración, concurrencia).
   `NEXT_PUBLIC_APP_URL` apuntan al dominio de arriba (la segunda se compila dentro
   del bundle, por eso hubo que desplegar dos veces: una para descubrir la URL).
 - **Bloqueo encontrado**: el primer deploy compiló pero Vercel lo abortó con
-  *"Vulnerable version of Next.js detected"*. La plataforma rechaza versiones de Next
+  _"Vulnerable version of Next.js detected"_. La plataforma rechaza versiones de Next
   con CVE conocido. Resuelto subiendo **Next 15.3.3 → 15.5.20** (última de la línea 15,
   sin cambios de ruptura; no se saltó a la 16).
 - **Otro bloqueo**: faltaba `prisma generate` en `postinstall`. En local pasaba
@@ -3919,8 +3920,9 @@ llegaba a cualquier escritura con FK a `User` y reventaba. Alcance real: `favori
 por permisos.
 
 **Solución (dos capas):**
-1. **Origen** — `src/lib/auth-options.ts`: el callback `jwt` ahora distingue *borrado*
-   (`!fresh` → `token.id = ""`, identidad invalidada) de *desactivado* (existe pero no
+
+1. **Origen** — `src/lib/auth-options.ts`: el callback `jwt` ahora distingue _borrado_
+   (`!fresh` → `token.id = ""`, identidad invalidada) de _desactivado_ (existe pero no
    `ACTIVE` → conserva id, revoca rol). Un token huérfano queda tratado como deslogueado
    en todas partes.
 2. **Frontera** — `src/lib/session.ts` (nuevo) `getSessionUserId()` mapea el id vacío a
@@ -3943,6 +3945,7 @@ incluida `/admin/login` — donde todavía no hay sesión. Eso dejaba una column
 izquierda del formulario en vez de la pantalla centrada.
 
 **Solución:**
+
 1. `src/components/admin/admin-shell.tsx` (nuevo) — wrapper cliente que decide si
    renderizar el sidebar según el pathname; en `/admin/login` devuelve solo `children`.
    `src/app/admin/layout.tsx` ahora delega en él (mismo JSX de antes, solo movido).
@@ -3978,6 +3981,7 @@ existe un `Dialog` de Radix en `src/components/ui/dialog.tsx`, sin usar todavía
 como link; home sin errores SSR). Falta pendiente el click-through E2E en navegador real.
 
 **Lo que se construyó:**
+
 - `src/components/account/account-dialog.tsx` — `AccountDialogProvider` + hook
   `useAccountDialog()` (`openLogin` / `openRegister` / `close`). Renderiza el modal con dos
   vistas (login/registro) que se alternan sin recargar, siguiendo el patrón de overlay del
@@ -4024,6 +4028,7 @@ una sola página simple (saludo + link a pedidos + cambiar contraseña). El pedi
 la cuenta en ese dashboard con sidebar y detallar cada sección (una por imagen).
 
 **Estado actual verificado:**
+
 - `/cuenta` (`page.tsx`): saludo `Hola, {name}`, link "Mis pedidos", `ChangePasswordForm`,
   `LogoutButton`. Nada más.
 - `/cuenta/pedidos` y `/cuenta/pedidos/[id]`: ✅ existen.
@@ -4041,17 +4046,18 @@ Favoritos · Salir. Cada sección = una ruta hija de `/cuenta`. En móvil el sid
 
 ### Detalle por sección (una por imagen de referencia)
 
-| # | Sección | Qué muestra la referencia | Estado actual | Qué falta | Esfuerzo |
-| - | ------- | ------------------------- | ------------- | --------- | -------- |
-| 1 | **Perfil** | Panel con botón "Editar" que alterna solo-lectura/edición. Campos: Nombre, Apellido, Email, Cédula de ciudadanía, Género, Fecha de nacimiento, Teléfono | Solo `name` + `email` | Migración Prisma: añadir `lastName, docId, gender, birthDate, phone` a `User`. API `PATCH /api/cuenta/profile`. Form con toggle editar; email solo-lectura | Medio |
-| 2 | **Direcciones** | Tarjetas (Dirección, Ciudad, Departamento, País) + "Editar" + "Añadir dirección" | No hay modelo `Address` | Modelo `Address` (1-N con User), CRUD `/api/cuenta/addresses`, UI lista+form. **Reusar** `country-state-city` + `use-locations` + combobox del checkout ya existentes | Medio-alto |
-| 3 | **Pedidos** | Tarjeta con Fecha, Total, #, badge de estado, ítems con miniatura; botones "Hacer pedido de nuevo", "Ver pedido", "Ver todos los ítems" | ✅ `/cuenta/pedidos(+[id])` | Solo mejoras: mover bajo el sidebar; añadir "Hacer pedido de nuevo" (reorder → carga ítems al carrito) | Bajo |
-| 4 | **Tarjetas de crédito** | Estado vacío "¡Aún no tienes ningún método de pago registrado!" + "Añadir tarjeta de crédito" | No existe | ⚠️ **Recomiendo diferir.** Guardar tarjetas = alcance PCI. Con MercadoPago sería vía tokenización (Customers & Cards API), pero el flujo actual cobra sin guardar tarjeta. No aporta hasta que haya recompra frecuente | Alto / diferir |
-| 5 | **Autenticación** | Card "Contraseña" (definir/cambiar) + "Gestión de sesiones" (N sesiones activas, "Ver sesiones") | ✅ `ChangePasswordForm` existe | Password: ya está, solo re-ubicar. ⚠️ "Sesiones activas" **no es viable con JWT stateless** sin añadir tabla de sesiones o pasar a DB sessions. Recomiendo omitir esa card por ahora | Bajo (password) / diferir (sesiones) |
-| 6 | **Carritos guardados** → replantear como **Listas guardadas** | "Vaciar carrito", buscador, tabla (#, Nombre, Productos, fecha, Acciones) | Carrito es client-side (`use-cart`, localStorage) | Modelo `SavedCart`/`SavedList`, CRUD, UI tabla. **Decisión del dueño (2026-07-23):** en vez de "carritos", exponerlo como **listas guardadas con nombre** (tipo wishlists para recompra/regalo), más natural para la tienda. Nice-to-have | Medio |
-| 7 | **Favoritos** | Grid de favoritos con corazón (breadcrumb Home · Mis Favoritos) | ✅ `/favoritos` + modelo `Favorite` | Solo enlazarlo/embeberlo en el sidebar del dashboard | Bajo |
+| #   | Sección                                                       | Qué muestra la referencia                                                                                                                               | Estado actual                                     | Qué falta                                                                                                                                                                                                                                 | Esfuerzo                             |
+| --- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| 1   | **Perfil**                                                    | Panel con botón "Editar" que alterna solo-lectura/edición. Campos: Nombre, Apellido, Email, Cédula de ciudadanía, Género, Fecha de nacimiento, Teléfono | Solo `name` + `email`                             | Migración Prisma: añadir `lastName, docId, gender, birthDate, phone` a `User`. API `PATCH /api/cuenta/profile`. Form con toggle editar; email solo-lectura                                                                                | Medio                                |
+| 2   | **Direcciones**                                               | Tarjetas (Dirección, Ciudad, Departamento, País) + "Editar" + "Añadir dirección"                                                                        | No hay modelo `Address`                           | Modelo `Address` (1-N con User), CRUD `/api/cuenta/addresses`, UI lista+form. **Reusar** `country-state-city` + `use-locations` + combobox del checkout ya existentes                                                                     | Medio-alto                           |
+| 3   | **Pedidos**                                                   | Tarjeta con Fecha, Total, #, badge de estado, ítems con miniatura; botones "Hacer pedido de nuevo", "Ver pedido", "Ver todos los ítems"                 | ✅ `/cuenta/pedidos(+[id])`                       | Solo mejoras: mover bajo el sidebar; añadir "Hacer pedido de nuevo" (reorder → carga ítems al carrito)                                                                                                                                    | Bajo                                 |
+| 4   | **Tarjetas de crédito**                                       | Estado vacío "¡Aún no tienes ningún método de pago registrado!" + "Añadir tarjeta de crédito"                                                           | No existe                                         | ⚠️ **Recomiendo diferir.** Guardar tarjetas = alcance PCI. Con MercadoPago sería vía tokenización (Customers & Cards API), pero el flujo actual cobra sin guardar tarjeta. No aporta hasta que haya recompra frecuente                    | Alto / diferir                       |
+| 5   | **Autenticación**                                             | Card "Contraseña" (definir/cambiar) + "Gestión de sesiones" (N sesiones activas, "Ver sesiones")                                                        | ✅ `ChangePasswordForm` existe                    | Password: ya está, solo re-ubicar. ⚠️ "Sesiones activas" **no es viable con JWT stateless** sin añadir tabla de sesiones o pasar a DB sessions. Recomiendo omitir esa card por ahora                                                      | Bajo (password) / diferir (sesiones) |
+| 6   | **Carritos guardados** → replantear como **Listas guardadas** | "Vaciar carrito", buscador, tabla (#, Nombre, Productos, fecha, Acciones)                                                                               | Carrito es client-side (`use-cart`, localStorage) | Modelo `SavedCart`/`SavedList`, CRUD, UI tabla. **Decisión del dueño (2026-07-23):** en vez de "carritos", exponerlo como **listas guardadas con nombre** (tipo wishlists para recompra/regalo), más natural para la tienda. Nice-to-have | Medio                                |
+| 7   | **Favoritos**                                                 | Grid de favoritos con corazón (breadcrumb Home · Mis Favoritos)                                                                                         | ✅ `/favoritos` + modelo `Favorite`               | Solo enlazarlo/embeberlo en el sidebar del dashboard                                                                                                                                                                                      | Bajo                                 |
 
 ### Fases recomendadas
+
 - **Fase A (base + quick wins):** ✅ **IMPLEMENTADA (2026-07-23)** — ver abajo.
 - **Fase B:** Direcciones — ✅ **IMPLEMENTADA (2026-07-25)** — ver abajo.
 - **Fase C:** Listas guardadas (antes "Carritos guardados") — modelo `SavedList`/`SavedCart`,
@@ -4068,9 +4074,10 @@ vacío → 400, fecha futura → 400, sin sesión → 401. Además `type-check` 
 `build` ✅. (Usuarios de prueba borrados del dev.)
 
 **Arquitectura / lo construido:**
+
 - **Schema:** migración `20260724023017_add_user_profile_fields` — `User` gana `lastName,
-  phone, docId, gender (enum Gender), birthDate (@db.Date)`. Enum `Gender = MALE|FEMALE|OTHER|
-  UNDISCLOSED`. (Migración corrida con **Node 22**, dev sigue en 18.)
+phone, docId, gender (enum Gender), birthDate (@db.Date)`. Enum `Gender = MALE|FEMALE|OTHER|
+UNDISCLOSED`. (Migración corrida con **Node 22**, dev sigue en 18.)
 - **Route group `(store)/cuenta/(dashboard)/`** — no cambia las URLs pero aísla las páginas
   autenticadas: `layout.tsx` resuelve la sesión con `getSessionUserId()` (redirige a
   `/cuenta/login` si falta) y pinta la cabecera "HOLA, {NOMBRE}!" + sidebar. `login`/`registro`
@@ -4091,6 +4098,7 @@ vacío → 400, fecha futura → 400, sin sesión → 401. Además `type-check` 
   Carritos / Tarjetas llegan en fases siguientes (no se muestran links rotos).
 
 **Refinamiento (2026-07-23, mismo día):**
+
 - **Favoritos no saca al usuario del dashboard:** se extrajo `FavoritesGrid`
   (`src/components/favorites/favorites-grid.tsx`) y ahora hay un tab interno
   `/cuenta/favoritos` que renderiza el grid dentro del layout con sidebar. La página
@@ -4129,9 +4137,10 @@ Libreta de direcciones del cliente, siguiendo `STANDARDS.md` (capa server-only c
 ownership, E2E con Playwright + limpieza de datos).
 
 **Arquitectura / lo construido:**
+
 - **Schema:** migración `20260725203512_add_address_model` — modelo `Address` (1-N con `User`,
   `onDelete: Cascade`, `@@index([userId])`) con `label, recipientName, phone, address, city,
-  state, country, zipCode, isDefault`. (Node 22.)
+state, country, zipCode, isDefault`. (Node 22.)
 - **Dominio** (`src/lib/addresses.ts`, server-only): `listAddresses`, `createAddress`,
   `updateAddress`, `setDefaultAddress`, `deleteAddress`. Validación por campo con `AddressError`.
   `isDefault` manejado en `$transaction`: la 1ª dirección es principal; marcar una desmarca las

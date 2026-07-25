@@ -355,7 +355,13 @@ export function ThemeEditor({ data }: { data: ThemeConfig }) {
       style: {
         borderRadius: form.toastRadius,
         ...(form.toastCustomColors
-          ? { backgroundColor: bg, color: text, borderColor: border, borderWidth: 1, borderStyle: "solid" }
+          ? {
+              backgroundColor: bg,
+              color: text,
+              borderColor: border,
+              borderWidth: 1,
+              borderStyle: "solid",
+            }
           : {}),
       },
     })

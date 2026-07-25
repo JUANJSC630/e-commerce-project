@@ -50,7 +50,9 @@ export function MercadoPagoCheckout({
         <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-brand-muted">
           Total a pagar
         </span>
-        <span className="font-display text-2xl font-bold text-brand-ink">{formatPrice(amount)}</span>
+        <span className="font-display text-2xl font-bold text-brand-ink">
+          {formatPrice(amount)}
+        </span>
       </div>
 
       <div role="tablist" aria-label="Método de pago" className="mt-5 grid grid-cols-2 gap-3">

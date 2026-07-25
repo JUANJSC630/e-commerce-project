@@ -62,9 +62,7 @@ export default async function RootLayout({
             position={theme.toastPosition}
             // Custom+uniform overrides per-type; custom+per-type needs rich colors on
             // so sonner applies our --success/--error/--info vars.
-            richColors={
-              theme.toastCustomColors ? theme.toastPerType : theme.toastRichColors
-            }
+            richColors={theme.toastCustomColors ? theme.toastPerType : theme.toastRichColors}
             closeButton={theme.toastCloseButton}
             expand={theme.toastExpand}
             duration={theme.toastDuration * 1000}

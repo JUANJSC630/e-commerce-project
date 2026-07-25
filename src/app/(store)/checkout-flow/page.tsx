@@ -59,7 +59,6 @@ export default function CheckoutPage() {
       }
     }
     setHydrated(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Persist the draft as the customer fills the form - but only while the cart

@@ -163,7 +163,8 @@ function optionalText(
   const trimmed = value.trim()
   if (!trimmed) return null
   if (trimmed.length > max) throw new AccountError(`${label} es demasiado largo`)
-  if (pattern && !pattern.test(trimmed)) throw new AccountError(`${label} no tiene un formato válido`)
+  if (pattern && !pattern.test(trimmed))
+    throw new AccountError(`${label} no tiene un formato válido`)
   return trimmed
 }
 
@@ -182,7 +183,8 @@ function parseBirthDate(value: unknown): Date | null {
   }
   const date = new Date(`${value}T00:00:00.000Z`)
   if (Number.isNaN(date.getTime())) throw new AccountError("Fecha de nacimiento inválida")
-  if (date.getTime() > Date.now()) throw new AccountError("La fecha de nacimiento no puede ser futura")
+  if (date.getTime() > Date.now())
+    throw new AccountError("La fecha de nacimiento no puede ser futura")
   if (date.getUTCFullYear() < 1900) throw new AccountError("Fecha de nacimiento inválida")
   return date
 }

@@ -55,7 +55,10 @@ export function AccountDialogProvider({ children }: { children: React.ReactNode 
     }
   }, [view, close])
 
-  const value = useMemo(() => ({ openLogin, openRegister, close }), [openLogin, openRegister, close])
+  const value = useMemo(
+    () => ({ openLogin, openRegister, close }),
+    [openLogin, openRegister, close],
+  )
 
   const isLogin = view === "login"
 
@@ -109,7 +112,9 @@ export function AccountDialogProvider({ children }: { children: React.ReactNode 
                   {isLogin ? "Inicia sesión" : "Crea tu cuenta"}
                 </h2>
                 <p className="mt-1 text-sm text-brand-muted">
-                  {isLogin ? "Accede a tu cuenta y tus pedidos" : "Guarda tus datos y sigue tus pedidos"}
+                  {isLogin
+                    ? "Accede a tu cuenta y tus pedidos"
+                    : "Guarda tus datos y sigue tus pedidos"}
                 </p>
               </header>
 

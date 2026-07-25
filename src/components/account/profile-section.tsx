@@ -44,8 +44,9 @@ export function ProfileSection({ profile }: { profile: Profile }) {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<FormState>(() => toForm(profile))
 
-  const set = (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm((f) => ({ ...f, [field]: e.target.value }))
+  const set =
+    (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setForm((f) => ({ ...f, [field]: e.target.value }))
 
   function cancel() {
     setForm(toForm(profile))
@@ -100,7 +101,12 @@ export function ProfileSection({ profile }: { profile: Profile }) {
           <Input id="name" value={form.name} onChange={set("name")} disabled={disabled} required />
         </Field>
         <Field label="Apellido" htmlFor="lastName">
-          <Input id="lastName" value={form.lastName} onChange={set("lastName")} disabled={disabled} />
+          <Input
+            id="lastName"
+            value={form.lastName}
+            onChange={set("lastName")}
+            disabled={disabled}
+          />
         </Field>
 
         <Field label="Email" htmlFor="email" className="md:col-span-2">

@@ -19,6 +19,7 @@ import { ProductGallery } from "@/components/product/product-gallery"
 import { StockBadge } from "@/components/product/stock-badge"
 import { StockAlertForm } from "@/components/product/stock-alert-form"
 import { SizeGuideModal } from "@/components/product/size-guide-modal"
+import { AddToListButton } from "@/components/product/add-to-list-button"
 import { isOutOfStock } from "@/lib/inventory"
 import { useCart } from "@/hooks/use-cart"
 import { useFavorites } from "@/hooks/use-favorites"
@@ -364,6 +365,7 @@ export function ProductDetail({ product, relatedProducts }: ProductDetailProps) 
               >
                 <Heart className={cn("w-5 h-5", isFavorite && "fill-red-500")} aria-hidden="true" />
               </button>
+              <AddToListButton productId={product.id} />
             </div>
 
             {/* Preorder note, or back-in-stock alert for plain out-of-stock items */}

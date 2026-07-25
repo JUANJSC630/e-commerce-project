@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useCart } from "@/hooks/use-cart"
 import { CartItem } from "@/components/cart/cart-item"
 import { CartSummary } from "@/components/cart/cart-summary"
+import { SaveCartButton } from "@/components/cart/save-cart-button"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
@@ -68,7 +69,8 @@ export default function CartPage() {
               <CartItem key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} item={item} />
             ))}
           </div>
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex flex-wrap justify-end gap-3">
+            <SaveCartButton />
             <Button
               variant="outline"
               onClick={() => setIsClearDialogOpen(true)}

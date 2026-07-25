@@ -2,7 +2,15 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { User, MapPin, Package, Heart, ShieldCheck, type LucideIcon } from "lucide-react"
+import {
+  User,
+  MapPin,
+  Package,
+  Heart,
+  ListChecks,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react"
 import { LogoutButton } from "@/components/account/logout-button"
 
 interface AccountNavItem {
@@ -15,14 +23,14 @@ interface AccountNavItem {
 
 /**
  * Account sidebar entries, in the recommended order. Only sections that exist
- * today are listed; saved lists and payment methods land in later phases (see
- * ROADMAP Bloque 24).
+ * today are listed; payment methods stay deferred (see ROADMAP Bloque 24).
  */
 const ITEMS: AccountNavItem[] = [
   { href: "/cuenta", label: "Perfil", icon: User, exact: true },
   { href: "/cuenta/direcciones", label: "Direcciones", icon: MapPin },
   { href: "/cuenta/pedidos", label: "Pedidos", icon: Package },
   { href: "/cuenta/favoritos", label: "Favoritos", icon: Heart },
+  { href: "/cuenta/listas", label: "Listas guardadas", icon: ListChecks },
   { href: "/cuenta/seguridad", label: "Seguridad", icon: ShieldCheck },
 ]
 

@@ -59,6 +59,26 @@ model User {
   orders    Order[]
   favorites Favorite[]
   reviews   Review[]
+  addresses Address[]
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label         String? // optional nickname, e.g. "Casa", "Oficina"
+  recipientName String? // who receives it; defaults to the account name
+  phone         String?
+  address       String // street line (calle/carrera + número)
+  city          String
+  state         String // department/state
+  country       String
+  zipCode       String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
 }
 
 enum Gender {

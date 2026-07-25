@@ -56,10 +56,36 @@ model User {
   status    UserStatus @default(ACTIVE)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  orders    Order[]
-  favorites Favorite[]
-  reviews   Review[]
-  addresses Address[]
+  orders     Order[]
+  favorites  Favorite[]
+  reviews    Review[]
+  addresses  Address[]
+  savedLists SavedList[]
+}
+
+model SavedList {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  items     SavedListItem[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+model SavedListItem {
+  id        String    @id @default(cuid())
+  listId    String
+  list      SavedList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  // Loose reference (no FK) like Favorite: a deleted product just stops
+  // resolving via /api/products?ids= instead of cascading list rows away.
+  productId String
+  createdAt DateTime  @default(now())
+
+  @@unique([listId, productId])
+  @@index([listId])
 }
 
 model Address {

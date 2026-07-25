@@ -1,6 +1,6 @@
 # Roadmap - Dulce Infancia Shop
 
-> Actualizado: 2026-07-25 (Bloque 24 Fase A - **dashboard + perfil ✅**; Fase B - **direcciones ✅**) | Score técnico frontend: **20/20** ✅ | Build prod ✅
+> Actualizado: 2026-07-25 (Bloque 24 Fase A **dashboard+perfil ✅**, Fase B **direcciones ✅**, Fase C **listas guardadas ✅**) | Score técnico frontend: **20/20** ✅ | Build prod ✅
 > **Objetivo final**: e-commerce 100% administrable - productos, imágenes, inventario y pedidos desde un dashboard sin tocar código.
 
 ---
@@ -36,7 +36,7 @@ yarn verify:cron                   # E2E del recordatorio de pago abandonado (re
 **Siguiente trabajo de valor, ya sin bloqueos** (por orden sugerido):
 
 1. ~~Login en modal (Bloque 23, Fase 1)~~ — ✅ **IMPLEMENTADO (2026-07-23)**, verificado con type-check/lint/build + smoke test. Falta el click-through E2E en navegador. Ver detalle en Bloque 23.
-2. **Dashboard de cuenta / perfil de usuario (Bloque 24)** — **Fase A ✅ (2026-07-23)** y **Fase B Direcciones ✅ (2026-07-25)**: dashboard con sidebar, perfil editable y libreta de direcciones (CRUD + principal). Siguiente: **Fase C (Listas guardadas**, antes "Carritos guardados").
+2. **Dashboard de cuenta / perfil de usuario (Bloque 24)** — **Fase A ✅**, **Fase B Direcciones ✅** y **Fase C Listas guardadas ✅** (todas 2026-07-25): dashboard con sidebar, perfil editable, libreta de direcciones y listas guardadas (guardar carrito como lista). Pendiente opcional: "añadir a una lista" desde la página de producto; tarjetas y sesiones activas siguen diferidas.
 3. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda. En progreso: 2/16 productos ya tienen foto real (copiada de producción), quedan 14.
 4. **Analytics (Bloque 12)** — GA4 + Meta Pixel, 0% hecho. Sin esto no se puede medir la conversión.
 5. **Bug 13.5** — el login no reclama los pedidos hechos como invitado (el registro sí).
@@ -4060,8 +4060,7 @@ Favoritos · Salir. Cada sección = una ruta hija de `/cuenta`. En móvil el sid
 
 - **Fase A (base + quick wins):** ✅ **IMPLEMENTADA (2026-07-23)** — ver abajo.
 - **Fase B:** Direcciones — ✅ **IMPLEMENTADA (2026-07-25)** — ver abajo.
-- **Fase C:** Listas guardadas (antes "Carritos guardados") — modelo `SavedList`/`SavedCart`,
-  listas con nombre para recompra/regalo. Ver decisión del dueño en la fila 6 de la tabla.
+- **Fase C:** Listas guardadas (antes "Carritos guardados") — ✅ **IMPLEMENTADA (2026-07-25)** — ver abajo.
 - **Diferido (documentado, no implementar aún):** Tarjetas de crédito (PCI / tokenización MP) y
   Gestión de sesiones activas (limitación de JWT stateless). Ver flags ⚠️ en la tabla.
 
@@ -4158,6 +4157,39 @@ state, country, zipCode, isDefault`. (Node 22.)
   default), 2ª dirección, marcar principal (cambia el default), borrar con `ConfirmModal`
   (verificado que el modal pinta por encima), validación 400 y sin-sesión 401. type-check ✅ ·
   lint ✅ · prettier ✅ · build ✅. Datos de prueba borrados (cascade verificado).
+
+### Fase C — Listas guardadas — IMPLEMENTADA (2026-07-25)
+
+Replantea "carritos guardados" como **listas guardadas con nombre** (wishlists para
+recompra/regalo), siguiendo `STANDARDS.md`.
+
+**Arquitectura / lo construido:**
+
+- **Schema:** migración `20260725210408_add_saved_lists` — `SavedList` (1-N con `User`, cascade)
+  y `SavedListItem` (cascade al list; **`productId` suelto sin FK, patrón `Favorite`** → un
+  producto borrado deja de resolverse en vez de romper la lista). `@@unique([listId, productId])`
+  evita duplicados; `@@index` por `userId`/`listId`.
+- **Dominio** (`src/lib/saved-lists.ts`, server-only): `listSavedLists` (con `_count`),
+  `getSavedList`, `createSavedList`, `renameSavedList`, `deleteSavedList`, `removeItem`.
+  `SavedListError`; `resolveProductIds` **dedupe, cap (200) y filtra a productos existentes**
+  (nunca guarda ids basura). Ownership por `where: { userId }`.
+- **API:** `/api/cuenta/lists` (GET/POST), `/[id]` (GET/PATCH rename/DELETE),
+  `/[id]/items/[productId]` (DELETE). `getSessionUserId()` → 401.
+- **UI:** `SavedListsSection` (tabla: nombre, #productos, fecha, Ver/Borrar con `ConfirmModal`).
+  `SavedListDetail` **reusa `ProductCard`** (resuelve ids vía `/api/products?ids=` igual que
+  favoritos) con botón "quitar" por producto y "Eliminar lista". `SaveCartButton` en el carrito
+  abre un modal (portal) para nombrar la lista y la crea desde los productos del carrito.
+- **Rutas** `/cuenta/listas` (+ `/[id]`) + entrada "Listas guardadas" en el sidebar (tras
+  Favoritos, orden recomendado). Integrado en `carrito/page.tsx` junto a "Vaciar Carrito".
+- **Limitación documentada (decisión, no cabo suelto):** la lista guarda **productos**, no
+  cantidades ni variantes (talla/color) del carrito — es una lista de recompra tipo wishlist,
+  no un snapshot de carrito. Añadir al carrito se hace desde cada `ProductCard` (que ya maneja
+  variantes). Guardar en lista desde la página de producto queda como mejora futura.
+- **Verificado E2E (Playwright)**: crear lista (dedupe + filtro de id inexistente → 2 de 4),
+  tabla, detalle con `ProductCard`, quitar item, eliminar lista con `ConfirmModal` (pinta por
+  encima), **flujo del carrito** (añadir producto → "Guardar en lista" → creada), validación
+  400 y sin-sesión 401. `yarn validate` (type-check + lint + prettier) ✅ · build ✅. Datos de
+  prueba borrados (cascade verificado: 0 listas/items huérfanos).
 
 ---
 

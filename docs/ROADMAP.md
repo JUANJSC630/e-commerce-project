@@ -36,7 +36,7 @@ yarn verify:cron                   # E2E del recordatorio de pago abandonado (re
 **Siguiente trabajo de valor, ya sin bloqueos** (por orden sugerido):
 
 1. ~~Login en modal (Bloque 23, Fase 1)~~ — ✅ **IMPLEMENTADO (2026-07-23)**, verificado con type-check/lint/build + smoke test. Falta el click-through E2E en navegador. Ver detalle en Bloque 23.
-2. **Dashboard de cuenta / perfil de usuario (Bloque 24)** — **Fase A ✅**, **Fase B Direcciones ✅** y **Fase C Listas guardadas ✅** (todas 2026-07-25): dashboard con sidebar, perfil editable, libreta de direcciones y listas guardadas (guardar carrito como lista). Pendiente opcional: "añadir a una lista" desde la página de producto; tarjetas y sesiones activas siguen diferidas.
+2. **Dashboard de cuenta / perfil de usuario (Bloque 24)** — **Fase A ✅**, **Fase B Direcciones ✅** y **Fase C Listas guardadas ✅** (todas 2026-07-25): dashboard con sidebar, perfil editable, libreta de direcciones y listas guardadas (guardar carrito como lista). Incluye "añadir a una lista" desde la página de producto. Tarjetas y sesiones activas siguen diferidas.
 3. **Imágenes reales de productos** — hoy casi todo el catálogo usa `/placeholder.svg`. Es lo que más cambia la percepción de la tienda. En progreso: 2/16 productos ya tienen foto real (copiada de producción), quedan 14.
 4. **Analytics (Bloque 12)** — GA4 + Meta Pixel, 0% hecho. Sin esto no se puede medir la conversión.
 5. **Bug 13.5** — el login no reclama los pedidos hechos como invitado (el registro sí).
@@ -4181,10 +4181,14 @@ recompra/regalo), siguiendo `STANDARDS.md`.
   abre un modal (portal) para nombrar la lista y la crea desde los productos del carrito.
 - **Rutas** `/cuenta/listas` (+ `/[id]`) + entrada "Listas guardadas" en el sidebar (tras
   Favoritos, orden recomendado). Integrado en `carrito/page.tsx` junto a "Vaciar Carrito".
+- **Añadir a una lista desde la página de producto (2026-07-25):** botón "Guardar en una lista"
+  junto al corazón de favoritos (`AddToListButton`) → modal (portal) para elegir una lista
+  existente o crear una nueva. Dominio `addItemsToList` (createMany `skipDuplicates`, valida
+  ownership y filtra a productos existentes) + API `POST /api/cuenta/lists/[id]/items`.
 - **Limitación documentada (decisión, no cabo suelto):** la lista guarda **productos**, no
   cantidades ni variantes (talla/color) del carrito — es una lista de recompra tipo wishlist,
   no un snapshot de carrito. Añadir al carrito se hace desde cada `ProductCard` (que ya maneja
-  variantes). Guardar en lista desde la página de producto queda como mejora futura.
+  variantes).
 - **Verificado E2E (Playwright)**: crear lista (dedupe + filtro de id inexistente → 2 de 4),
   tabla, detalle con `ProductCard`, quitar item, eliminar lista con `ConfirmModal` (pinta por
   encima), **flujo del carrito** (añadir producto → "Guardar en lista" → creada), validación

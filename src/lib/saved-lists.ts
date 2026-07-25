@@ -136,6 +136,31 @@ export async function deleteSavedList(userId: string, id: string): Promise<void>
   if (count === 0) throw new SavedListError("Lista no encontrada", 404)
 }
 
+/**
+ * Adds products to an existing list, skipping ones already there. Ids are
+ * validated to real products first. Returns how many rows were newly added.
+ */
+export async function addItemsToList(
+  userId: string,
+  listId: string,
+  productIdsInput: unknown,
+): Promise<number> {
+  const productIds = await resolveProductIds(productIdsInput)
+  return prisma.$transaction(async (tx) => {
+    const list = await tx.savedList.findFirst({
+      where: { id: listId, userId },
+      select: { id: true },
+    })
+    if (!list) throw new SavedListError("Lista no encontrada", 404)
+    if (productIds.length === 0) return 0
+    const { count } = await tx.savedListItem.createMany({
+      data: productIds.map((productId) => ({ listId, productId })),
+      skipDuplicates: true,
+    })
+    return count
+  }, TX_OPTS)
+}
+
 /** Removes one product from a list (ownership enforced via the list's userId). */
 export async function removeItem(userId: string, listId: string, productId: string): Promise<void> {
   await prisma.$transaction(async (tx) => {
